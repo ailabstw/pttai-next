@@ -23,6 +23,3 @@ Start frontend
 $ cd frontend && yarn start
 ```
 
-## License
-
-The MIT License
