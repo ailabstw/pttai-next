@@ -85,35 +85,32 @@ async function updateView (d1) {
 
   let diff = d1.createDiffStream(currentVersion[d1.key.toString('hex')])
   diff.on('data', async (d) => {
-    if (d.name.startsWith('/topics/')) {
-      if (d.name.match('moderation/(.+)')) {
-        let data = await user.readFile(d1, d.name)
-        console.log(d.name, data.toString('utf-8'))
+    console.log(d.name)
+    if (d.name.match(/^\/topics\/(.+)\/moderation$/)) return
+    if (d.name.match(/^\/topics\/(.+)\/curators$/)) return
+    if (d.name.match(/^\/topics\/(.+)\/reactions$/)) return
 
-        let action = JSON.parse(data)
-        mods.push(action)
-      }
+    if (d.name.match(/^\/topics\/(.+)\/moderation\/(.+)$/)) {
+      let data = await user.readFile(d1, d.name)
+
+      let action = JSON.parse(data)
+      mods.push(action)
+    } else if (d.name.match(/^\/topics\/(.+)\/reactions\/(.+)$/)) {
+      // TODO: handle reactions
+
+    } else if (d.name.match(/^\/topics\/(.+)$/)) {
+      let data = await user.readFile(d1, d.name)
+      let m = JSON.parse(data)
+      m.author = d1.key.toString('hex')
+      messages.push(m)
+
+      messages = messages.sort((x, y) => x.date - y.date)
     }
 
-    let topics = await user.getTopics(d1)
-    for (let i = 0; i < topics.length; i++) {
-      let ms = await user.getTopic(d1, topics[i])
-
-      for (let i = 0; i < ms.length; i++) {
-        let x = ms[i]
-        x.author = d1.key.toString('hex')
-        // console.log(x)
-        if (messages.find(m => m.id === x.id)) continue
-        messages.push(x)
-        messages = messages.sort((x, y) => x.date - y.date)
-
-        for (let j = 0; j < mods.length; j++) {
-          messages = messages.filter(m => m.id !== mods[j].id)
-        }
-        // console.log(messages)
-      }
-      io.emit('update', messages)
+    for (let j = 0; j < mods.length; j++) {
+      messages = messages.filter(m => m.id !== mods[j].id)
     }
+    io.emit('update', messages)
   })
 
   currentVersion[d1.key.toString('hex')] = d1.version

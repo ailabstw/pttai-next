@@ -50,7 +50,7 @@ function createTopic (archive, topic) {
         archive.mkdir(`/topics/${topic}/moderation`, (err) => {
           if (err) return reject(err)
 
-          archive.mkdir(`/topics/${topic}/reacts`, (err) => {
+          archive.mkdir(`/topics/${topic}/reactions`, (err) => {
             if (err) return reject(err)
 
             resolve()
@@ -79,7 +79,7 @@ function react (archive, topicID, react) {
     if (!react.id) return reject(new Error('undefined action.id'))
 
     if (!react.topic) react.topic = topicID
-    archive.writeFile(`/topics/${topicID}/reacts/${react.id}`, JSON.stringify(react), (err) => {
+    archive.writeFile(`/topics/${topicID}/reactions/${react.id}`, JSON.stringify(react), (err) => {
       if (err) return reject(err)
 
       resolve()
