@@ -2,6 +2,8 @@
 
 Experimental prototype to demostrate running a decentralized social network without trusting a centralized server.
 
+This is still a WIP, check back later.
+
 ## Usage
 
 Start 2 hub:
