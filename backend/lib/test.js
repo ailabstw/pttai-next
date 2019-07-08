@@ -45,7 +45,9 @@ tape('read and write in topic', function (t) {
     await user.postToTopic(a, 'foo', { id: 123, title: 'hello' })
 
     let posts = await user.getTopic(a, 'foo')
-    t.same(posts, [ { id: 123, title: 'hello', topic: 'foo' } ])
+    t.same(posts[0].id, 123)
+    t.same(posts[0].title, 'hello')
+    t.same(posts[0].topic, 'foo')
 
     t.end()
   })
