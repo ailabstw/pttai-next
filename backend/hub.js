@@ -81,10 +81,8 @@ function readUser (k1) {
 }
 
 async function updateView (d1) {
-  console.log('version', d1.version)
-
-  console.log('update view')
   if (!currentVersion[d1.key.toString('hex')]) currentVersion[d1.key.toString('hex')] = 0
+
   let diff = d1.createDiffStream(currentVersion[d1.key.toString('hex')])
   diff.on('data', async (d) => {
     if (d.name.startsWith('/topics/')) {

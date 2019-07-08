@@ -57,6 +57,12 @@ module.exports = function (archive) {
     res.json({ result: 'ok' })
   })
 
+  app.post('/topics/:id/react', async (req, res) => {
+    await user.moderate(archive, req.params.id, req.body.data)
+
+    res.json({ result: 'ok' })
+  })
+
   app.get('/friends', async (req, res) => {
     let fs = await user.getFriends(archive)
 

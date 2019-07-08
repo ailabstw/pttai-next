@@ -1,11 +1,13 @@
 module.exports = {
   init,
   readFile,
+
   getTopics,
   getTopic,
   createTopic,
   postToTopic,
   moderate,
+  react,
 
   getFriends,
   getFriend,
@@ -48,7 +50,11 @@ function createTopic (archive, topic) {
         archive.mkdir(`/topics/${topic}/moderation`, (err) => {
           if (err) return reject(err)
 
-          resolve()
+          archive.mkdir(`/topics/${topic}/reacts`, (err) => {
+            if (err) return reject(err)
+
+            resolve()
+          })
         })
       })
     })
@@ -68,6 +74,19 @@ function moderate (archive, topicID, action) {
   })
 }
 
+function react (archive, topicID, react) {
+  return new Promise((resolve, reject) => {
+    if (!react.id) return reject(new Error('undefined action.id'))
+
+    if (!react.topic) react.topic = topicID
+    archive.writeFile(`/topics/${topicID}/reacts/${react.id}`, JSON.stringify(react), (err) => {
+      if (err) return reject(err)
+
+      resolve()
+    })
+  })
+}
+
 function getTopic (archive, id) {
   return new Promise((resolve, reject) => {
     archive.readdir(`/topics/${id}`, async (err, list) => {
@@ -77,6 +96,7 @@ function getTopic (archive, id) {
       for (let i = 0; i < list.length; i++) {
         if (list[i] === 'curators') continue
         if (list[i] === 'moderation') continue
+        if (list[i] === 'reacts') continue
 
         let data = await readFile(archive, `/topics/${id}/${list[i]}`)
 

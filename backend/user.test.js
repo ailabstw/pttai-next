@@ -36,6 +36,12 @@ tape('test', async function (t) {
     t.same(res.data.result[0].title, 'hello')
     t.same(res.data.result[0].topic, 'foo')
 
+    res = await axios.post(`${HOST}/topics/foo/moderation`, { data: { id: 'helloo', action: 'delete' } })
+    t.same(res.data, { result: 'ok' })
+
+    res = await axios.post(`${HOST}/topics/foo/react`, { data: { id: 'helloo', reaction: ':)' } })
+    t.same(res.data, { result: 'ok' })
+
     res = await axios.get(`${HOST}/topics/foo/curators`)
     t.same(res.data, { result: [] })
 
