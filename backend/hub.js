@@ -18,6 +18,8 @@ for (let i = 0; i < users.length; i++) {
   readUser(users[i])
 }
 
+let hubArchive = hyperdrive(ram)
+
 var app = require('express')()
 var http = require('http').Server(app)
 var io = require('socket.io')(http)
@@ -37,6 +39,10 @@ app.post('/join', async (req, res) => {
   }
   console.log(users)
   res.json({ result: 'ok' })
+})
+
+app.get('/hub.json', (req, res) => {
+  res.json({ key: hubArchive.key.toString('hex'), moderators: [] })
 })
 
 io.on('connection', (socket) => {
@@ -78,27 +84,19 @@ async function updateView (d1) {
   console.log('version', d1.version)
 
   console.log('update view')
-  if (currentVersion[d1.key.toString('hex')]) {
-    let diff = d1.createDiffStream(currentVersion[d1.key.toString('hex')])
-    diff.on('data', async (d) => {
-      if (d.name.startsWith('/topics/')) {
-        if (d.name.match('moderation')) {
-          let data = await user.readFile(d1, d.name)
-          console.log(d.name, data.toString('utf-8'))
+  if (!currentVersion[d1.key.toString('hex')]) currentVersion[d1.key.toString('hex')] = 0
+  let diff = d1.createDiffStream(currentVersion[d1.key.toString('hex')])
+  diff.on('data', async (d) => {
+    if (d.name.startsWith('/topics/')) {
+      if (d.name.match('moderation/(.+)')) {
+        let data = await user.readFile(d1, d.name)
+        console.log(d.name, data.toString('utf-8'))
 
-          let action = JSON.parse(data)
-          mods.push(action)
-        } else {
-          let data = await user.readFile(d1, d.name)
-          console.log(d.name, data.toString('utf-8'))
-
-          let post = JSON.parse(data)
-          let event = ev('posted', post, { topic_id: post.topic })
-
-          io.emit('event', event)
-        }
+        let action = JSON.parse(data)
+        mods.push(action)
       }
-    })
+    }
+
     let topics = await user.getTopics(d1)
     for (let i = 0; i < topics.length; i++) {
       let ms = await user.getTopic(d1, topics[i])
@@ -115,14 +113,10 @@ async function updateView (d1) {
           messages = messages.filter(m => m.id !== mods[j].id)
         }
         // console.log(messages)
-        io.emit('update', messages)
       }
+      io.emit('update', messages)
     }
-  }
+  })
 
   currentVersion[d1.key.toString('hex')] = d1.version
-}
-
-function ev (type, data, broadcast) {
-  return { event: type, data, broadcast }
 }
