@@ -1,5 +1,6 @@
 const express = require('express')
 const bodyParser = require('body-parser')
+const audit = require('express-requests-logger')
 const cors = require('cors')
 const user = require('./lib')
 
@@ -7,7 +8,9 @@ module.exports = function (archive) {
   let app = express()
   app.use(bodyParser.json())
   app.use(cors())
+  app.use(audit())
 
+  // TODO: authz
   app.get('/me', (req, res) => {
     res.json({ result: { key: archive.key.toString('hex') } })
   })
@@ -44,6 +47,12 @@ module.exports = function (archive) {
 
   app.post('/topics/:id/curators', async (req, res) => {
     await user.addCurator(archive, req.params.id, req.body.data)
+
+    res.json({ result: 'ok' })
+  })
+
+  app.post('/topics/:id/moderation', async (req, res) => {
+    await user.moderate(archive, req.params.id, req.body.data)
 
     res.json({ result: 'ok' })
   })

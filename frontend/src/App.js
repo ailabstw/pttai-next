@@ -82,6 +82,8 @@ class App extends Component {
       this.setState({ messages })
       this.scrollMessage()
     })
+
+    this.socket.on('event', console.log)
   }
 
   changeTopic (topic) {
@@ -92,6 +94,14 @@ class App extends Component {
 
   handleAPIChange (e) {
     this.setState({ apiInput: e.target.value })
+  }
+
+  handleModeration (topic, id) {
+    return async () => {
+      console.log('mod', topic, id)
+      let ret = await axios.post(`${this.state.api}/topics/${topic}/moderation`, { data: { id, action: 'delete' } })
+      console.log(ret.data)
+    }
   }
 
   handleAPIInputKeyPress (e) {
@@ -162,7 +172,14 @@ class App extends Component {
         </div>
         <div className='message bg-red overflow-y-auto px-2' >
           <ul className='min-h-full flex flex-col justify-end'>
-            {this.state.messages[this.state.currentTopic] ? this.state.messages[this.state.currentTopic].map(m => <li key={m.id}><span className='font-bold'>{m.author ? m.author.substring(0, 8) : ''}...</span>: {m.message}</li>) : ''}
+            {this.state.messages[this.state.currentTopic] ? this.state.messages[this.state.currentTopic].map(m => {
+              return <li
+                key={m.id}
+                className='flex flex-row justify-between cursor-pointer'>
+                <span><span className='font-bold'>{m.author ? m.author.substring(0, 8) : ''}...</span>: {m.message}</span>
+                <span className='text-gray-500 hover:text-black' onClick={this.handleModeration(m.topic, m.id).bind(this)}>...</span>
+              </li>
+            }) : ''}
           </ul>
           <div id='end' ref={this.messageEndRef} />
         </div>

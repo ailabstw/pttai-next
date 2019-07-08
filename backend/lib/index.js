@@ -1,6 +1,3 @@
-const crypto = require('hypercore-crypto')
-const blake2b = require('blake2b')
-
 module.exports = {
   init,
   readFile,
@@ -8,6 +5,7 @@ module.exports = {
   getTopic,
   createTopic,
   postToTopic,
+  moderate,
 
   getFriends,
   getFriend,
@@ -47,8 +45,25 @@ function createTopic (archive, topic) {
       archive.mkdir(`/topics/${topic}/curators`, (err) => {
         if (err) return reject(err)
 
-        resolve()
+        archive.mkdir(`/topics/${topic}/moderation`, (err) => {
+          if (err) return reject(err)
+
+          resolve()
+        })
       })
+    })
+  })
+}
+
+function moderate (archive, topicID, action) {
+  return new Promise((resolve, reject) => {
+    if (!action.id) return reject(new Error('undefined action.id'))
+
+    if (!action.topic) action.topic = topicID
+    archive.writeFile(`/topics/${topicID}/moderation/${action.id}`, JSON.stringify(action), (err) => {
+      if (err) return reject(err)
+
+      resolve()
     })
   })
 }
@@ -61,18 +76,11 @@ function getTopic (archive, id) {
       let result = []
       for (let i = 0; i < list.length; i++) {
         if (list[i] === 'curators') continue
+        if (list[i] === 'moderation') continue
 
         let data = await readFile(archive, `/topics/${id}/${list[i]}`)
 
-        let { sig, payload } = JSON.parse(data)
-        let author = JSON.parse(payload).author
-        let out = new Uint8Array(64)
-        let hash = blake2b(out.length).update(payload).digest('hex')
-        if (crypto.verify(Buffer.from(hash, 'hex'), Buffer.from(sig, 'hex'), Buffer.from(author, 'hex'))) {
-          result.push(JSON.parse(payload))
-        } else {
-          console.error('failed to verify sig')
-        }
+        result.push(JSON.parse(data))
       }
 
       resolve(result)
@@ -115,17 +123,8 @@ function postToTopic (archive, id, data) {
 
     if (!data.topic) data.topic = id
 
-    if (!data.author) data.author = archive.key.toString('hex')
     if (!data.date) data.date = Date.now()
-
-    let payload = JSON.stringify(data)
-    let out = new Uint8Array(64)
-    let hash = blake2b(out.length).update(payload).digest('hex')
-    let sig = crypto.sign(Buffer.from(hash, 'hex'), archive.metadata.secretKey).toString('hex')
-
-    let s = JSON.stringify({ payload, sig })
-
-    archive.writeFile(`/topics/${id}/${data.id}`, s, (err) => {
+    archive.writeFile(`/topics/${id}/${data.id}`, JSON.stringify(data), (err) => {
       if (err) return reject(err)
 
       resolve()

@@ -33,7 +33,8 @@ tape('test', async function (t) {
     t.same(res.data, { result: 'ok' })
 
     res = await axios.get(`${HOST}/topics/foo`)
-    t.same(res.data, { result: [{ id: 'helloo', title: 'hello', body: 'world', topic: 'foo' }] })
+    t.same(res.data.result[0].title, 'hello')
+    t.same(res.data.result[0].topic, 'foo')
 
     res = await axios.get(`${HOST}/topics/foo/curators`)
     t.same(res.data, { result: [] })
