@@ -186,8 +186,8 @@ class App extends Component {
                   <span><span className='font-bold'>{m.author ? m.author.substring(0, 8) : ''}...</span>: {m.message}</span>
                   <span className='text-gray-500 hover:text-black cursor-pointer' onClick={this.handleModeration(m.topic, m.id).bind(this)}>...</span>
                 </div>
-                <div>
-                  {m.reactions && m.reactions.length > 0 ? m.reactions.map(r => <span className='py-1 px-2 bg-gray-200 rounded-lg w-auto' key={r.id}>{r.react}</span>) : '' }
+                <div className='my-1'>
+                  {m.reactions && m.reactions.length > 0 ? m.reactions.map(r => <span className='py-1 px-2 mx-1 bg-gray-200 rounded-lg w-auto' key={r.id}>{r.react}</span>) : '' }
                 </div>
               </li>
             }) : ''}
