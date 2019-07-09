@@ -42,6 +42,12 @@ class App extends Component {
   }
 
   async submit (msg) {
+    if (msg.startsWith('+')) {
+      let msgs = this.state.messages[this.state.currentTopic]
+      let last = msgs[msgs.length - 1]
+      await axios.post(`${this.state.api}/topics/${this.state.currentTopic}/reactions`, { data: { id: Date.now(), msgID: last.id, react: msg.slice(1) } })
+      return
+    }
     await axios.post(`${this.state.api}/topics/${this.state.currentTopic}`, { data: { id: Date.now(), message: msg } })
     this.scrollMessage()
   }
@@ -175,9 +181,14 @@ class App extends Component {
             {this.state.messages[this.state.currentTopic] ? this.state.messages[this.state.currentTopic].map(m => {
               return <li
                 key={m.id}
-                className='flex flex-row justify-between cursor-pointer'>
-                <span><span className='font-bold'>{m.author ? m.author.substring(0, 8) : ''}...</span>: {m.message}</span>
-                <span className='text-gray-500 hover:text-black' onClick={this.handleModeration(m.topic, m.id).bind(this)}>...</span>
+                className='flex flex-col'>
+                <div className='flex flex-row justify-between'>
+                  <span><span className='font-bold'>{m.author ? m.author.substring(0, 8) : ''}...</span>: {m.message}</span>
+                  <span className='text-gray-500 hover:text-black cursor-pointer' onClick={this.handleModeration(m.topic, m.id).bind(this)}>...</span>
+                </div>
+                <div>
+                  {m.reactions && m.reactions.length > 0 ? m.reactions.map(r => <span className='py-1 px-2 bg-gray-200 rounded-lg w-auto' key={r.id}>{r.react}</span>) : '' }
+                </div>
               </li>
             }) : ''}
           </ul>

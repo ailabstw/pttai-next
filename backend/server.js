@@ -57,8 +57,8 @@ module.exports = function (archive) {
     res.json({ result: 'ok' })
   })
 
-  app.post('/topics/:id/react', async (req, res) => {
-    await user.moderate(archive, req.params.id, req.body.data)
+  app.post('/topics/:id/reactions', async (req, res) => {
+    await user.react(archive, req.params.id, req.body.data)
 
     res.json({ result: 'ok' })
   })

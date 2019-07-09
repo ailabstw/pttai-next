@@ -11,6 +11,7 @@ let users = []
 let messages = []
 let currentVersion = {}
 let mods = []
+let reacts = {}
 
 let discovery = null
 
@@ -96,8 +97,11 @@ async function updateView (d1) {
       let action = JSON.parse(data)
       mods.push(action)
     } else if (d.name.match(/^\/topics\/(.+)\/reactions\/(.+)$/)) {
-      // TODO: handle reactions
+      let data = await user.readFile(d1, d.name)
 
+      let react = JSON.parse(data)
+      if (!reacts[react.msgID]) reacts[react.msgID] = []
+      reacts[react.msgID].push(react)
     } else if (d.name.match(/^\/topics\/(.+)$/)) {
       let data = await user.readFile(d1, d.name)
       let m = JSON.parse(data)
@@ -109,6 +113,18 @@ async function updateView (d1) {
 
     for (let j = 0; j < mods.length; j++) {
       messages = messages.filter(m => m.id !== mods[j].id)
+    }
+
+    for (let msgID in reacts) {
+      for (let i = 0; i < messages.length; i++) {
+        if (`${messages[i].id}` === msgID) {
+          messages[i].reactions = []
+          for (let react of reacts[msgID]) {
+            messages[i].reactions.push(react)
+          }
+          break
+        }
+      }
     }
     io.emit('update', messages)
   })
