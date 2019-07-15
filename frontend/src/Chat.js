@@ -2,6 +2,11 @@ import React, { Component } from 'react'
 import axios from 'axios'
 import socketIOClient from 'socket.io-client'
 
+import { Menu, Item, MenuProvider } from 'react-contexify'
+import 'react-contexify/dist/ReactContexify.min.css'
+
+const onClick = ({ event, props }) => console.log(event, props)
+
 const HUBS = [
   'http://localhost:3003',
   'http://localhost:3004'
@@ -126,12 +131,10 @@ class Chat extends Component {
     this.setState({ apiInput: e.target.value })
   }
 
-  handleModeration (topic, id) {
-    return async () => {
-      console.log('mod', topic, id)
-      let ret = await axios.post(`${this.state.api}/topics/${topic}/moderation`, { data: { id, action: 'delete' } })
-      console.log(ret.data)
-    }
+  async handleModeration ({ event, props }) {
+    console.log('mod', props)
+    let ret = await axios.post(`${this.state.api}/topics/${props.topic}/moderation`, { data: { id: props.id, action: 'delete' } })
+    console.log(ret.data)
   }
 
   handleAPIInputKeyPress (e) {
@@ -156,6 +159,10 @@ class Chat extends Component {
   render () {
     return (
       <div className='w-screen h-screen app' >
+        <Menu id='menu_id'>
+          <Item onClick={this.handleModeration.bind(this)}>Hide</Item>
+          <Item onClick={onClick}>React...</Item>
+        </Menu>
         <div className='hubs bg-gray-500 pt-2'>
           {HUBS.map((h, i) => {
             return <div
@@ -211,7 +218,9 @@ class Chat extends Component {
                 className='flex flex-col'>
                 <div className='flex flex-row justify-between'>
                   <span><span className='font-bold'>{m.author ? m.author.substring(0, 8) : ''}...</span>: {m.message}</span>
-                  <span className='text-gray-500 hover:text-black cursor-pointer' onClick={this.handleModeration(m.topic, m.id).bind(this)}>...</span>
+                  <MenuProvider id='menu_id' event='onClick' data={m}>
+                    <span className='text-gray-500 hover:text-black cursor-pointer'>...</span>
+                  </MenuProvider>
                 </div>
                 <div className='my-1'>
                   {m.reactions && m.reactions.length > 0 ? m.reactions.map(r => <span className='text-sm py-1 px-2 mx-1 bg-gray-200 rounded-lg w-auto' key={r.id}>{r.react}</span>) : '' }
