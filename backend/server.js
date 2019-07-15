@@ -1,6 +1,6 @@
 const express = require('express')
 const bodyParser = require('body-parser')
-const audit = require('express-requests-logger')
+const morgan = require('morgan')
 const cors = require('cors')
 const user = require('./lib')
 
@@ -8,7 +8,7 @@ module.exports = function (archive) {
   let app = express()
   app.use(bodyParser.json())
   app.use(cors())
-  app.use(audit())
+  app.use(morgan('tiny'))
 
   // TODO: authz
   app.get('/me', (req, res) => {
