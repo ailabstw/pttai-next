@@ -101,6 +101,7 @@ async function updateView (d1) {
 
       let react = JSON.parse(data)
       if (!reacts[react.msgID]) reacts[react.msgID] = []
+      react.author = d1.key.toString('hex')
       reacts[react.msgID].push(react)
     } else if (d.name.match(/^\/topics\/(.+)$/)) {
       let data = await user.readFile(d1, d.name)
