@@ -13,6 +13,9 @@ module.exports = {
   getFriend,
   createFriend,
 
+  getProfile,
+  setProfile,
+
   addCurator,
   getCurators
 }
@@ -24,7 +27,10 @@ function init (archive) {
       archive.mkdir('/friends', (err) => {
         if (err) return reject(err)
 
-        resolve()
+        archive.writeFile('/profile.json', JSON.stringify({ name: archive.key.toString('hex') }), (err) => {
+          if (err) return reject(err)
+          resolve()
+        })
       })
     })
   })
@@ -187,6 +193,25 @@ function createFriend (archive, friend) {
 
       resolve()
     })
+  })
+}
+
+function setProfile (archive, profile) {
+  return new Promise((resolve, reject) => {
+    if (!profile.name) return reject(new Error('undefined profile.name'))
+
+    archive.writeFile(`/profile.json`, JSON.stringify(profile), (err) => {
+      if (err) return reject(err)
+
+      resolve()
+    })
+  })
+}
+
+function getProfile (archive) {
+  return new Promise(async (resolve, reject) => {
+    let data = await readFile(archive, '/profile.json')
+    resolve(JSON.parse(data))
   })
 }
 

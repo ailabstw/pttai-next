@@ -75,5 +75,17 @@ module.exports = function (archive) {
     res.json({ result: 'ok' })
   })
 
+  app.get('/profile', async (req, res) => {
+    let profile = await user.getProfile(archive)
+
+    res.json({ result: profile })
+  })
+
+  app.post('/profile', async (req, res) => {
+    await user.setProfile(archive, req.body.data)
+
+    res.json({ result: 'ok' })
+  })
+
   return app
 }

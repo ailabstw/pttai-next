@@ -12,6 +12,7 @@ let messages = []
 let currentVersion = {}
 let mods = []
 let reacts = {}
+let profiles = {}
 
 let discovery = null
 
@@ -110,6 +111,10 @@ async function updateView (d1) {
       messages.push(m)
 
       messages = messages.sort((x, y) => x.date - y.date)
+    } else if (d.name.match(/^\/profile.json/)) {
+      let data = await user.readFile(d1, d.name)
+      let profile = JSON.parse(data)
+      profiles[d1.key.toString('hex')] = profile
     }
 
     for (let j = 0; j < mods.length; j++) {

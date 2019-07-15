@@ -18,7 +18,8 @@ class Chat extends Component {
       messages: {},
       hubID: 0,
       apiInput: 'http://localhost:10000',
-      api: 'http://localhost:10000'
+      api: 'http://localhost:10000',
+      username: 'username'
     }
 
     this.messageEndRef = React.createRef()
@@ -26,6 +27,14 @@ class Chat extends Component {
 
   componentDidMount () {
     this.load()
+  }
+
+  async updateProfile () {
+    let name = window.prompt('Enter new name')
+
+    await axios.post(`${this.state.api}/profile`, { data: { name } })
+
+    this.setState({ username: name })
   }
 
   onKeyPress (e) {
@@ -63,7 +72,11 @@ class Chat extends Component {
     res = await axios.get(`${this.state.api}/me`)
     let me = res.data.result
 
-    this.setState({ topics, friends, me }, this.connect)
+    res = await axios.get(`${this.state.api}/profile`)
+    let profile = res.data.result
+    console.log(profile)
+
+    this.setState({ topics, friends, me, username: profile.name }, this.connect)
   }
 
   async connect () {
@@ -150,7 +163,10 @@ class Chat extends Component {
                 <h2>P.me</h2>
                 <input className='p-1 border border-gray-500 rounded font-mono text-xs w-full bg-gray-200' value={this.state.apiInput} onChange={this.handleAPIChange.bind(this)} onKeyPress={this.handleAPIInputKeyPress.bind(this)} />
               </div>
-              <h2>Topics</h2>
+              <div className='flex flex-row justify-between'>
+                <h2>Topics</h2>
+                <h2 className='cursor-pointer mr-1 text-gray-600'>+</h2>
+              </div>
               <ul>
                 {this.state.topics.map(t => {
                   if (t === this.state.currentTopic) {
@@ -169,7 +185,7 @@ class Chat extends Component {
               </div>
             </div>
             <div className='bg-gray-100 h-20 flex flex-col justify-around px-2'>
-              <h2>@username</h2>
+              <h2 onClick={this.updateProfile.bind(this)}>@{this.state.username.slice(0, 16)}</h2>
               <input className='bg-gray-400 px-1 border border-gray-500 w-full' value={this.state.me.key} readOnly />
             </div>
           </div>
