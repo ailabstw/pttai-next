@@ -32,9 +32,11 @@ class Chat extends Component {
   async updateProfile () {
     let name = window.prompt('Enter new name')
 
-    await axios.post(`${this.state.api}/profile`, { data: { name } })
+    if (name) {
+      await axios.post(`${this.state.api}/profile`, { data: { name } })
 
-    this.setState({ username: name })
+      this.setState({ username: name })
+    }
   }
 
   onKeyPress (e) {
@@ -104,6 +106,16 @@ class Chat extends Component {
     this.socket.on('event', console.log)
   }
 
+  async createTopic () {
+    let topic = window.prompt('enter a new topic')
+    if (topic) {
+      await axios.post(`${this.state.api}/topics`, { data: topic })
+      let res = await axios.get(`${this.state.api}/topics`)
+      let topics = res.data.result
+      this.setState({ topics })
+    }
+  }
+
   changeTopic (topic) {
     return () => {
       this.setState({ currentTopic: topic })
@@ -165,7 +177,7 @@ class Chat extends Component {
               </div>
               <div className='flex flex-row justify-between'>
                 <h2>Topics</h2>
-                <h2 className='cursor-pointer mr-1 text-gray-600'>+</h2>
+                <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.createTopic.bind(this)}>+</h2>
               </div>
               <ul>
                 {this.state.topics.map(t => {
