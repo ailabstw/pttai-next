@@ -179,11 +179,11 @@ class Chat extends Component {
           <div className='flex flex-col justify-between h-full'>
             <div className='overflow-y-auto p-2'>
               <div className='mb-4'>
-                <h2>P.me</h2>
+                <h2 className='font-bold'>P.me</h2>
                 <input className='p-1 border border-gray-500 rounded font-mono text-xs w-full bg-gray-200' value={this.state.apiInput} onChange={this.handleAPIChange.bind(this)} onKeyPress={this.handleAPIInputKeyPress.bind(this)} />
               </div>
               <div className='flex flex-row justify-between'>
-                <h2>Topics</h2>
+                <h2 className='font-bold'>Topics</h2>
                 <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.createTopic.bind(this)}>+</h2>
               </div>
               <ul>
@@ -196,7 +196,7 @@ class Chat extends Component {
                 })}
               </ul>
               <div className='mt-4'>
-                <h2>Friends</h2>
+                <h2 className='font-bold'>Friends</h2>
                 <ul>
                   {this.state.friends.map(f => <li key={f.id}>{f.name}</li>)}
                 </ul>
