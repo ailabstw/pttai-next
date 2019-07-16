@@ -1,6 +1,9 @@
 import React, { Component } from 'react'
+import ReactDOM from 'react-dom'
 import axios from 'axios'
 import socketIOClient from 'socket.io-client'
+import 'emoji-mart/css/emoji-mart.css'
+import { Picker as EmojiPicker } from 'emoji-mart'
 
 import { Menu, Item, MenuProvider } from 'react-contexify'
 import 'react-contexify/dist/ReactContexify.min.css'
@@ -24,14 +27,23 @@ class Chat extends Component {
       hubID: 0,
       apiInput: 'http://localhost:10000',
       api: 'http://localhost:10000',
-      username: 'username'
+      username: 'username',
+      showEmojiPicker: false,
+      emojiPickerBottom: 0,
+      emojiPickerData: null
     }
 
     this.messageEndRef = React.createRef()
+    this.emojiPickerRef = React.createRef()
   }
 
   componentDidMount () {
     this.load()
+    document.addEventListener('mousedown', this.onClickOutSideEmojiPicker.bind(this))
+  }
+
+  componentWillUnmount () {
+    document.removeEventListener('mousedown', this.onClickOutSideEmojiPicker.bind(this))
   }
 
   async updateProfile () {
@@ -49,6 +61,12 @@ class Chat extends Component {
       this.submit(e.target.value)
 
       e.target.value = ''
+    }
+  }
+
+  onClickOutSideEmojiPicker (e) {
+    if (this.emojiPickerRef.current && !ReactDOM.findDOMNode(ReactDOM.findDOMNode(this.emojiPickerRef.current)).contains(e.target)) {
+      this.setState({ showEmojiPicker: false })
     }
   }
 
@@ -137,6 +155,17 @@ class Chat extends Component {
     console.log(ret.data)
   }
 
+  handleAddReaction ({ event, props }) {
+    this.setState({ emojiPickerData: props, emojiPickerBottom: document.documentElement.clientHeight - event.clientY - 100, showEmojiPicker: true })
+  }
+
+  async handleSelectEmoji (emoji, e) {
+    this.setState({ showEmojiPicker: false })
+    let props = this.state.emojiPickerData
+    let ret = await axios.post(`${this.state.api}/topics/${props.topic}/reactions`, { data: { id: Date.now(), react: emoji.native, msgID: props.id } })
+    console.log(ret.data)
+  }
+
   handleAPIInputKeyPress (e) {
     if (e.key === 'Enter') {
       this.setState({ api: this.state.apiInput }, async () => {
@@ -158,10 +187,13 @@ class Chat extends Component {
 
   render () {
     return (
-      <div className='w-screen h-screen app' >
+      <div className='w-screen h-screen app'>
+        {this.state.showEmojiPicker
+          ? <EmojiPicker ref={this.emojiPickerRef} style={{ right: 0, bottom: this.state.emojiPickerBottom, position: 'absolute' }} onClick={this.handleSelectEmoji.bind(this)} />
+          : ''}
         <Menu id='menu_id'>
           <Item onClick={this.handleModeration.bind(this)}>Hide</Item>
-          <Item onClick={onClick}>React...</Item>
+          <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
         </Menu>
         <div className='hubs bg-gray-500 pt-2'>
           {HUBS.map((h, i) => {
