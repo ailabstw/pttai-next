@@ -88,9 +88,7 @@ async function updateView (d1) {
   let diff = d1.createDiffStream(currentVersion[d1.key.toString('hex')])
   diff.on('data', async (d) => {
     console.log(d.name)
-    if (d.name.match(/^\/topics\/(.+)\/moderation$/)) return
-    if (d.name.match(/^\/topics\/(.+)\/curators$/)) return
-    if (d.name.match(/^\/topics\/(.+)\/reactions$/)) return
+    if (d.value.size === 0) return // skip directories
 
     if (d.name.match(/^\/topics\/(.+)\/moderation\/(.+)$/)) {
       let data = await user.readFile(d1, d.name)

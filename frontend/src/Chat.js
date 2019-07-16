@@ -8,8 +8,6 @@ import { Picker as EmojiPicker } from 'emoji-mart'
 import { Menu, Item, MenuProvider } from 'react-contexify'
 import 'react-contexify/dist/ReactContexify.min.css'
 
-const onClick = ({ event, props }) => console.log(event, props)
-
 const HUBS = [
   'http://localhost:3003',
   'http://localhost:3004'
@@ -255,7 +253,7 @@ class Chat extends Component {
                   </MenuProvider>
                 </div>
                 <div className='my-1'>
-                  {m.reactions && m.reactions.length > 0 ? m.reactions.map(r => <span className='text-sm py-1 px-2 mx-1 bg-gray-200 rounded-lg w-auto' key={r.id}>{r.react}</span>) : '' }
+                  {m.reactions && m.reactions.length > 0 ? m.reactions.map(r => <span className='text-sm py-1 px-2 mr-1 bg-gray-200 rounded-lg w-auto' key={r.id}>{r.react}</span>) : '' }
                 </div>
               </li>
             }) : ''}
