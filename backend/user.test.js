@@ -39,7 +39,7 @@ tape('test', async function (t) {
     res = await axios.post(`${HOST}/topics/foo/moderation`, { data: { id: 'helloo', action: 'delete' } })
     t.same(res.data, { result: 'ok' })
 
-    res = await axios.post(`${HOST}/topics/foo/react`, { data: { id: 'helloo', reaction: ':)' } })
+    res = await axios.post(`${HOST}/topics/foo/reactions`, { data: { id: 'helloo', reaction: ':)' } })
     t.same(res.data, { result: 'ok' })
 
     res = await axios.get(`${HOST}/topics/foo/curators`)

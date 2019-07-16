@@ -102,7 +102,7 @@ function getTopic (archive, id) {
       for (let i = 0; i < list.length; i++) {
         if (list[i] === 'curators') continue
         if (list[i] === 'moderation') continue
-        if (list[i] === 'reacts') continue
+        if (list[i] === 'reactions') continue
 
         let data = await readFile(archive, `/topics/${id}/${list[i]}`)
 
