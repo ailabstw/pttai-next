@@ -38,7 +38,7 @@ class Login extends Component {
 
     return <div className='flex items-center justify-center w-screen h-screen bg-gray-200' >
       <GoogleLogin
-        clientId='347531889221-gm36qi5lrlep23b0jcrb2t8dd0d7h68f.apps.googleusercontent.com'
+        clientId={process.env.GOOGLE_SIGNIN_CLIENT_ID}
         buttonText='Login'
         onSuccess={this.onLogin.bind(this)}
         onFailure={this.onLogin.bind(this)}
