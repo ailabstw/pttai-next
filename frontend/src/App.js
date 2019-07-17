@@ -3,14 +3,14 @@ import { HashRouter as Router, Route } from 'react-router-dom'
 
 import Chat from './Chat'
 import Login from './Login'
-import URLLogin from './UrlLogin'
+import TestLogin from './TestLogin'
 
 class App extends Component {
   render () {
     return <Router>
       <Route exact path='/' component={Login} />
+      <Route path='/test_login' component={TestLogin} />
       <Route path='/chat' component={Chat} />
-      <Route path='/:token' component={URLLogin} />
     </Router>
   }
 }

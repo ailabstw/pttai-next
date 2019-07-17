@@ -21,7 +21,8 @@ app.use(morgan('tiny'))
 
 function getArchive (token) {
   return new Promise((resolve, reject) => {
-    if (archives[token]) resolve(archives[token])
+    console.log('get archive', token, archives[token] ? archives[token].key.toString('hex') : '')
+    if (archives[token]) return resolve(archives[token])
 
     let archive = hyperdrive(storage(token), { latest: true })
 
@@ -55,76 +56,91 @@ app.post('/login', async (req, res) => {
 
 // TODO: authz
 app.get('/me', async (req, res) => {
-  let archive = await getArchive(req.params.token)
+  let archive = await getArchive(req.query.token)
+  console.log(Object.keys(archives))
   res.json({ result: { key: archive.key.toString('hex') } })
 })
 
 app.get('/topics', async (req, res) => {
-  let archive = await getArchive(req.params.token)
+  let archive = await getArchive(req.query.token)
   let ts = await user.getTopics(archive)
 
   res.json({ result: ts })
 })
 
 app.post('/topics', async (req, res) => {
-  let archive = await getArchive(req.params.token)
+  let archive = await getArchive(req.query.token)
   await user.createTopic(archive, req.body.data)
 
   res.json({ result: 'ok' })
 })
 
 app.get('/topics/:id', async (req, res) => {
-  let archive = await getArchive(req.params.token)
+  let archive = await getArchive(req.query.token)
   let t = await user.getTopic(archive, req.params.id)
 
   res.json({ result: t })
 })
 
 app.post('/topics/:id', async (req, res) => {
-  let archive = await getArchive(req.params.token)
+  let archive = await getArchive(req.query.token)
   await user.postToTopic(archive, req.params.id, req.body.data)
 
   res.json({ result: 'ok' })
 })
 
 app.get('/topics/:id/curators', async (req, res) => {
-  let archive = await getArchive(req.params.token)
+  let archive = await getArchive(req.query.token)
   let cs = await user.getCurators(archive, req.params.id)
 
   res.json({ result: cs })
 })
 
 app.post('/topics/:id/curators', async (req, res) => {
-  let archive = await getArchive(req.params.token)
+  let archive = await getArchive(req.query.token)
   await user.addCurator(archive, req.params.id, req.body.data)
 
   res.json({ result: 'ok' })
 })
 
 app.post('/topics/:id/moderation', async (req, res) => {
-  let archive = await getArchive(req.params.token)
+  let archive = await getArchive(req.query.token)
   await user.moderate(archive, req.params.id, req.body.data)
 
   res.json({ result: 'ok' })
 })
 
 app.post('/topics/:id/reactions', async (req, res) => {
-  let archive = await getArchive(req.params.token)
+  let archive = await getArchive(req.query.token)
   await user.react(archive, req.params.id, req.body.data)
 
   res.json({ result: 'ok' })
 })
 
 app.get('/friends', async (req, res) => {
-  let archive = await getArchive(req.params.token)
+  let archive = await getArchive(req.query.token)
   let fs = await user.getFriends(archive)
 
   res.json({ result: fs })
 })
 
 app.post('/friends', async (req, res) => {
-  let archive = await getArchive(req.params.token)
+  let archive = await getArchive(req.query.token)
   await user.createFriend(archive, req.body.data)
+
+  res.json({ result: 'ok' })
+})
+
+app.get('/profile', async (req, res) => {
+  let archive = await getArchive(req.query.token)
+  let profile = await user.getProfile(archive)
+
+  res.json({ result: profile })
+})
+
+app.post('/profile', async (req, res) => {
+  let archive = await getArchive(req.query.token)
+  await user.setProfile(archive, req.body.data)
 
   res.json({ result: 'ok' })
 })

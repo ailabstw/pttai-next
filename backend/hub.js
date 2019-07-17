@@ -69,7 +69,7 @@ function readUser (k1) {
     discovery.add(d1)
   }
 
-  d1.metadata.on('download', (idx, data) => console.log('download', idx, data))
+  // d1.metadata.on('download', (idx, data) => console.log('download', idx, data))
 
   d1.on('sync', () => { console.log('sync') })
   d1.on('update', () => {

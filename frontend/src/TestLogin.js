@@ -1,0 +1,46 @@
+import React, { Component } from 'react'
+import axios from 'axios'
+import { Redirect } from 'react-router-dom'
+
+class TestLogin extends Component {
+  constructor (props) {
+    super(props)
+
+    this.state = {
+      loggedIn: false,
+      input: ''
+    }
+  }
+
+  async login (token) {
+    let resp = await axios.post('http://localhost:9988/login', { id_token: token })
+    window.localStorage.setItem('token', resp.data.result.token)
+
+    this.setState({ loggedIn: true })
+  }
+
+  handleChange (e) {
+    this.setState({ input: e.target.value })
+  }
+
+  async handleInputChange (e) {
+    if (e.key === 'Enter') {
+      e.target.value = ''
+      await this.login(this.state.input)
+    }
+  }
+
+  render () {
+    if (this.state.loggedIn) {
+      return <Redirect to={{ pathname: '/chat' }} />
+    }
+
+    return <div className='flex items-center justify-center w-screen h-screen bg-gray-200'>
+      <div className='bg-white flex flex-column justify-between items-center'>
+        <input className='p-1 border border-gray-500 rounded font-mono text-xs w-full bg-gray-200' value={this.state.input} onChange={this.handleChange.bind(this)} onKeyPress={this.handleInputChange.bind(this)} />
+      </div>
+    </div>
+  }
+}
+
+export default TestLogin

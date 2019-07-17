@@ -23,16 +23,26 @@ class Chat extends Component {
       me: { key: '' },
       messages: {},
       hubID: 0,
-      apiInput: 'http://localhost:10000',
-      api: 'http://localhost:10000',
+      apiInput: 'http://localhost:9988',
+      api: 'http://localhost:9988',
       username: 'username',
       showEmojiPicker: false,
       emojiPickerBottom: 0,
-      emojiPickerData: null
+      emojiPickerData: null,
+      token: window.localStorage.getItem('token')
     }
 
     this.messageEndRef = React.createRef()
     this.emojiPickerRef = React.createRef()
+  }
+
+  async req (method, url, data) {
+    return axios({
+      method,
+      url: `${this.state.api}${url}`,
+      params: { token: this.state.token },
+      data: { data }
+    })
   }
 
   componentDidMount () {
@@ -48,7 +58,7 @@ class Chat extends Component {
     let name = window.prompt('Enter new name')
 
     if (name) {
-      await axios.post(`${this.state.api}/profile`, { data: { name } })
+      await this.req('post', '/profile', { name })
 
       this.setState({ username: name })
     }
@@ -76,26 +86,26 @@ class Chat extends Component {
     if (msg.startsWith('+')) {
       let msgs = this.state.messages[this.state.currentTopic]
       let last = msgs[msgs.length - 1]
-      await axios.post(`${this.state.api}/topics/${this.state.currentTopic}/reactions`, { data: { id: Date.now(), msgID: last.id, react: msg.slice(1) } })
+      await this.req('post', `/topics/${this.state.currentTopic}/reactions`, { id: Date.now(), msgID: last.id, react: msg.slice(1) })
       return
     }
-    await axios.post(`${this.state.api}/topics/${this.state.currentTopic}`, { data: { id: Date.now(), message: msg } })
+    await this.req('post', `/topics/${this.state.currentTopic}`, { id: Date.now(), message: msg })
     this.scrollMessage()
   }
 
   async load () {
     let res
 
-    res = await axios.get(`${this.state.api}/topics`)
+    res = await this.req('get', `/topics`)
     let topics = res.data.result
 
-    res = await axios.get(`${this.state.api}/friends`)
+    res = await this.req('get', `/friends`)
     let friends = res.data.result
 
-    res = await axios.get(`${this.state.api}/me`)
+    res = await this.req('get', `/me`)
     let me = res.data.result
 
-    res = await axios.get(`${this.state.api}/profile`)
+    res = await this.req('get', `/profile`)
     let profile = res.data.result
     console.log(profile)
 
@@ -130,8 +140,8 @@ class Chat extends Component {
   async createTopic () {
     let topic = window.prompt('enter a new topic')
     if (topic) {
-      await axios.post(`${this.state.api}/topics`, { data: topic })
-      let res = await axios.get(`${this.state.api}/topics`)
+      await this.req('post', '/topics', topic)
+      let res = await this.req('get', `/topics`)
       let topics = res.data.result
       this.setState({ topics })
     }
@@ -149,7 +159,7 @@ class Chat extends Component {
 
   async handleModeration ({ event, props }) {
     console.log('mod', props)
-    let ret = await axios.post(`${this.state.api}/topics/${props.topic}/moderation`, { data: { id: props.id, action: 'delete' } })
+    let ret = await this.req('post', `/topics/${props.topic}/moderation`, { id: props.id, action: 'delete' })
     console.log(ret.data)
   }
 
@@ -160,7 +170,7 @@ class Chat extends Component {
   async handleSelectEmoji (emoji, e) {
     this.setState({ showEmojiPicker: false })
     let props = this.state.emojiPickerData
-    let ret = await axios.post(`${this.state.api}/topics/${props.topic}/reactions`, { data: { id: Date.now(), react: emoji.native, msgID: props.id } })
+    let ret = await this.req('post', `/topics/${props.topic}/reactions`, { id: Date.now(), react: emoji.native, msgID: props.id })
     console.log(ret.data)
   }
 
