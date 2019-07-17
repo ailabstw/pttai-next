@@ -143,7 +143,7 @@ class Chat extends Component {
       await this.req('post', '/topics', topic)
       let res = await this.req('get', `/topics`)
       let topics = res.data.result
-      this.setState({ topics })
+      this.setState({ topics, currentTopic: topic })
     }
   }
 
