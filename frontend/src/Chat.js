@@ -28,6 +28,7 @@ class Chat extends Component {
       showEmojiPicker: false,
       emojiPickerBottom: 0,
       emojiPickerData: null,
+      profiles: {},
       token: window.localStorage.getItem('token')
     }
 
@@ -133,6 +134,10 @@ class Chat extends Component {
 
       this.setState({ messages })
       this.scrollMessage()
+    })
+    this.socket.on('profiles', (profiles) => {
+      console.log('profiles', profiles)
+      this.setState({ profiles })
     })
 
     this.socket.on('event', console.log)
@@ -252,7 +257,7 @@ class Chat extends Component {
                   <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.newFriend.bind(this)}>+</h2>
                 </div>
                 <ul>
-                  {this.state.friends.map(f => <li key={f.id}>@{f.id.slice(0, 15)}...</li>)}
+                  {this.state.friends.map(f => <li key={f.id}>@{this.state.profiles[f.id] ? this.state.profiles[f.id].name : f.id}</li>)}
                 </ul>
                 <span className='text-gray-700 underline cursor-pointer'>add new friend</span>
               </div>
@@ -274,7 +279,7 @@ class Chat extends Component {
                 key={m.id}
                 className='flex flex-col'>
                 <div className='flex flex-row justify-between'>
-                  <span><span className='font-bold'>{m.author ? m.author.substring(0, 8) : ''}...</span>: {m.message}</span>
+                  <span><span className='font-bold'>{m.author ? (this.state.profiles[m.author] ? this.state.profiles[m.author].name.substring(0, 8) : m.author.substring(0, 8) + '...') : ''}</span>: {m.message}</span>
                   <MenuProvider id='menu_id' event='onClick' data={m}>
                     <span className='text-gray-500 hover:text-black cursor-pointer'>...</span>
                   </MenuProvider>

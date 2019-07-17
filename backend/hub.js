@@ -50,6 +50,7 @@ app.get('/hub.json', (req, res) => {
 io.on('connection', (socket) => {
   console.log('connected')
   io.emit('update', messages)
+  io.emit('profiles', profiles)
 })
 
 let port = process.argv[2] || 3003
@@ -113,6 +114,8 @@ async function updateView (d1) {
       let data = await user.readFile(d1, d.name)
       let profile = JSON.parse(data)
       profiles[d1.key.toString('hex')] = profile
+
+      io.emit('profiles', profiles)
     }
 
     for (let j = 0; j < mods.length; j++) {
