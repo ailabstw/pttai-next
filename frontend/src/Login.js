@@ -13,11 +13,6 @@ class Login extends Component {
     }
   }
 
-  componentDidMount () {
-    let { token } = this.props.match.params
-    this.login(token)
-  }
-
   onLogin (resp) {
     console.log(resp)
 
@@ -38,7 +33,7 @@ class Login extends Component {
 
     return <div className='flex items-center justify-center w-screen h-screen bg-gray-200' >
       <GoogleLogin
-        clientId={process.env.GOOGLE_SIGNIN_CLIENT_ID}
+        clientId={process.env.REACT_APP_GOOGLE_SIGNIN_CLIENT_ID}
         buttonText='Login'
         onSuccess={this.onLogin.bind(this)}
         onFailure={this.onLogin.bind(this)}
