@@ -8,8 +8,8 @@ import TestLogin from './TestLogin'
 class App extends Component {
   render () {
     return <Router>
-      <Route exact path='/' component={Login} />
-      <Route path='/test_login' component={TestLogin} />
+      <Route exact path='/' component={TestLogin} />
+      <Route path='/login' component={Login} />
       <Route path='/chat' component={Chat} />
     </Router>
   }
