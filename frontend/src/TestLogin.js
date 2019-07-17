@@ -36,8 +36,9 @@ class TestLogin extends Component {
     }
 
     return <div className='flex items-center justify-center w-screen h-screen bg-gray-200'>
-      <div className='bg-white flex flex-column justify-between items-center'>
-        <input className='p-1 border border-gray-500 rounded font-mono text-xs w-full bg-gray-200' value={this.state.input} onChange={this.handleChange.bind(this)} onKeyPress={this.handleInputChange.bind(this)} />
+      <div className='bg-white flex flex-col justify-between items-center rounded-lg p-4'>
+        <h2 className='text-lg'>nickname</h2>
+        <input className='p-1 border border-gray-500 rounded font-mono text-xs w-full' value={this.state.input} onChange={this.handleChange.bind(this)} onKeyPress={this.handleInputChange.bind(this)} />
       </div>
     </div>
   }
