@@ -48,6 +48,16 @@ function getArchive (token) {
   })
 }
 
+function replicate (key) {
+  let archive = hyperdrive(storage(`replicates/${key}`), key, { latest: true })
+
+  if (!disc) {
+    disc = Discovery(archive)
+  } else {
+    disc.add(archive)
+  }
+}
+
 app.post('/login', async (req, res) => {
   // let token = await authGoogle(req.body.id_token)
   // TODO: token expiration
@@ -130,6 +140,9 @@ app.post('/friends', async (req, res) => {
   let archive = await getArchive(req.query.token)
   await user.createFriend(archive, req.body.data)
 
+  // TODO: replicate friend's archive properly
+  await replicate(req.body.data.id)
+
   res.json({ result: 'ok' })
 })
 
@@ -148,9 +161,6 @@ app.post('/profile', async (req, res) => {
 })
 
 let port = process.argv[2] | '9988'
-
-// TODO: google oauth to token
-// TODO: token to r/w archive
 
 app.listen(port, () => {
   console.log('API listening on', port)

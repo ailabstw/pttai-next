@@ -9,8 +9,7 @@ import { Menu, Item, MenuProvider } from 'react-contexify'
 import 'react-contexify/dist/ReactContexify.min.css'
 
 const HUBS = [
-  'http://localhost:3003',
-  'http://localhost:3004'
+  'http://localhost:3003'
 ]
 
 class Chat extends Component {
@@ -79,7 +78,9 @@ class Chat extends Component {
   }
 
   scrollMessage () {
-    this.messageEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    if (this.messageEndRef.current) {
+      this.messageEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
   }
 
   async submit (msg) {
@@ -144,6 +145,16 @@ class Chat extends Component {
       let res = await this.req('get', `/topics`)
       let topics = res.data.result
       this.setState({ topics, currentTopic: topic })
+    }
+  }
+
+  async newFriend () {
+    let id = window.prompt('friend\'s ID')
+    if (id) {
+      await this.req('post', '/friends', { id })
+      let res = await this.req('get', `/friends`)
+      let friends = res.data.result
+      this.setState({ friends })
     }
   }
 
@@ -236,15 +247,21 @@ class Chat extends Component {
                 })}
               </ul>
               <div className='mt-4'>
-                <h2 className='font-bold'>Friends</h2>
+                <div className='flex flex-row justify-between'>
+                  <h2 className='font-bold'>Friends</h2>
+                  <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.newFriend.bind(this)}>+</h2>
+                </div>
                 <ul>
-                  {this.state.friends.map(f => <li key={f.id}>{f.name}</li>)}
+                  {this.state.friends.map(f => <li key={f.id}>@{f.id.slice(0, 15)}...</li>)}
                 </ul>
                 <span className='text-gray-700 underline cursor-pointer'>add new friend</span>
               </div>
             </div>
             <div className='bg-gray-100 h-20 flex flex-col justify-around px-2'>
-              <h2 onClick={this.updateProfile.bind(this)}>@{this.state.username.slice(0, 16)}</h2>
+              <div className='flex flex-row justify-between items-center'>
+                <h2>@{this.state.username.slice(0, 16)}</h2>
+                <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.updateProfile.bind(this)}>✎</h2>
+              </div>
               <input className='bg-gray-400 px-1 border border-gray-500 w-full' value={this.state.me.key} readOnly />
             </div>
           </div>
