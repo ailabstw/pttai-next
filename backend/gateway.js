@@ -8,7 +8,9 @@ const Discovery = require('hyperdiscovery')
 const { OAuth2Client } = require('google-auth-library')
 const storage = require('./storage/ram')
 
-const GOOGLE_SIGNIN_CLIENT_ID = '347531889221-gm36qi5lrlep23b0jcrb2t8dd0d7h68f.apps.googleusercontent.com'
+require('dotenv').config()
+
+const GOOGLE_SIGNIN_CLIENT_ID = process.env.GOOGLE_SIGNIN_CLIENT_ID
 const googleOAuthClient = new OAuth2Client(GOOGLE_SIGNIN_CLIENT_ID)
 
 let archives = {}

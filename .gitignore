@@ -1,3 +1,4 @@
 node_modules
 frontend/src/build.css
 frontend/build
+.env
