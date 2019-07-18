@@ -6,18 +6,16 @@ This is still a WIP, check back later.
 
 ## Usage
 
-Start 2 hub:
+Start a hub:
 
 ```
 $ node backend/hub.js 3003
-$ node backend/hub.js 3004
 ```
 
-Start 2 user:
+Start a gateway:
 
 ```
-$ node backend/user.js 10000
-$ node backend/user.js 10001
+$ node backend/gateway.js
 ```
 
 Start frontend
