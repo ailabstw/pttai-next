@@ -5,13 +5,14 @@ const cors = require('cors')
 const user = require('./lib')
 const hyperdrive = require('hyperdrive')
 const Discovery = require('hyperdiscovery')
-const { OAuth2Client } = require('google-auth-library')
-const storage = require('./storage/ram')
+const storage = require('./storage/dat')
 
 require('dotenv').config()
 
-const GOOGLE_SIGNIN_CLIENT_ID = process.env.GOOGLE_SIGNIN_CLIENT_ID
-const googleOAuthClient = new OAuth2Client(GOOGLE_SIGNIN_CLIENT_ID)
+// const GOOGLE_SIGNIN_CLIENT_ID = process.env.GOOGLE_SIGNIN_CLIENT_ID
+
+// no-op auth for testing
+const authToken = require('./auth/noop')
 
 let archives = {}
 let disc
@@ -66,7 +67,6 @@ app.post('/login', async (req, res) => {
   res.json({ result: { key: archive.key.toString('hex'), token } })
 })
 
-// TODO: authz
 app.get('/me', async (req, res) => {
   let archive = await getArchive(req.query.token)
   console.log(Object.keys(archives))
@@ -140,7 +140,6 @@ app.post('/friends', async (req, res) => {
   let archive = await getArchive(req.query.token)
   await user.createFriend(archive, req.body.data)
 
-  // TODO: replicate friend's archive properly
   await replicate(req.body.data.id)
 
   res.json({ result: 'ok' })
@@ -165,18 +164,3 @@ let port = process.argv[2] | '9988'
 app.listen(port, () => {
   console.log('API listening on', port)
 })
-
-async function authGoogle (idToken) {
-  const ticket = await googleOAuthClient.verifyIdToken({
-    idToken: idToken,
-    audience: GOOGLE_SIGNIN_CLIENT_ID
-  })
-  const payload = ticket.getPayload()
-  let userID = payload['sub']
-  return userID
-}
-
-// for testing
-async function authToken (token) {
-  return token
-}

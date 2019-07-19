@@ -7,8 +7,9 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "node lib/test.js && node user.test.js",
-    "start": "node server.js"
+    "test": "node tests/*",
+    "hub": "node hub.js",
+    "gateway": "node gateway.js"
   },
   "keywords": [],
   "author": "",

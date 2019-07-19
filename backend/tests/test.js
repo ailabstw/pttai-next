@@ -1,7 +1,7 @@
 const hyperdrive = require('hyperdrive')
 const ram = require('random-access-memory')
 const tape = require('tape')
-const user = require('.')
+const user = require('../lib')
 
 tape('init', function (t) {
   t.plan(4)
