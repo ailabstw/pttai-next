@@ -119,7 +119,7 @@ class Chat extends Component {
 
     await axios.post(`${hub}/join`, { public_key: this.state.me.key })
 
-    let socket = socketIOClient(hub)
+    let socket = socketIOClient(hub, {path: process.env.REACT_APP_HUB_PATH})
     this.socket = socket
     this.socket.on('update', (msgs) => {
       console.log(msgs)
