@@ -13,7 +13,7 @@ class TestLogin extends Component {
   }
 
   async login (token) {
-    let resp = await axios.post('http://localhost:9988/login', { id_token: token })
+    let resp = await axios.post('http://localhost:9988/login', { id_token: token, name: token })
     window.localStorage.setItem('token', resp.data.result.token)
 
     this.setState({ loggedIn: true })
