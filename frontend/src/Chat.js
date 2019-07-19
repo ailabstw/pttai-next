@@ -9,7 +9,7 @@ import { Menu, Item, MenuProvider } from 'react-contexify'
 import 'react-contexify/dist/ReactContexify.min.css'
 
 const HUBS = [
-  'http://localhost:3003'
+  process.env.REACT_APP_HUB_URL
 ]
 
 class Chat extends Component {
@@ -22,8 +22,7 @@ class Chat extends Component {
       me: { key: '' },
       messages: {},
       hubID: 0,
-      apiInput: 'http://localhost:9988',
-      api: 'http://localhost:9988',
+      api: process.env.REACT_APP_GATEWAY_URL,
       username: 'username',
       showEmojiPicker: false,
       emojiPickerBottom: 0,
@@ -169,10 +168,6 @@ class Chat extends Component {
     }
   }
 
-  handleAPIChange (e) {
-    this.setState({ apiInput: e.target.value })
-  }
-
   async handleModeration ({ event, props }) {
     console.log('mod', props)
     let ret = await this.req('post', `/topics/${props.topic}/moderation`, { id: props.id, action: 'delete' })
@@ -188,17 +183,6 @@ class Chat extends Component {
     let props = this.state.emojiPickerData
     let ret = await this.req('post', `/topics/${props.topic}/reactions`, { id: Date.now(), react: emoji.native, msgID: props.id })
     console.log(ret.data)
-  }
-
-  handleAPIInputKeyPress (e) {
-    if (e.key === 'Enter') {
-      this.setState({ api: this.state.apiInput }, async () => {
-        await this.load()
-        await this.connect()
-      })
-
-      e.target.value = ''
-    }
   }
 
   setHub (id) {
@@ -236,7 +220,7 @@ class Chat extends Component {
             <div className='overflow-y-auto p-2'>
               <div className='mb-4'>
                 <h2 className='font-bold'>P.me</h2>
-                <input className='p-1 border border-gray-500 rounded font-mono text-xs w-full bg-gray-200' value={this.state.apiInput} onChange={this.handleAPIChange.bind(this)} onKeyPress={this.handleAPIInputKeyPress.bind(this)} />
+                <input className='p-1 border border-gray-500 rounded font-mono text-xs w-full bg-gray-200' value={process.env.REACT_APP_GATEWAY_URL} readOnly />
               </div>
               <div className='flex flex-row justify-between'>
                 <h2 className='font-bold'>Topics</h2>

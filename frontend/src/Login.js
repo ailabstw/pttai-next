@@ -20,7 +20,7 @@ class Login extends Component {
   }
 
   async login (token) {
-    let resp = await axios.post('http://localhost:9988/login', { id_token: token })
+    let resp = await axios.post(`${process.env.REACT_APP_GATEWAY_URL}/login`, { id_token: token })
     window.localStorage.setItem('token', resp.data.token)
 
     this.setState({ loggedIn: true })

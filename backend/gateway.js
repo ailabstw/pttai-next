@@ -5,7 +5,7 @@ const cors = require('cors')
 const user = require('./lib')
 const hyperdrive = require('hyperdrive')
 const Discovery = require('hyperdiscovery')
-const storage = require('./storage/dat')
+const storage = require('./storage/ram')
 
 require('dotenv').config()
 
