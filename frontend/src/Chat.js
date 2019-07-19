@@ -108,7 +108,6 @@ class Chat extends Component {
 
     res = await this.req('get', `/profile`)
     let profile = res.data.result
-    console.log(profile)
 
     this.setState({ topics, friends, me, username: profile.name }, this.connect)
   }
@@ -140,6 +139,7 @@ class Chat extends Component {
     })
 
     this.socket.on('event', console.log)
+    this.socket.on('error', console.error)
   }
 
   async createTopic () {
