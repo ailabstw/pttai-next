@@ -162,7 +162,7 @@ app.post('/profile', async (req, res) => {
   res.json({ result: 'ok' })
 })
 
-let port = process.argv[2] | '9988'
+let port = process.argv[2] || '9988'
 
 app.listen(port, () => {
   console.log('API listening on', port)
