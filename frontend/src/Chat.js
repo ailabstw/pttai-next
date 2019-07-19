@@ -65,7 +65,7 @@ class Chat extends Component {
   }
 
   onKeyPress (e) {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && e.target.value.length > 0) {
       this.submit(e.target.value)
 
       e.target.value = ''
