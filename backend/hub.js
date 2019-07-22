@@ -3,6 +3,7 @@ const ram = require('random-access-memory')
 const Discovery = require('hyperdiscovery')
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const morgan = require('morgan')
 
 const user = require('./lib')
 
@@ -26,6 +27,7 @@ var app = require('express')()
 var http = require('http').Server(app)
 var io = require('socket.io')(http)
 app.use(bodyParser.json())
+app.use(morgan('tiny'))
 app.use(cors())
 
 app.post('/join', async (req, res) => {
@@ -47,8 +49,15 @@ app.get('/hub.json', (req, res) => {
   res.json({ key: hubArchive.key.toString('hex'), moderators: [] })
 })
 
-io.on('connection', (socket) => {
+let ns = io
+
+if (process.env.SOCKET_IO_NAMESPACE) {
+  ns = io.of(process.env.SOCKET_IO_NAMESPACE)
+}
+
+ns.on('connection', (socket) => {
   console.log('connected')
+  console.log(Object.keys(io.nsps))
   socket.emit('update', messages)
   socket.emit('profiles', profiles)
 })
@@ -115,7 +124,7 @@ async function updateView (d1) {
       let profile = JSON.parse(data)
       profiles[d1.key.toString('hex')] = profile
 
-      io.emit('profiles', profiles)
+      ns.emit('profiles', profiles)
     }
 
     for (let j = 0; j < mods.length; j++) {
@@ -134,7 +143,7 @@ async function updateView (d1) {
       }
     }
     console.log('view updated')
-    io.emit('update', messages)
+    ns.emit('update', messages)
   })
 
   currentVersion[d1.key.toString('hex')] = d1.version
