@@ -6,15 +6,11 @@ const cors = require('cors')
 const morgan = require('morgan')
 require('dotenv').config()
 
-const user = require('./lib')
+const View = require('./lib/view')
 
 let users = []
 
-let messages = []
-let currentVersion = {}
-let mods = []
-let reacts = {}
-let profiles = {}
+let view = new View()
 
 let discovery = null
 
@@ -59,8 +55,16 @@ if (process.env.SOCKET_IO_NAMESPACE) {
 ns.on('connection', (socket) => {
   console.log('connected')
   console.log(Object.keys(io.nsps))
-  socket.emit('update', messages)
-  socket.emit('profiles', profiles)
+  socket.emit('update', view.messages)
+  socket.emit('profiles', view.profiles)
+})
+
+view.on('update', (msgs) => {
+  ns.emit('update', msgs)
+})
+
+view.on('profiles', (profiles) => {
+  ns.emit('profiles', profiles)
 })
 
 let port = process.argv[2] || 3003
@@ -85,67 +89,10 @@ function readUser (k1) {
   d1.on('sync', () => { console.log('sync') })
   d1.on('update', () => {
     console.log('update')
-    updateView(d1)
+    view.update(d1)
   })
   d1.on('content', () => {
     console.log('content')
-    updateView(d1)
+    view.update(d1)
   })
-}
-
-async function updateView (d1) {
-  if (!currentVersion[d1.key.toString('hex')]) currentVersion[d1.key.toString('hex')] = 0
-
-  let diff = d1.createDiffStream(currentVersion[d1.key.toString('hex')])
-  diff.on('data', async (d) => {
-    console.log(d.name)
-    if (d.value.size === 0) return // skip directories
-
-    if (d.name.match(/^\/topics\/(.+)\/moderation\/(.+)$/)) {
-      let data = await user.readFile(d1, d.name)
-
-      let action = JSON.parse(data)
-      mods.push(action)
-    } else if (d.name.match(/^\/topics\/(.+)\/reactions\/(.+)$/)) {
-      let data = await user.readFile(d1, d.name)
-
-      let react = JSON.parse(data)
-      if (!reacts[react.msgID]) reacts[react.msgID] = []
-      react.author = d1.key.toString('hex')
-      reacts[react.msgID].push(react)
-    } else if (d.name.match(/^\/topics\/(.+)$/)) {
-      let data = await user.readFile(d1, d.name)
-      let m = JSON.parse(data)
-      m.author = d1.key.toString('hex')
-      messages.push(m)
-
-      messages = messages.sort((x, y) => x.date - y.date)
-    } else if (d.name.match(/^\/profile.json/)) {
-      let data = await user.readFile(d1, d.name)
-      let profile = JSON.parse(data)
-      profiles[d1.key.toString('hex')] = profile
-
-      ns.emit('profiles', profiles)
-    }
-
-    for (let j = 0; j < mods.length; j++) {
-      messages = messages.filter(m => m.id !== mods[j].id)
-    }
-
-    for (let msgID in reacts) {
-      for (let i = 0; i < messages.length; i++) {
-        if (`${messages[i].id}` === msgID) {
-          messages[i].reactions = []
-          for (let react of reacts[msgID]) {
-            messages[i].reactions.push(react)
-          }
-          break
-        }
-      }
-    }
-    console.log('view updated')
-    ns.emit('update', messages)
-  })
-
-  currentVersion[d1.key.toString('hex')] = d1.version
 }
