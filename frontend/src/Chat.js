@@ -6,6 +6,7 @@ import 'emoji-mart/css/emoji-mart.css'
 import { Picker as EmojiPicker } from 'emoji-mart'
 
 import { Menu, Item, MenuProvider } from 'react-contexify'
+import Reactions from './Reactions'
 import 'react-contexify/dist/ReactContexify.min.css'
 
 const HUBS = [
@@ -269,7 +270,7 @@ class Chat extends Component {
                   </MenuProvider>
                 </div>
                 <div className='my-1'>
-                  {m.reactions && m.reactions.length > 0 ? m.reactions.map(r => <span className='text-sm py-1 px-2 mr-1 bg-gray-200 rounded-lg w-auto' key={r.id}>{r.react}</span>) : '' }
+                  <Reactions reactions={m.reactions} />
                 </div>
               </li>
             }) : ''}
