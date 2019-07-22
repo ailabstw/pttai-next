@@ -59,11 +59,11 @@ function replicate (key) {
 }
 
 app.post('/login', async (req, res) => {
-  let token = await authGoogle(req.body.id_token.id_token)
+  let { token, name } = await authGoogle(req.body.id_token.id_token)
   let archive = await getArchive(token)
 
-  if (req.body.name) {
-    await user.setProfile(archive, { name: req.body.name })
+  if (name) {
+    await user.setProfile(archive, { name })
   }
   res.json({ result: { key: archive.key.toString('hex'), token } })
 })
