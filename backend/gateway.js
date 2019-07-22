@@ -10,7 +10,8 @@ const storage = require('./storage/ram')
 require('dotenv').config()
 
 // no-op auth for testing
-const authToken = require('./auth/google')
+const authGoogle = require('./auth/google')
+const authTest = require('./auth/noop')
 
 let archives = {}
 let disc
@@ -58,8 +59,17 @@ function replicate (key) {
 }
 
 app.post('/login', async (req, res) => {
-  // TODO: token expiration
-  let token = await authToken(req.body.id_token.id_token)
+  let token = await authGoogle(req.body.id_token.id_token)
+  let archive = await getArchive(token)
+
+  if (req.body.name) {
+    await user.setProfile(archive, { name: req.body.name })
+  }
+  res.json({ result: { key: archive.key.toString('hex'), token } })
+})
+
+app.post('/test-login', async (req, res) => {
+  let token = await authTest(req.body.id_token)
   let archive = await getArchive(token)
 
   if (req.body.name) {

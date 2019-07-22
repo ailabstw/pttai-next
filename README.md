@@ -14,7 +14,8 @@ $ npm i
 2. Start backend. Backend consist of a hub and a gateway:
 
 ```
-$ make
+$ node backend/gateway.js
+$ node backend/hub.js
 ```
 
 3. Start frontend
