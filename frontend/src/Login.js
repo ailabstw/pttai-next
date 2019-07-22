@@ -16,7 +16,7 @@ class Login extends Component {
   onLogin (resp) {
     console.log(resp)
 
-    this.login(resp.id_token)
+    this.login(resp.tokenObj)
   }
 
   async login (token) {

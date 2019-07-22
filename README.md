@@ -2,24 +2,26 @@
 
 Experimental prototype to demostrate running a decentralized social network without trusting a centralized server.
 
-This is still a WIP, check back later.
-
 ## Usage
 
-Start a hub:
+1. clone the repo and install dependencies
 
 ```
-$ node backend/hub.js 3003
+$ git clone git@github.com:ailabstw/pttai-next.git
+$ npm i
 ```
 
-Start a gateway:
+2. Start backend. Backend consist of a hub and a gateway:
 
 ```
-$ node backend/gateway.js
+$ make
 ```
 
-Start frontend
+3. Start frontend
 ```
 $ cd frontend && yarn start
 ```
 
+## Terminology
+
+## License

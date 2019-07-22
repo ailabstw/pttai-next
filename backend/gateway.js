@@ -9,10 +9,8 @@ const storage = require('./storage/ram')
 
 require('dotenv').config()
 
-// const GOOGLE_SIGNIN_CLIENT_ID = process.env.GOOGLE_SIGNIN_CLIENT_ID
-
 // no-op auth for testing
-const authToken = require('./auth/noop')
+const authToken = require('./auth/google')
 
 let archives = {}
 let disc
@@ -61,7 +59,7 @@ function replicate (key) {
 
 app.post('/login', async (req, res) => {
   // TODO: token expiration
-  let token = await authToken(req.body.id_token)
+  let token = await authToken(req.body.id_token.id_token)
   let archive = await getArchive(token)
 
   if (req.body.name) {
