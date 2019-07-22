@@ -17,7 +17,7 @@ async function authGoogle (idToken) {
   console.log(DOMAIN_ALLOW_LIST, payload)
 
   if (DOMAIN_ALLOW_LIST.length > 0) {
-    if (DOMAIN_ALLOW_LIST.indexOf(payload.hd) !== -1) {
+    if (DOMAIN_ALLOW_LIST.indexOf(payload.hd) === -1) {
       throw new Error(`invalid domain: ${payload.hd}`)
     }
   }
