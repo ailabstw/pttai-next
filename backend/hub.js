@@ -1,5 +1,4 @@
 const path = require('path')
-console.log(path.join(__dirname, '.env'))
 require('dotenv').config({ path: path.join(__dirname, '.env') })
 
 const hyperdrive = require('hyperdrive')
@@ -91,10 +90,10 @@ function readUser (k1) {
   d1.on('sync', () => { console.log('sync') })
   d1.on('update', () => {
     console.log('update')
-    view.update(d1)
+    view.apply(d1)
   })
   d1.on('content', () => {
     console.log('content')
-    view.update(d1)
+    view.apply(d1)
   })
 }

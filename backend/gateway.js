@@ -1,5 +1,4 @@
 const path = require('path')
-console.log(path.join(__dirname, '.env'))
 require('dotenv').config({ path: path.join(__dirname, '.env') })
 
 const express = require('express')
