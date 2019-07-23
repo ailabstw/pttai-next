@@ -1,3 +1,7 @@
+const path = require('path')
+console.log(path.join(__dirname, '.env'))
+require('dotenv').config({ path: path.join(__dirname, '.env') })
+
 const express = require('express')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
@@ -6,8 +10,6 @@ const user = require('./lib')
 const hyperdrive = require('hyperdrive')
 const Discovery = require('hyperdiscovery')
 const storage = require('./storage/ram')
-
-require('dotenv').config()
 
 // no-op auth for testing
 const authGoogle = require('./auth/google')

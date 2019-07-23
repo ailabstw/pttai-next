@@ -1,11 +1,13 @@
+const path = require('path')
+console.log(path.join(__dirname, '.env'))
+require('dotenv').config({ path: path.join(__dirname, '.env') })
+
 const hyperdrive = require('hyperdrive')
 const ram = require('random-access-memory')
 const Discovery = require('hyperdiscovery')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const morgan = require('morgan')
-require('dotenv').config()
-
 const View = require('./lib/view')
 
 let users = []
