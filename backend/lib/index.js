@@ -1,3 +1,5 @@
+const box = require('./box')
+
 module.exports = {
   init,
   readFile,
@@ -188,7 +190,9 @@ function createFriend (archive, friend) {
   return new Promise((resolve, reject) => {
     if (!friend.id) return reject(new Error('undefined friend.id'))
 
-    archive.writeFile(`/friends/${friend.id}`, JSON.stringify(friend), (err) => {
+    let b = box.encrypt(archive.metadata.secretKey, archive.key, Buffer.from(JSON.stringify(friend)))
+
+    archive.writeFile(`/friends/${friend.id}`, JSON.stringify({ nonce: b.nonce.toString('hex'), cipher: b.cipher.toString('hex') }), (err) => {
       if (err) return reject(err)
 
       resolve()
@@ -218,7 +222,11 @@ function getProfile (archive) {
 function getFriend (archive, id) {
   return new Promise(async (resolve, reject) => {
     try {
-      let data = await readFile(archive, `/friends/${id}`)
+      let b = await readFile(archive, `/friends/${id}`)
+      let { nonce, cipher } = JSON.parse(b)
+
+      let data = box.decrypt(archive.key, archive.metadata.secretKey, Buffer.from(cipher, 'hex'), Buffer.from(nonce, 'hex'))
+
       resolve(JSON.parse(data))
     } catch (e) {
       reject(e)
