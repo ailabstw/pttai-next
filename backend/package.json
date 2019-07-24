@@ -23,7 +23,7 @@
     "express": "^4.17.1",
     "google-auth-library": "^4.2.5",
     "hyperdiscovery": "^10.0.0",
-    "hyperdrive": "^9.14.5",
+    "hyperdrive": "^9.15.0",
     "morgan": "^1.9.1",
     "random-access-memory": "^3.1.1",
     "socket.io": "^2.2.0"

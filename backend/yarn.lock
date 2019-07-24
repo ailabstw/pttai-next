@@ -1907,7 +1907,7 @@ hyperdiscovery@^9.0.0, hyperdiscovery@^9.0.2:
     hypercore-protocol "^6.9.0"
     mutexify "^1.2.0"
 
-hyperdrive@^9.1.1, hyperdrive@^9.14.5:
+hyperdrive@^9.1.1, hyperdrive@^9.15.0:
   version "9.15.0"
   resolved "https://registry.yarnpkg.com/hyperdrive/-/hyperdrive-9.15.0.tgz#e0474bf245c7089ca90e3bda95e341d692e4043e"
   integrity sha512-FXEU/f0B0zIODkllE2eqk6S2Gmd0fcR7vwsbbA+OBRWXARALoCkJedOHBX6ervkkBPi3uQ/wXPTb7wee2j2PiA==

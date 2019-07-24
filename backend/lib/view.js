@@ -55,9 +55,9 @@ class View extends EventEmitter {
     let diff = archive.createDiffStream(this.state.currentVersion[key])
     diff.on('data', async (d) => {
       console.log(d.name)
-      let data = await user.readFile(archive, d.name)
       if (d.value.size === 0) return // skip directories
 
+      let data = await user.readFile(archive, d.name)
       this.applyDiff(key, d, data)
       this.reduce()
     })
