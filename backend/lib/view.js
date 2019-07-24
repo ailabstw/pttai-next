@@ -25,7 +25,7 @@ class View extends EventEmitter {
     return this.state.profiles
   }
 
-  applyDIff (key, d, data) {
+  applyDiff (key, d, data) {
     if (d.name.match(/^\/topics\/(.+)\/moderation\/(.+)$/)) {
       let action = JSON.parse(data)
       this.state.mods.push(action)
@@ -58,7 +58,7 @@ class View extends EventEmitter {
       let data = await user.readFile(archive, d.name)
       if (d.value.size === 0) return // skip directories
 
-      this.applyDIff(key, d, data)
+      this.applyDiff(key, d, data)
       this.reduce()
     })
 
