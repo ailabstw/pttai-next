@@ -201,8 +201,8 @@ class Chat extends Component {
           ? <EmojiPicker ref={this.emojiPickerRef} style={{ right: 0, bottom: this.state.emojiPickerBottom, position: 'absolute' }} onClick={this.handleSelectEmoji.bind(this)} />
           : ''}
         <Menu id='menu_id'>
-          <Item onClick={this.handleModeration.bind(this)}>Hide</Item>
           <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
+          <Item onClick={this.handleModeration.bind(this)}>Hide</Item>
         </Menu>
         <div className='hubs bg-gray-500 pt-2'>
           {HUBS.map((h, i) => {
