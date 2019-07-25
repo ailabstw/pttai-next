@@ -94,7 +94,7 @@ class Chat extends Component {
     let res
 
     res = await this.req('get', `/topics`)
-    let topics = res.data.result
+    let topics = res.data.result.sort()
 
     res = await this.req('get', `/friends`)
     let friends = res.data.result
@@ -153,7 +153,7 @@ class Chat extends Component {
     if (topic) {
       await this.req('post', '/topics', topic)
       let res = await this.req('get', `/topics`)
-      let topics = res.data.result
+      let topics = res.data.result.sort
       this.setState({ topics, currentTopic: topic })
     }
   }
