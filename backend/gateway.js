@@ -9,18 +9,67 @@ const user = require('./lib')
 const hyperdrive = require('hyperdrive')
 const Discovery = require('hyperdiscovery')
 const storage = require('./storage/ram')
+const box = require('./lib/box')
 
 // no-op auth for testing
 const authGoogle = require('./auth/google')
 const authTest = require('./auth/noop')
 
+const View = require('./lib/gateway_view')
+
 let archives = {}
 let disc
 
 let app = express()
+var http = require('http').Server(app)
+var io = require('socket.io')(http)
 app.use(bodyParser.json())
 app.use(cors())
 app.use(morgan('tiny'))
+
+let view = new View()
+
+view.on('gossip', ({ cipher, nonce, sender }) => {
+  for (let token in archives) {
+    let archive = archives[token]
+    let keyPair = { publicKey: archive.key, secretKey: archive.metadata.secretKey }
+
+    // console.log('decrypting', keyPair.secretKey)
+    let decrypted = box.decrypt(sender.key, keyPair.secretKey, Buffer.from(cipher, 'hex'), Buffer.from(nonce, 'hex'))
+    // console.log('trying', decrypted.toString())
+
+    view.emit('decrypted', { receiver: archive, msg: decrypted, sender })
+  }
+})
+
+let ns = io
+
+if (process.env.GATEWAY_SOCKET_IO_NAMESPACE) {
+  ns = io.of(process.env.GATEWAY_SOCKET_IO_NAMESPACE)
+}
+
+let token2socket = {}
+
+ns.on('connection', (socket) => {
+  socket.emit('hello')
+  socket.on('register', function (token) {
+    if (!token) return
+    console.log('registering', token)
+    token2socket[token] = socket
+  })
+})
+
+view.on('decrypted', ({ receiver, msg, sender }) => {
+  for (let token in token2socket) {
+    console.log('broadcasting dm', token)
+    let archive = archives[token]
+    let socket = token2socket[token]
+    if (archive.key.toString('hex') === receiver.key.toString('hex')) {
+      socket.emit('dm', { sender: sender.key.toString('hex'), msg: msg.toString() })
+      break
+    }
+  }
+})
 
 function getArchive (token) {
   return new Promise((resolve, reject) => {
@@ -28,6 +77,7 @@ function getArchive (token) {
     if (archives[token]) return resolve(archives[token])
 
     let archive = hyperdrive(storage(token), { latest: true })
+    archives[token] = archive
 
     archive.on('ready', async () => {
       await user.init(archive)
@@ -43,8 +93,18 @@ function getArchive (token) {
         disc.add(archive)
       }
 
-      archives[token] = archive
       resolve(archive)
+    })
+
+    archive.on('sync', () => { console.log('sync') })
+    archive.on('update', () => {
+      console.log('update')
+      console.log(archive.metadata.listenerCount('append'))
+      view.apply(archive)
+    })
+    archive.on('content', () => {
+      console.log('content')
+      view.apply(archive)
     })
   })
 }
@@ -157,6 +217,28 @@ app.post('/friends', async (req, res) => {
   res.json({ result: 'ok' })
 })
 
+app.post('/dm', async (req, res) => {
+  let archive = await getArchive(req.query.token)
+
+  let receiverPublicKey = Buffer.from(req.body.data.receiver, 'hex')
+  let msg = Buffer.from(req.body.data.message)
+
+  console.log('sending dm', { receiver: receiverPublicKey, secretKey: archive.metadata.secretKey })
+
+  let b = box.encrypt(archive.metadata.secretKey, receiverPublicKey, msg)
+
+  await user.postToTopic(
+    archive,
+    '__gossiping',
+    {
+      id: Math.random(),
+      nonce: b.nonce.toString('hex'),
+      cipher: b.cipher.toString('hex')
+    })
+
+  res.json({ result: 'ok' })
+})
+
 app.get('/profile', async (req, res) => {
   let archive = await getArchive(req.query.token)
   let profile = await user.getProfile(archive)
@@ -173,6 +255,4 @@ app.post('/profile', async (req, res) => {
 
 let port = process.argv[2] || '9988'
 
-app.listen(port, () => {
-  console.log('API listening on', port)
-})
+http.listen(port, () => { console.log(`listening ${port}`) })

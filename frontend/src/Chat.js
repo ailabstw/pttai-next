@@ -4,6 +4,7 @@ import axios from 'axios'
 import socketIOClient from 'socket.io-client'
 import 'emoji-mart/css/emoji-mart.css'
 import { Picker as EmojiPicker } from 'emoji-mart'
+import { Redirect } from 'react-router-dom'
 
 import { Menu, Item, MenuProvider } from 'react-contexify'
 import Reactions from './Reactions'
@@ -85,12 +86,6 @@ class Chat extends Component {
   }
 
   async submit (msg) {
-    if (msg.startsWith('+')) {
-      let msgs = this.state.messages[this.state.currentTopic]
-      let last = msgs[msgs.length - 1]
-      await this.req('post', `/topics/${this.state.currentTopic}/reactions`, { id: Date.now(), msgID: last.id, react: msg.slice(1) })
-      return
-    }
     await this.req('post', `/topics/${this.state.currentTopic}`, { id: Date.now(), message: msg })
     this.scrollMessage()
   }
@@ -114,14 +109,14 @@ class Chat extends Component {
   }
 
   async connect () {
-    if (this.socket) this.socket.close()
+    if (this.hubSocket) this.hubSocket.close()
     let hub = HUBS[this.state.hubID]
 
     await axios.post(`${hub}/join`, { public_key: this.state.me.key })
 
     let socket = socketIOClient(hub, { path: process.env.REACT_APP_HUB_PATH })
-    this.socket = socket
-    this.socket.on('update', (msgs) => {
+    this.hubSocket = socket
+    this.hubSocket.on('update', (msgs) => {
       console.log(msgs)
 
       let messages = {}
@@ -134,13 +129,23 @@ class Chat extends Component {
       this.setState({ messages })
       this.scrollMessage()
     })
-    this.socket.on('profiles', (profiles) => {
+    this.hubSocket.on('profiles', (profiles) => {
       console.log('profiles', profiles)
       this.setState({ profiles })
     })
 
-    this.socket.on('event', console.log)
-    this.socket.on('error', console.error)
+    this.hubSocket.on('event', console.log)
+    this.hubSocket.on('error', console.error)
+
+    let gatewaySocket = socketIOClient(this.state.api, { path: process.env.REACT_APP_GATEWAY_PATH })
+    this.gatewaySocket = gatewaySocket
+    this.gatewaySocket.on('hello', () => {
+      this.gatewaySocket.emit('register', this.state.token)
+    })
+
+    this.gatewaySocket.on('dm', ({ sender, msg }) => {
+      console.log('dm', sender, msg)
+    })
   }
 
   async createTopic () {
@@ -186,6 +191,16 @@ class Chat extends Component {
     console.log(ret.data)
   }
 
+  sendDM (key) {
+    return async () => {
+      let msg = window.prompt('msg')
+      if (msg) {
+        let b = await this.req('post', '/dm', { message: msg, receiver: key })
+        console.log(b)
+      }
+    }
+  }
+
   setHub (id) {
     return () => {
       this.setState({ hubID: id }, () => {
@@ -195,6 +210,9 @@ class Chat extends Component {
   }
 
   render () {
+    if (!this.state.token) {
+      return <Redirect to={{ path: '/' }} />
+    }
     return (
       <div className='w-screen h-screen app'>
         {this.state.showEmojiPicker
@@ -242,7 +260,7 @@ class Chat extends Component {
                   <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.newFriend.bind(this)}>+</h2>
                 </div>
                 <ul>
-                  {this.state.friends.map(f => <li key={f.id}>@{this.state.profiles[f.id] ? this.state.profiles[f.id].name : f.id}</li>)}
+                  {this.state.friends.map(f => <li key={f.id} onClick={this.sendDM(f.id).bind(this)}>@{this.state.profiles[f.id] ? this.state.profiles[f.id].name : f.id}</li>)}
                 </ul>
                 <span className='text-gray-700 underline cursor-pointer'>add new friend</span>
               </div>
@@ -269,9 +287,11 @@ class Chat extends Component {
                     <span className='text-gray-500 hover:text-black cursor-pointer'>...</span>
                   </MenuProvider>
                 </div>
-                <div className='my-1'>
-                  <Reactions reactions={m.reactions} />
-                </div>
+                { m.reactions && m.reactions.length > 0
+                  ? <div className='my-1 mb-3'>
+                    <Reactions reactions={m.reactions} />
+                  </div>
+                  : <div className='my-1' />}
               </li>
             }) : ''}
           </ul>

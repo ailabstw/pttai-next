@@ -49,8 +49,8 @@ app.get('/hub.json', (req, res) => {
 
 let ns = io
 
-if (process.env.SOCKET_IO_NAMESPACE) {
-  ns = io.of(process.env.SOCKET_IO_NAMESPACE)
+if (process.env.HUB_SOCKET_IO_NAMESPACE) {
+  ns = io.of(process.env.HUB_SOCKET_IO_NAMESPACE)
 }
 
 ns.on('connection', (socket) => {
@@ -73,6 +73,7 @@ let port = process.argv[2] || 3003
 http.listen(port, () => { console.log(`listening ${port}`) })
 
 function readUser (k1) {
+  console.log('reading user', k1)
   let d1 = hyperdrive(ram, Buffer.from(k1, 'hex'))
   d1.on('error', console.error)
   // const net = require('net')
@@ -90,6 +91,7 @@ function readUser (k1) {
   d1.on('sync', () => { console.log('sync') })
   d1.on('update', () => {
     console.log('update')
+    console.log(d1.metadata.listenerCount('append'))
     view.apply(d1)
   })
   d1.on('content', () => {
