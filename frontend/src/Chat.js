@@ -6,8 +6,8 @@ import 'emoji-mart/css/emoji-mart.css'
 import { Picker as EmojiPicker } from 'emoji-mart'
 import { Redirect } from 'react-router-dom'
 
-import { Menu, Item, MenuProvider } from 'react-contexify'
-import Reactions from './Reactions'
+import { Menu, Item } from 'react-contexify'
+import Messages from './Messages'
 import 'react-contexify/dist/ReactContexify.min.css'
 
 const HUBS = [
@@ -18,11 +18,12 @@ class Chat extends Component {
   constructor () {
     super()
     this.state = {
-      currentTopic: 'tech',
+      currentTopic: '#tech',
       topics: [],
       friends: [],
       me: { key: '' },
       messages: {},
+      dms: {},
       hubID: 0,
       api: process.env.REACT_APP_GATEWAY_URL,
       username: 'username',
@@ -67,7 +68,7 @@ class Chat extends Component {
 
   onKeyPress (e) {
     if (e.key === 'Enter' && e.target.value.length > 0) {
-      this.submit(e.target.value)
+      this.postToTopic({ message: e.target.value })
 
       e.target.value = ''
     }
@@ -85,8 +86,17 @@ class Chat extends Component {
     }
   }
 
-  async submit (msg) {
-    await this.req('post', `/topics/${this.state.currentTopic}`, { id: Date.now(), message: msg })
+  async postToTopic (data) {
+    if (this.state.currentTopic[0] === '#') {
+    // to channel
+      let topic = this.state.currentTopic.slice(1)
+      data.id = Date.now()
+      await this.req('post', `/topics/${topic}`, data)
+    } else if (this.state.currentTopic[0] === '@') {
+      // dm
+      let key = this.state.currentTopic.slice(1)
+      await this.req('post', '/dm', { message: data.message, receiver: key })
+    }
     this.scrollMessage()
   }
 
@@ -122,8 +132,9 @@ class Chat extends Component {
       let messages = {}
       for (let i = 0; i < msgs.length; i++) {
         let m = msgs[i]
-        if (!messages[m.topic]) messages[m.topic] = []
-        messages[m.topic].push(m)
+        let topic = `#${m.topic}`
+        if (!messages[topic]) messages[topic] = []
+        messages[topic].push(m)
       }
 
       this.setState({ messages })
@@ -143,17 +154,24 @@ class Chat extends Component {
       this.gatewaySocket.emit('register', this.state.token)
     })
 
-    this.gatewaySocket.on('dm', ({ sender, msg }) => {
-      if (this.state.friends.findIndex(x => x.id === sender) === -1) {
-        this.setState({ friends: this.state.friends.concat([{ id: sender }]) })
+    this.gatewaySocket.on('dm', (dmList) => {
+      console.log('dm', dmList)
+      let dms = {}
+      for (let dm of dmList) {
+        if (!dms[dm.auther]) dms[dm.author] = []
+        if (this.state.friends.findIndex(x => x.id === dm.author) === -1) {
+          this.setState({ friends: this.state.friends.concat([{ id: dm.author }]) })
+        }
+        dms[dm.author].push(dm)
       }
-      console.log('dm', sender, msg)
+      this.setState({ dms })
     })
   }
 
   async createTopic () {
     let topic = window.prompt('enter a new topic')
     if (topic) {
+      if (topic[0] !== '#') topic = `#${topic}`
       await this.req('post', '/topics', topic)
       let res = await this.req('get', `/topics`)
       let topics = res.data.result.sort
@@ -214,9 +232,18 @@ class Chat extends Component {
   }
 
   render () {
+    let messages = []
+
+    if (this.state.messages[this.state.currentTopic]) { messages = this.state.messages[this.state.currentTopic] }
+    if (this.state.currentTopic[0] === '@') {
+      let key = this.state.currentTopic.slice(1)
+      messages = this.state.dms[key]
+    }
+
     if (!this.state.token) {
       return <Redirect to={{ path: '/' }} />
     }
+
     return (
       <div className='w-screen h-screen app'>
         {this.state.showEmojiPicker
@@ -251,10 +278,10 @@ class Chat extends Component {
               </div>
               <ul>
                 {this.state.topics.map(t => {
-                  if (t === this.state.currentTopic) {
-                    return <li onClick={this.changeTopic(t).bind(this)} key={t} className='rounded bg-gray-400 cursor-pointer'>#{t}</li>
+                  if (`#${t}` === this.state.currentTopic) {
+                    return <li onClick={this.changeTopic(`#${t}`).bind(this)} key={t} className='rounded bg-gray-400 cursor-pointer'>#{t}</li>
                   } else {
-                    return <li onClick={this.changeTopic(t).bind(this)} key={t} className='cursor-pointer'>#{t}</li>
+                    return <li onClick={this.changeTopic(`#${t}`).bind(this)} key={t} className='cursor-pointer'>#{t}</li>
                   }
                 })}
               </ul>
@@ -264,9 +291,8 @@ class Chat extends Component {
                   <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.newFriend.bind(this)}>+</h2>
                 </div>
                 <ul>
-                  {this.state.friends.map(f => <li key={f.id} onClick={this.sendDM(f.id).bind(this)}>@{this.state.profiles[f.id] ? this.state.profiles[f.id].name : f.id}</li>)}
+                  {this.state.friends.map(f => <li className='cursor-pointer' key={f.id} onClick={this.changeTopic(`@${f.id}`).bind(this)}>@{this.state.profiles[f.id] ? this.state.profiles[f.id].name : f.id}</li>)}
                 </ul>
-                <span className='text-gray-700 underline cursor-pointer'>add new friend</span>
               </div>
             </div>
             <div className='bg-gray-100 h-20 flex flex-col justify-around px-2'>
@@ -280,25 +306,7 @@ class Chat extends Component {
 
         </div>
         <div className='message bg-red overflow-y-auto px-2' >
-          <ul className='min-h-full flex flex-col justify-end'>
-            {this.state.messages[this.state.currentTopic] ? this.state.messages[this.state.currentTopic].map(m => {
-              return <li
-                key={m.id}
-                className='flex flex-col'>
-                <div className='flex flex-row justify-between'>
-                  <span><span className='font-bold'>{m.author ? (this.state.profiles[m.author] ? this.state.profiles[m.author].name.substring(0, 8) : m.author.substring(0, 8) + '...') : ''}</span>: {m.message}</span>
-                  <MenuProvider id='menu_id' event='onClick' data={m}>
-                    <span className='text-gray-500 hover:text-black cursor-pointer'>...</span>
-                  </MenuProvider>
-                </div>
-                { m.reactions && m.reactions.length > 0
-                  ? <div className='my-1 mb-3'>
-                    <Reactions reactions={m.reactions} />
-                  </div>
-                  : <div className='my-1' />}
-              </li>
-            }) : ''}
-          </ul>
+          {messages ? <Messages profiles={this.state.profiles} messages={messages} /> : ''}
           <div id='end' ref={this.messageEndRef} />
         </div>
         <div className='prompt bg-blue'>

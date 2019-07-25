@@ -8,7 +8,7 @@ const cors = require('cors')
 const user = require('./lib')
 const hyperdrive = require('hyperdrive')
 const Discovery = require('hyperdiscovery')
-const storage = require('./storage/ram')
+const storage = require('./storage/dat')
 const box = require('./lib/box')
 
 // no-op auth for testing
@@ -27,30 +27,7 @@ app.use(bodyParser.json())
 app.use(cors())
 app.use(morgan('tiny'))
 
-let view = new View()
-
-view.on('gossip', ({ cipher, nonce, sender }) => {
-  for (let token in archives) {
-    let archive = archives[token]
-    let keyPair = { publicKey: archive.key, secretKey: archive.metadata.secretKey }
-
-    // console.log('decrypting', keyPair.secretKey)
-    let decrypted = box.decrypt(sender.key, keyPair.secretKey, Buffer.from(cipher, 'hex'), Buffer.from(nonce, 'hex'))
-    // console.log('trying', decrypted.toString())
-    let success = false
-    for (let i = 0; i < decrypted.length; i++) {
-      if (decrypted[i] !== 0) {
-        success = true
-        break
-      }
-    }
-
-    if (success) {
-      view.emit('decrypted', { receiver: archive, msg: decrypted, sender })
-      view.collectDM(archive.key.toString('hex'), decrypted.toString())
-    }
-  }
-})
+let view = new View(archives)
 
 let ns = io
 
@@ -69,16 +46,23 @@ ns.on('connection', (socket) => {
   })
 })
 
-view.on('decrypted', ({ receiver, msg, sender }) => {
-  for (let token in token2socket) {
-    console.log('broadcasting dm', token)
-    let archive = archives[token]
-    let socket = token2socket[token]
-    console.log(archive.key.toString('hex'))
-    console.log(receiver.key.toString('hex'))
-    if (archive.key.toString('hex') === receiver.key.toString('hex')) {
-      socket.emit('dm', { sender: sender.key.toString('hex'), msg: msg.toString() })
-      break
+view.on('dm', (dm) => {
+  for (let receiverKey in dm) {
+    for (let token in token2socket) {
+      try {
+        let archive = archives[token]
+        let socket = token2socket[token]
+        console.log(archive.key.toString('hex'))
+        if (archive.key.toString('hex') === receiverKey) {
+          socket.emit('dm', dm[receiverKey])
+          break
+        } else {
+          continue
+        }
+      } catch (e) {
+        console.error(e)
+      // TODO: ignore for now
+      }
     }
   }
 })
@@ -88,7 +72,7 @@ function getArchive (token) {
     console.log('get archive', token, archives[token] ? archives[token].key.toString('hex') : '')
     if (archives[token]) return resolve(archives[token])
 
-    let archive = hyperdrive(storage(token), { latest: true })
+    let archive = hyperdrive(storage(`storage/${token}`), { latest: true })
     archives[token] = archive
 
     archive.on('ready', async () => {

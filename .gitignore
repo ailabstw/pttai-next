@@ -3,3 +3,4 @@ frontend/src/build.css
 frontend/build
 .env
 .DS_Store
+storage

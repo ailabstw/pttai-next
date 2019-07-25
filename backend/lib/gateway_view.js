@@ -1,9 +1,11 @@
 const user = require('.')
 const EventEmitter = require('events')
+const box = require('./box')
 
 class GatewayView extends EventEmitter {
-  constructor (state) {
+  constructor (archives, state) {
     super()
+
     if (!state) {
       state = {
         dm: {},
@@ -11,17 +13,46 @@ class GatewayView extends EventEmitter {
       }
     }
 
+    this.archives = archives
     this.state = state
-
     this.keys = []
+
+    this.on('gossip', this.__onGossip)
   }
 
   addKey (keyPair) {
     this.keys.push(keyPair)
   }
 
-  collectDM (receiver, message) {
+  collectDM (receiverKey, author, id, message) {
+    if (!this.state.dm[receiverKey]) this.state.dm[receiverKey] = []
 
+    this.state.dm[receiverKey].push({ author, message, id })
+
+    this.emit('dm', this.state.dm)
+  }
+
+  __onGossip ({ cipher, nonce, author, id }) {
+    for (let token in this.archives) {
+      let archive = this.archives[token]
+      let keyPair = { publicKey: archive.key, secretKey: archive.metadata.secretKey }
+
+      // console.log('decrypting', keyPair.secretKey)
+      let decrypted = box.decrypt(author.key, keyPair.secretKey, Buffer.from(cipher, 'hex'), Buffer.from(nonce, 'hex'))
+      // console.log('trying', decrypted.toString())
+      let success = false
+      for (let i = 0; i < decrypted.length; i++) {
+        if (decrypted[i] !== 0) {
+          success = true
+          break
+        }
+      }
+
+      if (success) {
+        this.emit('decrypted', { receiver: archive, msg: decrypted, author, id })
+        this.collectDM(archive.key.toString('hex'), author.key.toString('hex'), id, decrypted.toString())
+      }
+    }
   }
 
   apply (archive) {
@@ -35,11 +66,11 @@ class GatewayView extends EventEmitter {
       if (d.name.match(/^\/topics\/__gossiping\/(.+)$/)) {
         let data = await user.readFile(archive, d.name)
 
-        let { nonce, cipher } = JSON.parse(data)
+        let { nonce, cipher, id } = JSON.parse(data)
 
         console.log('gossiping!', key, d.name, { nonce, cipher })
 
-        this.emit('gossip', { sender: archive, nonce, cipher })
+        this.emit('gossip', { author: archive, nonce, cipher, id })
       }
     })
 
