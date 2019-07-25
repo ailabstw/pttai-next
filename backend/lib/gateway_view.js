@@ -20,6 +20,10 @@ class GatewayView extends EventEmitter {
     this.keys.push(keyPair)
   }
 
+  collectDM (receiver, message) {
+
+  }
+
   apply (archive) {
     let key = archive.key.toString('hex')
     if (!this.state.currentVersion[key]) this.state.currentVersion[key] = 0

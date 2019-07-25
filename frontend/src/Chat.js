@@ -144,6 +144,9 @@ class Chat extends Component {
     })
 
     this.gatewaySocket.on('dm', ({ sender, msg }) => {
+      if (this.state.friends.findIndex(x => x.id === sender) === -1) {
+        this.setState({ friends: this.state.friends.concat([{ id: sender }]) })
+      }
       console.log('dm', sender, msg)
     })
   }
@@ -162,6 +165,7 @@ class Chat extends Component {
     let id = window.prompt('friend\'s ID')
     if (id) {
       await this.req('post', '/friends', { id })
+      await this.req('post', '/dm', { message: 'hello new friend', receiver: id })
       let res = await this.req('get', `/friends`)
       let friends = res.data.result
       this.setState({ friends })

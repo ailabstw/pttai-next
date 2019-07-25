@@ -37,8 +37,18 @@ view.on('gossip', ({ cipher, nonce, sender }) => {
     // console.log('decrypting', keyPair.secretKey)
     let decrypted = box.decrypt(sender.key, keyPair.secretKey, Buffer.from(cipher, 'hex'), Buffer.from(nonce, 'hex'))
     // console.log('trying', decrypted.toString())
+    let success = false
+    for (let i = 0; i < decrypted.length; i++) {
+      if (decrypted[i] !== 0) {
+        success = true
+        break
+      }
+    }
 
-    view.emit('decrypted', { receiver: archive, msg: decrypted, sender })
+    if (success) {
+      view.emit('decrypted', { receiver: archive, msg: decrypted, sender })
+      view.collectDM(archive.key.toString('hex'), decrypted.toString())
+    }
   }
 })
 
@@ -64,6 +74,8 @@ view.on('decrypted', ({ receiver, msg, sender }) => {
     console.log('broadcasting dm', token)
     let archive = archives[token]
     let socket = token2socket[token]
+    console.log(archive.key.toString('hex'))
+    console.log(receiver.key.toString('hex'))
     if (archive.key.toString('hex') === receiver.key.toString('hex')) {
       socket.emit('dm', { sender: sender.key.toString('hex'), msg: msg.toString() })
       break

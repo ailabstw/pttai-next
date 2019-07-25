@@ -26,7 +26,9 @@ class View extends EventEmitter {
   }
 
   applyDiff (key, d, data) {
-    if (d.name.match(/^\/topics\/(.+)\/moderation\/(.+)$/)) {
+    if (d.name.match(/__gossiping/)) {
+      // skip hidden topic
+    } else if (d.name.match(/^\/topics\/(.+)\/moderation\/(.+)$/)) {
       let action = JSON.parse(data)
       this.state.mods.push(action)
     } else if (d.name.match(/^\/topics\/(.+)\/reactions\/(.+)$/)) {
