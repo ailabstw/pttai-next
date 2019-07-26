@@ -163,6 +163,18 @@ class Chat extends Component {
     this.gatewaySocket.on('dm', (dmChannels) => {
       console.log('dm', dmChannels)
       this.setState({ dmChannels })
+      for (let channelID in dmChannels) {
+        let keys = channelID.split('-')
+        let key
+        if (keys[0] === this.state.me.key) {
+          key = keys[1]
+        } else {
+          key = keys[0]
+        }
+        if (this.state.friends.findIndex(x => x.id === key) === -1) {
+          this.setState({ friends: this.state.friends.concat([{ id: key }]) })
+        }
+      }
     })
     this.gatewaySocket.on('error', console.error)
   }
