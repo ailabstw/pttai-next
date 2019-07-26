@@ -46,16 +46,17 @@ ns.on('connection', (socket) => {
   })
 })
 
-view.on('dm', (dm) => {
-  for (let receiverKey in dm) {
-    for (let token in token2socket) {
+view.on('dm', (dmChannels) => {
+  for (let token in token2socket) {
+    let socket = token2socket[token]
+    let ret = {}
+    for (let channelID in dmChannels) {
       try {
         let archive = archives[token]
-        let socket = token2socket[token]
         console.log(archive.key.toString('hex'))
-        if (archive.key.toString('hex') === receiverKey) {
-          socket.emit('dm', dm[receiverKey])
-          break
+        let archiveKey = archive.key.toString('hex')
+        if (channelID.startsWith(archiveKey) || channelID.endsWith(archiveKey)) {
+          ret[channelID] = dmChannels[channelID]
         } else {
           continue
         }
@@ -64,6 +65,8 @@ view.on('dm', (dm) => {
       // TODO: ignore for now
       }
     }
+
+    socket.emit('dm', ret)
   }
 })
 

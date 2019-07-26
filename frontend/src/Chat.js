@@ -23,7 +23,7 @@ class Chat extends Component {
       friends: [],
       me: { key: '' },
       messages: {},
-      dms: {},
+      dmChannels: {},
       hubID: 0,
       api: process.env.REACT_APP_GATEWAY_URL,
       username: 'username',
@@ -92,9 +92,15 @@ class Chat extends Component {
       let topic = this.state.currentTopic.slice(1)
       data.id = Date.now()
       await this.req('post', `/topics/${topic}`, data)
-    } else if (this.state.currentTopic[0] === '@') {
+    } else {
       // dm
-      let key = this.state.currentTopic.slice(1)
+      let keys = this.state.currentTopic.split('-')
+      let key
+      if (keys[0] === this.state.me.key) {
+        key = keys[1]
+      } else {
+        key = keys[0]
+      }
       await this.req('post', '/dm', { message: data.message, receiver: key })
     }
     this.scrollMessage()
@@ -154,17 +160,9 @@ class Chat extends Component {
       this.gatewaySocket.emit('register', this.state.token)
     })
 
-    this.gatewaySocket.on('dm', (dmList) => {
-      console.log('dm', dmList)
-      let dms = {}
-      for (let dm of dmList) {
-        if (!dms[dm.auther]) dms[dm.author] = []
-        if (this.state.friends.findIndex(x => x.id === dm.author) === -1) {
-          this.setState({ friends: this.state.friends.concat([{ id: dm.author }]) })
-        }
-        dms[dm.author].push(dm)
-      }
-      this.setState({ dms })
+    this.gatewaySocket.on('dm', (dmChannels) => {
+      console.log('dm', dmChannels)
+      this.setState({ dmChannels })
     })
   }
 
@@ -213,16 +211,6 @@ class Chat extends Component {
     console.log(ret.data)
   }
 
-  sendDM (key) {
-    return async () => {
-      let msg = window.prompt('msg')
-      if (msg) {
-        let b = await this.req('post', '/dm', { message: msg, receiver: key })
-        console.log(b)
-      }
-    }
-  }
-
   setHub (id) {
     return () => {
       this.setState({ hubID: id }, () => {
@@ -233,11 +221,19 @@ class Chat extends Component {
 
   render () {
     let messages = []
+    let currentActiveDM
 
-    if (this.state.messages[this.state.currentTopic]) { messages = this.state.messages[this.state.currentTopic] }
-    if (this.state.currentTopic[0] === '@') {
-      let key = this.state.currentTopic.slice(1)
-      messages = this.state.dms[key]
+    console.log(this.state.currentTopic, this.state.dmChannels)
+    if (this.state.messages[this.state.currentTopic]) {
+      messages = this.state.messages[this.state.currentTopic]
+    } else {
+      messages = this.state.dmChannels[this.state.currentTopic]
+      let keys = this.state.currentTopic.split('-')
+      if (keys[0] === this.state.me.key) {
+        currentActiveDM = keys[1]
+      } else {
+        currentActiveDM = keys[0]
+      }
     }
 
     if (!this.state.token) {
@@ -291,7 +287,21 @@ class Chat extends Component {
                   <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.newFriend.bind(this)}>+</h2>
                 </div>
                 <ul>
-                  {this.state.friends.map(f => <li className='cursor-pointer' key={f.id} onClick={this.changeTopic(`@${f.id}`).bind(this)}>@{this.state.profiles[f.id] ? this.state.profiles[f.id].name : f.id}</li>)}
+                  {this.state.friends.map(f => {
+                    let c = ''
+                    if (currentActiveDM === f.id) {
+                      c = 'bg-gray-400 rounded'
+                    }
+                    let name = f.id
+                    if (this.state.profiles[f.id]) name = this.state.profiles[f.id].name
+                    if (name.length > 12) name = name.slice(0, 12) + '...'
+                    return <li
+                      className={`cursor-pointer ${c}`}
+                      key={f.id}
+                      onClick={this.changeTopic([f.id, this.state.me.key].sort().join('-')).bind(this)}>
+                         @{name}
+                    </li>
+                  })}
                 </ul>
               </div>
             </div>

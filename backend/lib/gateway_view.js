@@ -8,7 +8,7 @@ class GatewayView extends EventEmitter {
 
     if (!state) {
       state = {
-        dm: {},
+        dmChannels: {},
         currentVersion: {}
       }
     }
@@ -24,12 +24,14 @@ class GatewayView extends EventEmitter {
     this.keys.push(keyPair)
   }
 
-  collectDM (receiverKey, author, id, message) {
-    if (!this.state.dm[receiverKey]) this.state.dm[receiverKey] = []
+  collectDM (receiverKey, authorKey, id, message) {
+    let dmChannelID = [authorKey, receiverKey].sort().join('-')
 
-    this.state.dm[receiverKey].push({ author, message, id })
+    if (!this.state.dmChannels[dmChannelID]) this.state.dmChannels[dmChannelID] = []
 
-    this.emit('dm', this.state.dm)
+    this.state.dmChannels[dmChannelID].push({ author: authorKey, message, id })
+
+    this.emit('dm', this.state.dmChannels)
   }
 
   __onGossip ({ cipher, nonce, author, id }) {
