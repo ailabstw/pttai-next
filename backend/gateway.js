@@ -86,7 +86,7 @@ function getArchive (token) {
     console.log('get archive', token, archives[token] ? archives[token].key.toString('hex') : '')
     if (archives[token]) return resolve(archives[token])
 
-    let archive = hyperdrive(storage(`storage/${token}`), { latest: true })
+    let archive = hyperdrive(storage(`gateway/storage/${token}`), { latest: true })
     archives[token] = archive
 
     archive.on('ready', async () => {
@@ -123,7 +123,7 @@ function getArchive (token) {
 }
 
 function replicate (key) {
-  let archive = hyperdrive(storage(`replicates/${key}`), key, { latest: true })
+  let archive = hyperdrive(storage(`gateway/replicates/${key}`), key, { latest: true })
 
   if (!disc) {
     disc = Discovery(archive)
