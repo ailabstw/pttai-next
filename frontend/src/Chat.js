@@ -195,9 +195,13 @@ class Chat extends Component {
   }
 
   async handleModeration ({ event, props }) {
-    console.log('mod', props)
-    let ret = await this.req('post', `/topics/${props.topic}/moderation`, { id: props.id, action: 'delete' })
-    console.log(ret.data)
+    let ok = window.confirm('hide the message?')
+
+    if (ok) {
+      console.log('mod', props)
+      let ret = await this.req('post', `/topics/${props.topic}/moderation`, { id: props.id, action: 'delete' })
+      console.log(ret.data)
+    }
   }
 
   handleAddReaction ({ event, props }) {
