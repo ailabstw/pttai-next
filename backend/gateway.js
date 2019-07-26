@@ -90,13 +90,16 @@ function getArchive (token) {
     archives[token] = archive
 
     archive.on('ready', async () => {
-      await user.init(archive)
+      try {
+        await user.init(archive)
 
-      await user.createTopic(archive, 'tech')
-      await user.createTopic(archive, 'food')
-      await user.postToTopic(archive, 'tech', { id: Math.random(), message: 'hello' })
-      await user.postToTopic(archive, 'food', { id: Math.random(), message: 'hello' })
-
+        await user.createTopic(archive, 'tech')
+        await user.createTopic(archive, 'food')
+        await user.postToTopic(archive, 'tech', { id: Math.random(), message: 'hello' })
+        await user.postToTopic(archive, 'food', { id: Math.random(), message: 'hello' })
+      } catch (e) {
+        console.error(e)
+      }
       if (!disc) {
         disc = Discovery(archive)
       } else {
@@ -143,7 +146,7 @@ app.post('/test-login', async (req, res) => {
   let token = await authTest(req.body.id_token)
   let archive = await getArchive(token)
 
-  // await user.setProfile(archive, { name: req.body.id_token })
+  await user.setProfile(archive, { name: req.body.name })
   res.json({ result: { key: archive.key.toString('hex'), token } })
 })
 

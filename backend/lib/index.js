@@ -24,14 +24,19 @@ module.exports = {
 
 function init (archive) {
   return new Promise((resolve, reject) => {
-    archive.mkdir('/topics', (err) => {
-      if (err) return reject(err)
-      archive.mkdir('/friends', (err) => {
-        if (err) return reject(err)
+    archive.stat('/topics', (err, stat) => {
+      // reject if already initialized
+      if (!err) return reject(err)
 
-        archive.writeFile('/profile.json', JSON.stringify({ name: archive.key.toString('hex') }), (err) => {
+      archive.mkdir('/topics', (err) => {
+        if (err) return reject(err)
+        archive.mkdir('/friends', (err) => {
           if (err) return reject(err)
-          resolve()
+
+          archive.writeFile('/profile.json', JSON.stringify({ name: archive.key.toString('hex') }), (err) => {
+            if (err) return reject(err)
+            resolve()
+          })
         })
       })
     })
