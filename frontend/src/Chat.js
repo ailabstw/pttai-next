@@ -190,7 +190,9 @@ class Chat extends Component {
 
   changeTopic (topic) {
     return () => {
-      this.setState({ currentTopic: topic })
+      this.setState({ currentTopic: topic }, () => {
+        this.scrollMessage()
+      })
     }
   }
 
