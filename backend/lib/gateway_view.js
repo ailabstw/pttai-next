@@ -17,6 +17,9 @@ class GatewayView extends EventEmitter {
     this.state = state
     this.keys = []
 
+    // 暫時還不知道發給誰的 DM 先存起來，等有新的 archive 加入時再試試
+    this.pendingDMs = []
+
     this.on('gossip', this.__onGossip)
   }
 
@@ -34,25 +37,30 @@ class GatewayView extends EventEmitter {
     this.emit('dm', this.state.dmChannels)
   }
 
-  __onGossip ({ cipher, nonce, author, id }) {
-    for (let token in this.archives) {
-      let archive = this.archives[token]
-      let keyPair = { publicKey: archive.key, secretKey: archive.metadata.secretKey }
+  __onGossip () {
+    for (let i = 0; i < this.pendingDMs.length; i++) {
+      let { author, nonce, cipher, id } = this.pendingDMs[i]
 
-      // console.log('decrypting', keyPair.secretKey)
-      let decrypted = box.decrypt(author.key, keyPair.secretKey, Buffer.from(cipher, 'hex'), Buffer.from(nonce, 'hex'))
-      // console.log('trying', decrypted.toString())
-      let success = false
-      for (let i = 0; i < decrypted.length; i++) {
-        if (decrypted[i] !== 0) {
-          success = true
-          break
+      for (let token in this.archives) {
+        let archive = this.archives[token]
+        let keyPair = { publicKey: archive.key, secretKey: archive.metadata.secretKey }
+
+        // console.log('decrypting', keyPair.secretKey)
+        let decrypted = box.decrypt(author.key, keyPair.secretKey, Buffer.from(cipher, 'hex'), Buffer.from(nonce, 'hex'))
+        // console.log('trying', decrypted.toString())
+        let success = false
+        for (let i = 0; i < decrypted.length; i++) {
+          if (decrypted[i] !== 0) {
+            success = true
+            break
+          }
         }
-      }
 
-      if (success) {
-        this.emit('decrypted', { receiver: archive, msg: decrypted, author, id })
-        this.collectDM(archive.key.toString('hex'), author.key.toString('hex'), id, decrypted.toString())
+        if (success) {
+          this.pendingDMs.splice(i, 1)
+          this.emit('decrypted', { receiver: archive, msg: decrypted, author, id })
+          this.collectDM(archive.key.toString('hex'), author.key.toString('hex'), id, decrypted.toString())
+        }
       }
     }
   }
@@ -71,6 +79,8 @@ class GatewayView extends EventEmitter {
         let { nonce, cipher, id } = JSON.parse(data)
 
         console.log('gossiping!', key, d.name, { nonce, cipher })
+
+        this.pendingDMs.unshift({ author: archive, nonce, cipher, id })
 
         this.emit('gossip', { author: archive, nonce, cipher, id })
       }

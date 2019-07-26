@@ -43,32 +43,43 @@ ns.on('connection', (socket) => {
     if (!token) return
     console.log('registering', token)
     token2socket[token] = socket
+
+    // console.log('registered', token, archives[token])
+    if (archives[token]) {
+      let ret = filterDMChannels(view.state.dmChannels, archives[token])
+      socket.emit('dm', ret)
+    }
   })
 })
 
 view.on('dm', (dmChannels) => {
   for (let token in token2socket) {
     let socket = token2socket[token]
-    let ret = {}
-    for (let channelID in dmChannels) {
-      try {
-        let archive = archives[token]
-        console.log(archive.key.toString('hex'))
-        let archiveKey = archive.key.toString('hex')
-        if (channelID.startsWith(archiveKey) || channelID.endsWith(archiveKey)) {
-          ret[channelID] = dmChannels[channelID]
-        } else {
-          continue
-        }
-      } catch (e) {
-        console.error(e)
-      // TODO: ignore for now
-      }
-    }
-
+    let ret = filterDMChannels(dmChannels, archives[token])
     socket.emit('dm', ret)
   }
 })
+
+function filterDMChannels (dmChannels, archive) {
+  let ret = {}
+  console.log(archive.key.toString('hex'))
+  for (let channelID in dmChannels) {
+    console.log('channelID', channelID, dmChannels[channelID])
+    try {
+      let archiveKey = archive.key.toString('hex')
+      if (channelID.startsWith(archiveKey) || channelID.endsWith(archiveKey)) {
+        ret[channelID] = dmChannels[channelID]
+      } else {
+        continue
+      }
+    } catch (e) {
+      console.error(e)
+      // TODO: ignore for now
+    }
+  }
+
+  return ret
+}
 
 function getArchive (token) {
   return new Promise((resolve, reject) => {
@@ -132,9 +143,7 @@ app.post('/test-login', async (req, res) => {
   let token = await authTest(req.body.id_token)
   let archive = await getArchive(token)
 
-  if (req.body.name) {
-    await user.setProfile(archive, { name: req.body.name })
-  }
+  await user.setProfile(archive, { name: req.body.id_token })
   res.json({ result: { key: archive.key.toString('hex'), token } })
 })
 
