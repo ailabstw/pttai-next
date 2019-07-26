@@ -164,6 +164,7 @@ class Chat extends Component {
       console.log('dm', dmChannels)
       this.setState({ dmChannels })
     })
+    this.gatewaySocket.on('error', console.error)
   }
 
   async createTopic () {
