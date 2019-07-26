@@ -154,7 +154,7 @@ class Chat extends Component {
     this.hubSocket.on('event', console.log)
     this.hubSocket.on('error', console.error)
 
-    let gatewaySocket = socketIOClient(this.state.api, { path: process.env.REACT_APP_GATEWAY_PATH })
+    let gatewaySocket = socketIOClient(this.state.api, { path: process.env.REACT_APP_GATEWAY_PATH, forceNew: true })
     this.gatewaySocket = gatewaySocket
     this.gatewaySocket.on('hello', () => {
       this.gatewaySocket.emit('register', this.state.token)
