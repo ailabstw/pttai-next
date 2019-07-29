@@ -14,7 +14,6 @@ async function authGoogle (idToken) {
   })
 
   const payload = ticket.getPayload()
-  console.log(ALLOWED_DOMAIN_LIST, payload)
 
   if (ALLOWED_DOMAIN_LIST.length > 0) {
     if (ALLOWED_DOMAIN_LIST.indexOf(payload.hd) === -1) {
