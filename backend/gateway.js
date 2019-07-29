@@ -55,8 +55,13 @@ ns.on('connection', (socket) => {
 view.on('dm', (dmChannels) => {
   for (let token in token2socket) {
     let socket = token2socket[token]
-    let ret = filterDMChannels(dmChannels, archives[token])
-    socket.emit('dm', ret)
+    let socketArchive = archives[token]
+    if (socket && socketArchive) {
+      let ret = filterDMChannels(dmChannels, archives[token])
+      socket.emit('dm', ret)
+    } else {
+      console.log('unable to find archive for socket with token:', token)
+    }
   }
 })
 
