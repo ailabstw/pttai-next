@@ -71,7 +71,7 @@ class GatewayView extends EventEmitter {
 
     let diff = archive.createDiffStream(this.state.currentVersion[key])
     diff.on('data', async (d) => {
-      console.log(d.name)
+      console.log('gateway', d.name)
       if (d.value.size === 0) return // skip directories
       if (d.name.match(/^\/topics\/__gossiping\/(.+)$/)) {
         let data = await user.readFile(archive, d.name)
