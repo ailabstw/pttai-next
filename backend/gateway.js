@@ -43,7 +43,7 @@ ns.on('connection', (socket) => {
     if (!token) return
 
     console.log('registering', token)
-    await getArchive(token)
+    await loadArchive(token)
     token2socket[token] = socket
 
     // console.log('registered', token, archives[token])
@@ -69,9 +69,7 @@ view.on('dm', (dmChannels) => {
 
 function filterDMChannels (dmChannels, archive) {
   let ret = {}
-  console.log(archive.key.toString('hex'))
   for (let channelID in dmChannels) {
-    console.log('channelID', channelID, dmChannels[channelID])
     try {
       let archiveKey = archive.key.toString('hex')
       if (channelID.startsWith(archiveKey) || channelID.endsWith(archiveKey)) {
@@ -88,9 +86,9 @@ function filterDMChannels (dmChannels, archive) {
   return ret
 }
 
-function getArchive (token) {
+function loadArchive (token) {
   return new Promise((resolve, reject) => {
-    console.log('get archive', token, archives[token] ? archives[token].key.toString('hex') : '')
+    console.log('loading archive', token, archives[token] ? archives[token].key.toString('hex') : 'not found')
     if (archives[token]) return resolve(archives[token])
 
     let archive = hyperdrive(storage(`gateway/storage/${token}`, { secretDir: 'gateway/secrets' }), { latest: true })
@@ -141,7 +139,7 @@ function replicate (key) {
 
 app.post('/login', async (req, res) => {
   let { token, name } = await authGoogle(req.body.id_token.id_token)
-  let archive = await getArchive(token)
+  let archive = await loadArchive(token)
 
   if (name) {
     await user.setProfile(archive, { name })
@@ -151,83 +149,83 @@ app.post('/login', async (req, res) => {
 
 app.post('/test-login', async (req, res) => {
   let token = await authTest(req.body.id_token)
-  let archive = await getArchive(token)
+  let archive = await loadArchive(token)
 
   await user.setProfile(archive, { name: req.body.id_token })
   res.json({ result: { key: archive.key.toString('hex'), token } })
 })
 
 app.get('/me', async (req, res) => {
-  let archive = await getArchive(req.query.token)
+  let archive = await loadArchive(req.query.token)
   console.log(Object.keys(archives))
   res.json({ result: { key: archive.key.toString('hex') } })
 })
 
 app.get('/topics', async (req, res) => {
-  let archive = await getArchive(req.query.token)
+  let archive = await loadArchive(req.query.token)
   let ts = await user.getTopics(archive)
 
   res.json({ result: ts })
 })
 
 app.post('/topics', async (req, res) => {
-  let archive = await getArchive(req.query.token)
+  let archive = await loadArchive(req.query.token)
   await user.createTopic(archive, req.body.data)
 
   res.json({ result: 'ok' })
 })
 
 app.get('/topics/:id', async (req, res) => {
-  let archive = await getArchive(req.query.token)
+  let archive = await loadArchive(req.query.token)
   let t = await user.getTopic(archive, req.params.id)
 
   res.json({ result: t })
 })
 
 app.post('/topics/:id', async (req, res) => {
-  let archive = await getArchive(req.query.token)
+  let archive = await loadArchive(req.query.token)
   await user.postToTopic(archive, req.params.id, req.body.data)
 
   res.json({ result: 'ok' })
 })
 
 app.get('/topics/:id/curators', async (req, res) => {
-  let archive = await getArchive(req.query.token)
+  let archive = await loadArchive(req.query.token)
   let cs = await user.getCurators(archive, req.params.id)
 
   res.json({ result: cs })
 })
 
 app.post('/topics/:id/curators', async (req, res) => {
-  let archive = await getArchive(req.query.token)
+  let archive = await loadArchive(req.query.token)
   await user.addCurator(archive, req.params.id, req.body.data)
 
   res.json({ result: 'ok' })
 })
 
 app.post('/topics/:id/moderation', async (req, res) => {
-  let archive = await getArchive(req.query.token)
+  let archive = await loadArchive(req.query.token)
   await user.moderate(archive, req.params.id, req.body.data)
 
   res.json({ result: 'ok' })
 })
 
 app.post('/topics/:id/reactions', async (req, res) => {
-  let archive = await getArchive(req.query.token)
+  let archive = await loadArchive(req.query.token)
   await user.react(archive, req.params.id, req.body.data)
 
   res.json({ result: 'ok' })
 })
 
 app.get('/friends', async (req, res) => {
-  let archive = await getArchive(req.query.token)
+  let archive = await loadArchive(req.query.token)
   let fs = await user.getFriends(archive)
 
   res.json({ result: fs })
 })
 
 app.post('/friends', async (req, res) => {
-  let archive = await getArchive(req.query.token)
+  let archive = await loadArchive(req.query.token)
   await user.createFriend(archive, req.body.data)
 
   await replicate(req.body.data.id)
@@ -236,7 +234,7 @@ app.post('/friends', async (req, res) => {
 })
 
 app.post('/dm', async (req, res) => {
-  let archive = await getArchive(req.query.token)
+  let archive = await loadArchive(req.query.token)
 
   let receiverPublicKey = Buffer.from(req.body.data.receiver, 'hex')
   let msg = Buffer.from(req.body.data.message)
@@ -258,14 +256,14 @@ app.post('/dm', async (req, res) => {
 })
 
 app.get('/profile', async (req, res) => {
-  let archive = await getArchive(req.query.token)
+  let archive = await loadArchive(req.query.token)
   let profile = await user.getProfile(archive)
 
   res.json({ result: profile })
 })
 
 app.post('/profile', async (req, res) => {
-  let archive = await getArchive(req.query.token)
+  let archive = await loadArchive(req.query.token)
   await user.setProfile(archive, req.body.data)
 
   res.json({ result: 'ok' })
