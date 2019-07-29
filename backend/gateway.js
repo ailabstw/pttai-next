@@ -41,7 +41,9 @@ ns.on('connection', (socket) => {
   socket.emit('hello')
   socket.on('register', function (token) {
     if (!token) return
+
     console.log('registering', token)
+    getArchive(token)
     token2socket[token] = socket
 
     // console.log('registered', token, archives[token])
@@ -60,7 +62,7 @@ view.on('dm', (dmChannels) => {
       let ret = filterDMChannels(dmChannels, archives[token])
       socket.emit('dm', ret)
     } else {
-      console.log('unable to find archive for socket with token:', token)
+      console.error('unable to find archive for socket with token:', token)
     }
   }
 })
