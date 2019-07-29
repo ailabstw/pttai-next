@@ -5,3 +5,5 @@ frontend/build
 .DS_Store
 /gateway
 /hub
+backend/gateway
+backend/hub

@@ -18,7 +18,7 @@ class Chat extends Component {
   constructor () {
     super()
     this.state = {
-      currentTopic: '#tech',
+      currentTopic: '#general',
       friends: [],
       me: { key: '' },
       messages: {},

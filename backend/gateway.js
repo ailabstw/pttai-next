@@ -101,10 +101,8 @@ async function main () {
         try {
           await user.init(archive)
 
-          await user.createTopic(archive, 'tech')
-          await user.createTopic(archive, 'food')
-          await user.postToTopic(archive, 'tech', { id: Math.random(), message: { type: 'text', value: 'hello' } })
-          await user.postToTopic(archive, 'food', { id: Math.random(), message: { type: 'text', value: 'hello' } })
+          await user.createTopic(archive, 'general')
+          await user.postToTopic(archive, 'general', { id: Date.now(), message: { type: 'text', value: 'hello' } })
         } catch (e) {
           console.error(e)
         }
