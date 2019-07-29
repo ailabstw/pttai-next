@@ -268,18 +268,6 @@ class Chat extends Component {
           <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
           <Item onClick={this.handleModeration.bind(this)}>Hide</Item>
         </Menu>
-        <div className='hubs bg-gray-500 pt-2'>
-          {HUBS.map((h, i) => {
-            return <div
-              className={`rounded-full bg-gray-700 flex justify-center items-center text-white text-xl mt-2 border-box border-white ${this.state.hubID === i ? 'border-4' : ''}`}
-              style={{ width: '50px', height: '50px', marginLeft: '3px' }}
-              key={i}
-              onClick={this.setHub(i).bind(this)}
-            >
-              {i}
-            </div>
-          })}
-        </div>
         <div className='sidebar bg-gray-200' >
           <div className='flex flex-col justify-between h-full'>
             <div className='overflow-y-auto p-2'>
@@ -298,6 +286,7 @@ class Chat extends Component {
                   } else if (!t.startsWith('__')) {
                     return <li onClick={this.changeTopic(`#${t}`).bind(this)} key={t} className='cursor-pointer'>#{t}</li>
                   }
+                  return ''
                 })}
               </ul>
               <div className='mt-4'>
