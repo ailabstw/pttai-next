@@ -18,7 +18,7 @@ class Messages extends Component {
           </div>
           { m.reactions && m.reactions.length > 0
             ? <div className='my-1 mb-3'>
-              <Reactions reactions={m.reactions} />
+              <Reactions myKey={this.props.myKey} reactions={m.reactions} />
             </div>
             : <div className='my-1' />}
         </li>

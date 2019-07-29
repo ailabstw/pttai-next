@@ -335,7 +335,7 @@ class Chat extends Component {
 
         </div>
         <div className='message bg-red overflow-y-auto px-2' >
-          {messages ? <Messages profiles={this.state.profiles} messages={messages} /> : ''}
+          {messages ? <Messages profiles={this.state.profiles} messages={messages} myKey={this.state.me.key} /> : ''}
           <div id='end' ref={this.messageEndRef} />
         </div>
         <div className='prompt bg-blue'>
