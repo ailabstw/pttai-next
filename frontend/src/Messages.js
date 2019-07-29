@@ -11,7 +11,7 @@ class Messages extends Component {
           key={m.id}
           className='flex flex-col hover:bg-gray-100'>
           <div className='flex flex-row justify-between'>
-            <span><span className='font-bold'>{m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 8) : m.author.substring(0, 8) + '...') : ''}</span>: {m.message}</span>
+            <span><span className='font-bold'>{m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 8) : m.author.substring(0, 8) + '...') : ''}</span>: {m.message.value}</span>
             <MenuProvider id='menu_id' event='onClick' data={m}>
               <span className='text-gray-500 hover:text-black cursor-pointer'>...</span>
             </MenuProvider>

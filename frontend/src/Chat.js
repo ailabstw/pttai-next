@@ -68,7 +68,7 @@ class Chat extends Component {
 
   onKeyPress (e) {
     if (e.key === 'Enter' && e.target.value.length > 0) {
-      this.postToTopic({ message: e.target.value })
+      this.postToTopic({ message: { type: 'text', value: e.target.value } })
 
       e.target.value = ''
     }
@@ -194,7 +194,7 @@ class Chat extends Component {
     let id = window.prompt('friend\'s ID')
     if (id) {
       await this.req('post', '/friends', { id })
-      await this.req('post', '/dm', { message: 'hello new friend', receiver: id })
+      await this.req('post', '/dm', { message: { type: 'text', value: 'hello new friend' }, receiver: id })
       let res = await this.req('get', `/friends`)
       let friends = res.data.result
       this.setState({ friends })

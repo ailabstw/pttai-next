@@ -27,7 +27,7 @@ class GatewayView extends EventEmitter {
 
     if (!this.state.dmChannels[dmChannelID]) this.state.dmChannels[dmChannelID] = []
 
-    this.state.dmChannels[dmChannelID].push({ author: authorKey, message, id })
+    this.state.dmChannels[dmChannelID].push({ author: authorKey, message: JSON.parse(message), id })
 
     this.emit('dm', this.state.dmChannels)
   }
