@@ -181,12 +181,14 @@ class Chat extends Component {
 
   async createTopic () {
     let topic = window.prompt('enter a new topic')
-    if (topic) {
+    if (topic && topic.match(/[\w-]+/)) {
       await this.req('post', '/topics', topic)
       if (topic[0] !== '#') topic = `#${topic}`
       this.setState({ currentTopic: topic }, () => {
         this.postToTopic({ message: { type: 'text', value: 'joined the channel' } })
       })
+    } else {
+      window.alert('failed to create topic')
     }
   }
 
