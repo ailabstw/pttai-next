@@ -10,6 +10,7 @@ class TestLogin extends Component {
       loggedIn: false,
       input: ''
     }
+    this.inputRef = React.createRef()
   }
 
   async login (token) {
@@ -17,6 +18,12 @@ class TestLogin extends Component {
     window.localStorage.setItem('token', resp.data.result.token)
 
     this.setState({ loggedIn: true })
+  }
+
+  componentDidMount () {
+    if (this.inputRef) {
+      this.inputRef.current.focus()
+    }
   }
 
   handleChange (e) {
@@ -38,7 +45,7 @@ class TestLogin extends Component {
     return <div className='flex items-center justify-center w-screen h-screen bg-gray-200'>
       <div className='bg-white flex flex-col justify-between items-center rounded-lg p-4'>
         <h2 className='text-lg'>nickname</h2>
-        <input className='p-1 border border-gray-500 rounded font-mono text-xs w-full' value={this.state.input} onChange={this.handleChange.bind(this)} onKeyPress={this.handleInputChange.bind(this)} />
+        <input className='p-1 border border-gray-500 rounded font-mono text-xs w-full' ref={this.inputRef} value={this.state.input} onChange={this.handleChange.bind(this)} onKeyPress={this.handleInputChange.bind(this)} />
       </div>
     </div>
   }

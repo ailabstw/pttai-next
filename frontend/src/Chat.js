@@ -36,6 +36,7 @@ class Chat extends Component {
 
     this.messageEndRef = React.createRef()
     this.emojiPickerRef = React.createRef()
+    this.inputRef = React.createRef()
   }
 
   async req (method, url, data) {
@@ -50,6 +51,9 @@ class Chat extends Component {
   componentDidMount () {
     this.load()
     document.addEventListener('mousedown', this.onClickOutSideEmojiPicker.bind(this))
+    if (this.inputRef) {
+      this.inputRef.current.focus()
+    }
   }
 
   componentWillUnmount () {
@@ -328,7 +332,7 @@ class Chat extends Component {
           <div id='end' ref={this.messageEndRef} />
         </div>
         <div className='prompt bg-blue'>
-          <input onKeyPress={this.onKeyPress.bind(this)} type='text' placeholder='say something...' className='border border-grey-100 w-full h-full p-2 rounded border-box' />
+          <input autofocus onKeyPress={this.onKeyPress.bind(this)} type='text' placeholder='say something...' className='focus:border-gray-900 border border-gray-400 w-full h-full p-2 rounded border-box outline-none' ref={this.inputRef} />
         </div>
       </div>
     )
