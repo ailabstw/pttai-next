@@ -186,7 +186,6 @@ class Chat extends Component {
   async createTopic () {
     let topic = window.prompt('enter a new topic')
     if (topic) {
-      if (topic[0] !== '#') topic = `#${topic}`
       await this.req('post', '/topics', topic)
       let res = await this.req('get', `/topics`)
       let topics = res.data.result.sort
