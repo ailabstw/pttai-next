@@ -15,7 +15,7 @@ const box = require('./lib/box')
 const authGoogle = require('./auth/google')
 const authTest = require('./auth/noop')
 
-const View = require('./lib/gateway_view')
+const View = require('./lib/views/gateway')
 
 let archives = {}
 let disc

@@ -1,4 +1,4 @@
-const user = require('.')
+const user = require('..')
 const EventEmitter = require('events')
 
 class View extends EventEmitter {
@@ -56,7 +56,7 @@ class View extends EventEmitter {
 
     let diff = archive.createDiffStream(this.state.currentVersion[key])
     diff.on('data', async (d) => {
-      console.log('hub', d.name)
+      console.log('hub', archive.key.toString('hex'), d.name)
       if (d.value.size === 0) return // skip directories
 
       let data = await user.readFile(archive, d.name)

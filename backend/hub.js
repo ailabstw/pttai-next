@@ -7,7 +7,7 @@ const Discovery = require('hyperdiscovery')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const morgan = require('morgan')
-const View = require('./lib/view')
+const View = require('./lib/views/hub')
 
 let users = []
 
@@ -39,7 +39,7 @@ app.post('/join', async (req, res) => {
     users.push(req.body.public_key)
     readUser(req.body.public_key)
   }
-  console.log(users)
+  console.log('users', users)
   res.json({ result: 'ok' })
 })
 

@@ -1,6 +1,6 @@
-const user = require('.')
+const user = require('..')
 const EventEmitter = require('events')
-const box = require('./box')
+const box = require('../box')
 
 class GatewayView extends EventEmitter {
   constructor (archives, state) {
@@ -15,16 +15,11 @@ class GatewayView extends EventEmitter {
 
     this.archives = archives
     this.state = state
-    this.keys = []
 
     // 暫時還不知道發給誰的 DM 先存起來，等有新的 archive 加入時再試試
     this.pendingDMs = []
 
     this.on('gossip', this.__onGossip)
-  }
-
-  addKey (keyPair) {
-    this.keys.push(keyPair)
   }
 
   collectDM (receiverKey, authorKey, id, message) {
