@@ -153,7 +153,7 @@ app.post('/test-login', async (req, res) => {
   let token = await authTest(req.body.id_token)
   let archive = await getArchive(token)
 
-  await user.setProfile(archive, { name: req.body.name })
+  await user.setProfile(archive, { name: req.body.id_token })
   res.json({ result: { key: archive.key.toString('hex'), token } })
 })
 
