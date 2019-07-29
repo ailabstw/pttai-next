@@ -280,7 +280,7 @@ class Chat extends Component {
                 <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.createTopic.bind(this)}>+</h2>
               </div>
               <ul>
-                {Object.keys(this.state.messages).map(t => {
+                {Object.keys(this.state.messages).sort().map(t => {
                   if (t === this.state.currentTopic) {
                     return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className='rounded bg-gray-400 cursor-pointer'>{t}</li>
                   } else if (!t.startsWith('__')) {
