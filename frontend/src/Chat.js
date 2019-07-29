@@ -19,7 +19,6 @@ class Chat extends Component {
     super()
     this.state = {
       currentTopic: '#tech',
-      topics: [],
       friends: [],
       me: { key: '' },
       messages: {},
@@ -113,9 +112,6 @@ class Chat extends Component {
   async load () {
     let res
 
-    res = await this.req('get', `/topics`)
-    let topics = res.data.result.sort()
-
     res = await this.req('get', `/friends`)
     let friends = res.data.result
 
@@ -125,7 +121,7 @@ class Chat extends Component {
     res = await this.req('get', `/profile`)
     let profile = res.data.result
 
-    this.setState({ topics, friends, me, username: profile.name }, this.connect)
+    this.setState({ friends, me, username: profile.name }, this.connect)
   }
 
   async connect () {
@@ -187,9 +183,10 @@ class Chat extends Component {
     let topic = window.prompt('enter a new topic')
     if (topic) {
       await this.req('post', '/topics', topic)
-      let res = await this.req('get', `/topics`)
-      let topics = res.data.result.sort
-      this.setState({ topics, currentTopic: topic })
+      if (topic[0] !== '#') topic = `#${topic}`
+      this.setState({ currentTopic: topic }, () => {
+        this.postToTopic({ message: { type: 'text', value: 'joined the channel' } })
+      })
     }
   }
 
@@ -283,11 +280,11 @@ class Chat extends Component {
                 <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.createTopic.bind(this)}>+</h2>
               </div>
               <ul>
-                {this.state.topics.map(t => {
-                  if (`#${t}` === this.state.currentTopic) {
-                    return <li onClick={this.changeTopic(`#${t}`).bind(this)} key={t} className='rounded bg-gray-400 cursor-pointer'>#{t}</li>
+                {Object.keys(this.state.messages).map(t => {
+                  if (t === this.state.currentTopic) {
+                    return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className='rounded bg-gray-400 cursor-pointer'>{t}</li>
                   } else if (!t.startsWith('__')) {
-                    return <li onClick={this.changeTopic(`#${t}`).bind(this)} key={t} className='cursor-pointer'>#{t}</li>
+                    return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className='cursor-pointer'>{t}</li>
                   }
                   return ''
                 })}
@@ -331,7 +328,7 @@ class Chat extends Component {
           <div id='end' ref={this.messageEndRef} />
         </div>
         <div className='prompt bg-blue'>
-          <input autofocus onKeyPress={this.onKeyPress.bind(this)} type='text' placeholder='say something...' className='focus:border-gray-900 border border-gray-400 w-full h-full p-2 rounded border-box outline-none' ref={this.inputRef} />
+          <input onKeyPress={this.onKeyPress.bind(this)} type='text' placeholder='say something...' className='focus:border-gray-900 border border-gray-400 w-full h-full p-2 rounded border-box outline-none' ref={this.inputRef} />
         </div>
       </div>
     )
