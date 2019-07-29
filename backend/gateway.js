@@ -39,11 +39,11 @@ let token2socket = {}
 
 ns.on('connection', (socket) => {
   socket.emit('hello')
-  socket.on('register', function (token) {
+  socket.on('register', async function (token) {
     if (!token) return
 
     console.log('registering', token)
-    getArchive(token)
+    await getArchive(token)
     token2socket[token] = socket
 
     // console.log('registered', token, archives[token])
