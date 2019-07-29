@@ -133,7 +133,7 @@ class Chat extends Component {
     let socket = socketIOClient(hub, { path: process.env.REACT_APP_HUB_PATH })
     this.hubSocket = socket
     this.hubSocket.on('update', (msgs) => {
-      console.log(msgs)
+      console.log('hub update', msgs)
 
       let messages = {}
       for (let i = 0; i < msgs.length; i++) {

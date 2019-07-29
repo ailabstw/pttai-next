@@ -39,9 +39,11 @@ class View extends EventEmitter {
     } else if (d.name.match(/^\/topics\/(.+)$/)) {
       let m = JSON.parse(data)
       m.author = key
-      this.state.messages.push(m)
+      if (!this.state.messages.find(x => x.id === m.id)) {
+        this.state.messages.push(m)
 
-      this.state.messages = this.state.messages.sort((x, y) => x.date - y.date)
+        this.state.messages = this.state.messages.sort((x, y) => x.date - y.date)
+      }
     } else if (d.name.match(/^\/profile.json/)) {
       let profile = JSON.parse(data)
       this.state.profiles[key] = profile
