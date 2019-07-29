@@ -295,7 +295,7 @@ class Chat extends Component {
                 {this.state.topics.map(t => {
                   if (`#${t}` === this.state.currentTopic) {
                     return <li onClick={this.changeTopic(`#${t}`).bind(this)} key={t} className='rounded bg-gray-400 cursor-pointer'>#{t}</li>
-                  } else {
+                  } else if (!t.startsWith('__')) {
                     return <li onClick={this.changeTopic(`#${t}`).bind(this)} key={t} className='cursor-pointer'>#{t}</li>
                   }
                 })}
