@@ -278,13 +278,18 @@ async function main () {
 
   async function loadExistingArchives () {
     console.log('loading existing archives')
-    let tokens = fs.readdirSync(path.resolve('./gateway/storage'))
-    console.log(tokens)
-    for (let i = 0; i < tokens.length; i++) {
-      let token = tokens[i]
-      await loadArchive(token)
+    try {
+      let tokens = fs.readdirSync(path.resolve('./gateway/storage'))
+      console.log(tokens)
+      for (let i = 0; i < tokens.length; i++) {
+        let token = tokens[i]
+        await loadArchive(token)
+      }
+      console.log('loaded')
+    } catch (e) {
+      // TODO: ignore for now
+      console.error(e)
     }
-    console.log('loaded')
   }
 }
 
