@@ -23,7 +23,7 @@ class Messages extends Component {
                 <span className='font-bold cursor-pointer hover:underline' onClick={this.onNewFriend(m.author)}>
                   {m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 8) : m.author.substring(0, 8) + '...') : ''}
                 </span>
-                : <Linkify>{m.message.value}</Linkify>
+                : <Linkify properties={{ target: '_blank', className: 'text-blue-600 underline' }}>{m.message.value}</Linkify>
               </span>
               <MenuProvider id='menu_id' event='onClick' data={m}>
                 <span className='text-gray-500 hover:text-black cursor-pointer'>...</span>
@@ -44,7 +44,7 @@ class Messages extends Component {
                 <span className='font-bold cursor-pointer hover:underline' onClick={this.onNewFriend(m.author)}>
                   {m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 8) : m.author.substring(0, 8) + '...') : ''}
                 </span>
-                <Linkify>{` ${m.message.value}`}</Linkify>
+                <Linkify properties={{ target: '_blank', className: 'text-blue-400 underline' }}>{` ${m.message.value}`}</Linkify>
               </span>
               <MenuProvider id='menu_id' event='onClick' data={m}>
                 <span className='text-gray-500 hover:text-black cursor-pointer'>...</span>
