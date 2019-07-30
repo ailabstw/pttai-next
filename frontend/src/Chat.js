@@ -266,6 +266,9 @@ class Chat extends Component {
       lastReadTime[topic] = Date.now()
       this.setState({ currentTopic: topic, lastReadTime }, () => {
         this.scrollMessage()
+        if (this.inputRef) {
+          this.inputRef.current.focus()
+        }
       })
     }
   }
