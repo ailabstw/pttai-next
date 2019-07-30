@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { MenuProvider } from 'react-contexify'
 import Reactions from './Reactions'
+import Linkify from 'react-linkify'
 
 class Messages extends Component {
   onNewFriend (id) {
@@ -22,7 +23,7 @@ class Messages extends Component {
                 <span className='font-bold cursor-pointer hover:underline' onClick={this.onNewFriend(m.author)}>
                   {m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 8) : m.author.substring(0, 8) + '...') : ''}
                 </span>
-                : {m.message.value}
+                : <Linkify>{m.message.value}</Linkify>
               </span>
               <MenuProvider id='menu_id' event='onClick' data={m}>
                 <span className='text-gray-500 hover:text-black cursor-pointer'>...</span>
@@ -37,13 +38,13 @@ class Messages extends Component {
         } else if (m.message.type === 'action') {
           return <li
             key={m.id}
-            className='flex flex-col hover:bg-gray-100'>
+            className='message flex flex-col hover:bg-gray-100'>
             <div className='flex flex-row justify-between'>
               <span className='text-gray-500 italic'>
                 <span className='font-bold cursor-pointer hover:underline' onClick={this.onNewFriend(m.author)}>
                   {m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 8) : m.author.substring(0, 8) + '...') : ''}
                 </span>
-                {` ${m.message.value}`}
+                <Linkify>{` ${m.message.value}`}</Linkify>
               </span>
               <MenuProvider id='menu_id' event='onClick' data={m}>
                 <span className='text-gray-500 hover:text-black cursor-pointer'>...</span>

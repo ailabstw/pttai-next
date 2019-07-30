@@ -34,3 +34,8 @@ code {
 .border-box {
   box-sizing: border-box;
 }
+
+.message a {
+  color: #4d4dcf;
+  text-decoration: underline;
+}
