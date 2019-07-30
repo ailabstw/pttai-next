@@ -186,7 +186,7 @@ class Chat extends Component {
         await this.req('post', '/topics', topic)
         if (topic[0] !== '#') topic = `#${topic}`
         this.setState({ currentTopic: topic }, () => {
-          this.postToTopic({ message: { type: 'text', value: 'joined the channel' } })
+          this.postToTopic({ message: { type: 'text', value: 'joined the topic' } })
         })
       } else {
         window.alert('invalid topic name')
@@ -206,7 +206,7 @@ class Chat extends Component {
       return this.changeTopic([id, this.state.me.key].sort().join('-'))()
     }
     await this.req('post', '/friends', { id })
-    await this.req('post', '/dm', { message: { type: 'action', value: 'joined the conversation' }, receiver: id })
+    await this.req('post', '/dm', { message: { type: 'action', value: 'started the conversation' }, receiver: id })
     let res = await this.req('get', `/friends`)
     let friends = res.data.result
     this.setState({ friends }, () => {
