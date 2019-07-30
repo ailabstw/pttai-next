@@ -265,6 +265,7 @@ class Chat extends Component {
     return () => {
       let lastReadTime = Object.assign({}, this.state.lastReadTime)
       lastReadTime[topic] = Date.now()
+      window.localStorage.setItem('lastReadTime', JSON.stringify(lastReadTime))
       if (this.inputRef) {
         this.inputRef.current.focus()
       }
