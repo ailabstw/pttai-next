@@ -248,6 +248,7 @@ class Chat extends Component {
   }
 
   async _newFriend (id) {
+    if (this.state.me.key === id) return
     if (this.state.friends.find(f => f.id === id)) {
       return this.changeTopic([id, this.state.me.key].sort().join('-'))()
     }
