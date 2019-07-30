@@ -21,7 +21,7 @@ class Messages extends Component {
             <div className='flex flex-row justify-between'>
               <span>
                 <span className='font-bold cursor-pointer hover:underline' onClick={this.onNewFriend(m.author)}>
-                  {m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 8) : m.author.substring(0, 8) + '...') : ''}
+                  {m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 16) : m.author.substring(0, 16) + '...') : ''}
                 </span>
                 : <Linkify properties={{ target: '_blank', className: 'text-blue-600 underline' }}>{m.message.value}</Linkify>
               </span>
@@ -42,7 +42,7 @@ class Messages extends Component {
             <div className='flex flex-row justify-between'>
               <span className='text-gray-500 italic'>
                 <span className='font-bold cursor-pointer hover:underline' onClick={this.onNewFriend(m.author)}>
-                  {m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 8) : m.author.substring(0, 8) + '...') : ''}
+                  {m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 16) : m.author.substring(0, 16) + '...') : ''}
                 </span>
                 <Linkify properties={{ target: '_blank', className: 'text-blue-400 underline' }}>{` ${m.message.value}`}</Linkify>
               </span>
