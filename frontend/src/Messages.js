@@ -26,7 +26,7 @@ class Messages extends Component {
             key={m.id}
             className='flex flex-col hover:bg-gray-100'>
             <div className='flex flex-row justify-between'>
-              <span>
+              <span className='break-all'>
                 <span className={`font-bold cursor-pointer hover:underline ${this.id2color(m.author)}`} onClick={this.onNewFriend(m.author)}>
                   {m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 16) : m.author.substring(0, 16) + '...') : ''}
                 </span>
