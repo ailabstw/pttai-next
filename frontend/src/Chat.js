@@ -197,17 +197,21 @@ class Chat extends Component {
   async newFriend () {
     let id = window.prompt('friend\'s ID')
     if (id) {
-      if (this.state.friends.find(f => f.id === id)) {
-        return this.changeTopic([id, this.state.me.key].sort().join('-'))()
-      }
-      await this.req('post', '/friends', { id })
-      await this.req('post', '/dm', { message: { type: 'action', value: 'joined the conversation' }, receiver: id })
-      let res = await this.req('get', `/friends`)
-      let friends = res.data.result
-      this.setState({ friends }, () => {
-        this.changeTopic([id, this.state.me.key].sort().join('-'))()
-      })
+      await this._newFriend(id)
     }
+  }
+
+  async _newFriend (id) {
+    if (this.state.friends.find(f => f.id === id)) {
+      return this.changeTopic([id, this.state.me.key].sort().join('-'))()
+    }
+    await this.req('post', '/friends', { id })
+    await this.req('post', '/dm', { message: { type: 'action', value: 'joined the conversation' }, receiver: id })
+    let res = await this.req('get', `/friends`)
+    let friends = res.data.result
+    this.setState({ friends }, () => {
+      this.changeTopic([id, this.state.me.key].sort().join('-'))()
+    })
   }
 
   changeTopic (topic) {
@@ -337,7 +341,14 @@ class Chat extends Component {
 
         </div>
         <div className='message bg-red overflow-y-auto px-2' >
-          {messages ? <Messages profiles={this.state.profiles} messages={messages} myKey={this.state.me.key} onAddReaction={this.onAddReaction.bind(this)} /> : ''}
+          {messages
+            ? <Messages
+              profiles={this.state.profiles}
+              messages={messages}
+              myKey={this.state.me.key}
+              onAddReaction={this.onAddReaction.bind(this)}
+              onNewFriend={this._newFriend.bind(this)}
+            /> : ''}
           <div id='end' ref={this.messageEndRef} />
         </div>
         <div className='prompt bg-blue'>
