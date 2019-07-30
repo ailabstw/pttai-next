@@ -40,6 +40,7 @@ class Messages extends Component {
               : <div className='my-1' />}
           </li>
         }
+        return ''
       })}
     </ul>
   }

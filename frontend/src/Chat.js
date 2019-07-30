@@ -197,11 +197,16 @@ class Chat extends Component {
   async newFriend () {
     let id = window.prompt('friend\'s ID')
     if (id) {
+      if (this.state.friends.find(f => f.id === id)) {
+        return this.changeTopic([id, this.state.me.key].sort().join('-'))()
+      }
       await this.req('post', '/friends', { id })
       await this.req('post', '/dm', { message: { type: 'action', value: 'joined the conversation' }, receiver: id })
       let res = await this.req('get', `/friends`)
       let friends = res.data.result
-      this.setState({ friends })
+      this.setState({ friends }, () => {
+        this.changeTopic([id, this.state.me.key].sort().join('-'))()
+      })
     }
   }
 
@@ -290,9 +295,9 @@ class Chat extends Component {
               <ul>
                 {Object.keys(this.state.messages).sort().map(t => {
                   if (t === this.state.currentTopic) {
-                    return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className='rounded bg-gray-400 cursor-pointer'>{t}</li>
+                    return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className='rounded bg-gray-400 cursor-pointer text-gray-600'>{t}</li>
                   } else if (!t.startsWith('__')) {
-                    return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className='cursor-pointer'>{t}</li>
+                    return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className='cursor-pointer text-gray-600'>{t}</li>
                   }
                   return ''
                 })}
