@@ -2,12 +2,18 @@ import React, { Component } from 'react'
 import { MenuProvider } from 'react-contexify'
 import Reactions from './Reactions'
 import Linkify from 'react-linkify'
+import nameColors from './name_colors'
 
 class Messages extends Component {
   onNewFriend (id) {
     return () => {
       this.props.onNewFriend(id)
     }
+  }
+
+  id2color (id) {
+    let n = parseInt(id, 16)
+    return nameColors[n % nameColors.length]
   }
 
   render () {
@@ -20,7 +26,7 @@ class Messages extends Component {
             className='flex flex-col hover:bg-gray-100'>
             <div className='flex flex-row justify-between'>
               <span>
-                <span className='font-bold cursor-pointer hover:underline' onClick={this.onNewFriend(m.author)}>
+                <span className={`font-bold cursor-pointer hover:underline ${this.id2color(m.author)}`} onClick={this.onNewFriend(m.author)}>
                   {m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 16) : m.author.substring(0, 16) + '...') : ''}
                 </span>
                 : <Linkify properties={{ target: '_blank', className: 'text-blue-600 underline' }}>{m.message.value}</Linkify>
