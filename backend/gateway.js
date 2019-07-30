@@ -250,7 +250,7 @@ async function main () {
       archive,
       '__gossiping',
       {
-        id: Math.random(),
+        id: Date.now(),
         nonce: b.nonce.toString('hex'),
         cipher: b.cipher.toString('hex')
       })
