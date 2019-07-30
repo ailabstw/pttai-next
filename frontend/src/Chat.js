@@ -232,6 +232,10 @@ class Chat extends Component {
     console.log(ret.data)
   }
 
+  async onAddReaction (react, message) {
+    await this.req('post', `/topics/${message.topic}/reactions`, { id: Date.now(), react: react, msgID: message.id })
+  }
+
   setHub (id) {
     return () => {
       this.setState({ hubID: id }, () => {
@@ -326,7 +330,7 @@ class Chat extends Component {
 
         </div>
         <div className='message bg-red overflow-y-auto px-2' >
-          {messages ? <Messages profiles={this.state.profiles} messages={messages} myKey={this.state.me.key} /> : ''}
+          {messages ? <Messages profiles={this.state.profiles} messages={messages} myKey={this.state.me.key} onAddReaction={this.onAddReaction.bind(this)} /> : ''}
           <div id='end' ref={this.messageEndRef} />
         </div>
         <div className='prompt bg-blue'>

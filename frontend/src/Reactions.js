@@ -1,6 +1,14 @@
 import React, { Component } from 'react'
 
 class Reactions extends Component {
+  addReaction (react, fromMe) {
+    if (fromMe) return () => {}
+
+    return () => {
+      this.props.onAddReaction(react, this.props.message)
+    }
+  }
+
   render () {
     let rs = this.props.reactions
     if (!rs || rs.length === 0) return ''
@@ -13,21 +21,17 @@ class Reactions extends Component {
     }, {})
 
     let fromMe = rs.filter(x => x.author === this.props.myKey).map(x => x.react)
-    console.log('counted', counted)
-
     let ret = []
 
     for (let r in counted) {
       let hl = fromMe.indexOf(r) !== -1 ? 'border-2 border-blue-400' : ''
       ret.push(
-        <span className={`cursor-pointer border-box text-sm py-1 px-2 mr-1 bg-gray-200 rounded-full w-auto ${hl}`} key={r}>
+        <span className={`cursor-pointer border-box text-sm py-1 px-2 mr-1 bg-gray-200 rounded-full w-auto ${hl}`} key={r} onClick={this.addReaction(r, fromMe.indexOf(r) !== -1).bind(this)}>
           <span>{r}</span>
           <span className='text-xs'>{counted[r]}</span>
         </span>
       )
     }
-
-    console.log(ret)
 
     return ret
 
