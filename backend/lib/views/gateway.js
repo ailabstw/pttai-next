@@ -29,13 +29,18 @@ class GatewayView extends EventEmitter {
 
     this.state.dmChannels[dmChannelID].push({ author: authorKey, message: JSON.parse(message), id })
 
+    this.state.dmChannels[dmChannelID] = this.state.dmChannels[dmChannelID].sort((x, y) => x.message.date - y.message.date)
+
     this.emit('dm', this.state.dmChannels)
   }
 
   __onGossip () {
+    console.log('gossip received, pending', this.pendingDMs.length)
+    let nextPendingDMs = []
     for (let i = 0; i < this.pendingDMs.length; i++) {
       let { author, nonce, cipher, id } = this.pendingDMs[i]
 
+      let foundReceiver = false
       for (let token in this.archives) {
         let archive = this.archives[token]
         let keyPair = { publicKey: archive.key, secretKey: archive.metadata.secretKey }
@@ -52,12 +57,19 @@ class GatewayView extends EventEmitter {
         }
 
         if (success) {
-          this.pendingDMs.splice(i, 1)
+          foundReceiver = true
           this.emit('decrypted', { receiver: archive, msg: decrypted, author, id })
           this.collectDM(archive.key.toString('hex'), author.key.toString('hex'), id, decrypted.toString())
+          break
         }
       }
+
+      if (!foundReceiver) {
+        nextPendingDMs.push(this.pendingDMs[i])
+      }
     }
+
+    this.pendingDMs = nextPendingDMs
   }
 
   apply (archive) {
