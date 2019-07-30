@@ -232,7 +232,7 @@ class Chat extends Component {
         await this.req('post', '/topics', topic)
         if (topic[0] !== '#') topic = `#${topic}`
         this.setState({ currentTopic: topic }, () => {
-          this.postToTopic({ message: { type: 'text', value: 'joined the topic' } })
+          this.postToTopic({ message: { type: 'action', value: 'joined the topic' } })
         })
       } else {
         window.alert('invalid topic name')
