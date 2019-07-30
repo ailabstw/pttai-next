@@ -19,6 +19,7 @@ class Messages extends Component {
   render () {
     console.log('rendering messages', this.props.messages)
     return <ul className='min-h-full flex flex-col justify-end'>
+      {this.props.messages.length > 0 ? <div className='h-48' /> : ''}
       {this.props.messages.map(m => {
         if (m.message.type === 'text') {
           return <li
