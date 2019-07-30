@@ -32,7 +32,8 @@ class Chat extends Component {
       profiles: {},
       token: window.localStorage.getItem('token'),
       lastReadTime: JSON.parse(window.localStorage.getItem('lastReadTime') || '{}'),
-      lastMessageTime: {}
+      lastMessageTime: {},
+      disconnected: false
     }
 
     this.messageEndRef = React.createRef()
@@ -166,6 +167,12 @@ class Chat extends Component {
       console.log('profiles', profiles)
       this.setState({ profiles })
     })
+    this.hubSocket.on('disconnect', (reason) => {
+      this.setState({ disconnected: true })
+    })
+    this.hubSocket.on('reconnect', (reason) => {
+      this.setState({ disconnected: false })
+    })
 
     this.hubSocket.on('event', console.log)
     this.hubSocket.on('error', console.error)
@@ -174,6 +181,12 @@ class Chat extends Component {
     this.gatewaySocket = gatewaySocket
     this.gatewaySocket.on('hello', () => {
       this.gatewaySocket.emit('register', this.state.token)
+    })
+    this.gatewaySocket.on('disconnect', (reason) => {
+      this.setState({ disconnected: true })
+    })
+    this.gatewaySocket.on('reconnect', (reason) => {
+      this.setState({ disconnected: false })
     })
 
     this.gatewaySocket.on('dm', (dmChannels) => {
@@ -321,6 +334,7 @@ class Chat extends Component {
 
     return (
       <div className='w-screen h-screen app'>
+        {this.state.disconnected ? <div className='absolute top-0 left-0 h-8 font-bold bg-red-800 text-gray-300 w-screen flex items-center justify-center'>Disconnected</div> : ''}
         {this.state.showEmojiPicker
           ? <EmojiPicker ref={this.emojiPickerRef} style={{ right: 0, bottom: this.state.emojiPickerBottom, position: 'absolute' }} onClick={this.handleSelectEmoji.bind(this)} />
           : ''}
