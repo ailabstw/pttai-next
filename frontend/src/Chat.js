@@ -30,7 +30,9 @@ class Chat extends Component {
       emojiPickerBottom: 0,
       emojiPickerData: null,
       profiles: {},
-      token: window.localStorage.getItem('token')
+      token: window.localStorage.getItem('token'),
+      lastReadTime: JSON.parse(window.localStorage.getItem('lastReadTime') || '{}'),
+      lastMessageTime: {}
     }
 
     this.messageEndRef = React.createRef()
@@ -136,14 +138,28 @@ class Chat extends Component {
       console.log('hub update', msgs)
 
       let messages = {}
+      let lastMessageTime = Object.assign({}, this.state.lastMessageTime)
+      let lastReadTime = Object.assign({}, this.state.lastReadTime)
       for (let i = 0; i < msgs.length; i++) {
         let m = msgs[i]
         let topic = `#${m.topic}`
         if (!messages[topic]) messages[topic] = []
         messages[topic].push(m)
+
+        if (!lastMessageTime[topic]) {
+          lastMessageTime[topic] = m.date
+        } else if (lastMessageTime[topic] < m.date) {
+          lastMessageTime[topic] = m.date
+        }
+
+        if (!lastReadTime[topic]) lastReadTime[topic] = Date.now()
       }
 
-      this.setState({ messages })
+      // current topic is always read
+      lastReadTime[this.state.currentTopic] = Date.now()
+
+      this.setState({ messages, lastMessageTime, lastReadTime })
+      window.localStorage.setItem('lastReadTime', JSON.stringify(lastReadTime))
       this.scrollMessage()
     })
     this.hubSocket.on('profiles', (profiles) => {
@@ -163,6 +179,8 @@ class Chat extends Component {
     this.gatewaySocket.on('dm', (dmChannels) => {
       console.log('dm', dmChannels)
       this.setState({ dmChannels })
+      let lastMessageTime = Object.assign({}, this.state.lastMessageTime)
+      let lastReadTime = Object.assign({}, this.state.lastReadTime)
       for (let channelID in dmChannels) {
         let keys = channelID.split('-')
         let key
@@ -174,7 +192,22 @@ class Chat extends Component {
         if (this.state.friends.findIndex(x => x.id === key) === -1) {
           this.setState({ friends: this.state.friends.concat([{ id: key }]) })
         }
+        if (!lastReadTime[channelID]) lastReadTime[channelID] = Date.now()
+
+        for (let dm of dmChannels[channelID]) {
+          let m = dm.message
+          if (!lastMessageTime[channelID]) {
+            lastMessageTime[channelID] = m.date
+          } else if (lastMessageTime[channelID] < m.date) {
+            lastMessageTime[channelID] = m.date
+          }
+        }
       }
+      // current topic is always read
+      lastReadTime[this.state.currentTopic] = Date.now()
+
+      this.setState({ lastMessageTime, lastReadTime })
+      window.localStorage.setItem('lastReadTime', JSON.stringify(lastReadTime))
     })
     this.gatewaySocket.on('error', console.error)
   }
@@ -216,7 +249,9 @@ class Chat extends Component {
 
   changeTopic (topic) {
     return () => {
-      this.setState({ currentTopic: topic }, () => {
+      let lastReadTime = Object.assign({}, this.state.lastReadTime)
+      lastReadTime[topic] = Date.now()
+      this.setState({ currentTopic: topic, lastReadTime }, () => {
         this.scrollMessage()
       })
     }
@@ -272,6 +307,14 @@ class Chat extends Component {
       }
     }
 
+    let unread = {}
+    for (let topic in this.state.lastReadTime) {
+      if (this.state.lastMessageTime[topic] > this.state.lastReadTime[topic]) {
+        unread[topic] = true
+      }
+    }
+    console.log('unread', unread)
+
     if (!this.state.token) {
       return <Redirect to={{ path: '/' }} />
     }
@@ -293,22 +336,24 @@ class Chat extends Component {
                 <input className='p-1 border border-gray-500 rounded font-mono text-xs w-full bg-gray-200' value={process.env.REACT_APP_GATEWAY_URL} readOnly />
               </div>
               <div className='flex flex-row justify-between'>
-                <h2 className='font-bold'>Topics</h2>
+                <h2>Topics</h2>
                 <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.createTopic.bind(this)}>+</h2>
               </div>
               <ul>
                 {Object.keys(this.state.messages).sort().map(t => {
+                  let textStyle = 'text-gray-600'
+                  if (unread[t]) textStyle = `text-black font-bold`
                   if (t === this.state.currentTopic) {
-                    return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className='rounded bg-gray-400 cursor-pointer text-gray-600'>{t}</li>
+                    return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`rounded bg-gray-400 cursor-pointer ${textStyle}`}>{t}</li>
                   } else if (!t.startsWith('__')) {
-                    return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className='cursor-pointer text-gray-600'>{t}</li>
+                    return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`cursor-pointer ${textStyle}`}>{t}</li>
                   }
                   return ''
                 })}
               </ul>
               <div className='mt-4'>
                 <div className='flex flex-row justify-between'>
-                  <h2 className='font-bold'>Friends</h2>
+                  <h2>Friends</h2>
                   <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.newFriend.bind(this)}>+</h2>
                 </div>
                 <ul>
@@ -318,12 +363,15 @@ class Chat extends Component {
                       c = 'bg-gray-400 rounded'
                     }
                     let name = f.id
+                    let textStyle = 'text-gray-600'
+                    let channelID = [f.id, this.state.me.key].sort().join('-')
+                    if (unread[channelID]) textStyle = `text-black font-bold`
                     if (this.state.profiles[f.id]) name = this.state.profiles[f.id].name
                     if (name.length > 12) name = name.slice(0, 12) + '...'
                     return <li
-                      className={`cursor-pointer text-gray-600 ${c}`}
+                      className={`cursor-pointer ${textStyle} ${c}`}
                       key={f.id}
-                      onClick={this.changeTopic([f.id, this.state.me.key].sort().join('-')).bind(this)}>
+                      onClick={this.changeTopic(channelID).bind(this)}>
                          @{name}
                     </li>
                   })}

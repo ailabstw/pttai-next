@@ -238,7 +238,9 @@ async function main () {
     let archive = await loadArchive(req.query.token)
 
     let receiverPublicKey = Buffer.from(req.body.data.receiver, 'hex')
-    let msg = Buffer.from(JSON.stringify(req.body.data.message))
+    let msg = req.body.data.message
+    if (!msg.date) msg.date = Date.now()
+    msg = Buffer.from(JSON.stringify(req.body.data.message))
 
     // console.log('sending dm', { receiver: receiverPublicKey, secretKey: archive.metadata.secretKey })
 
