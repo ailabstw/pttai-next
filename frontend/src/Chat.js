@@ -283,7 +283,7 @@ class Chat extends Component {
           : ''}
         <Menu id='menu_id'>
           <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
-          <Item onClick={this.handleModeration.bind(this)}>Hide</Item>
+          {/* <Item onClick={this.handleModeration.bind(this)}>Hide</Item> */}
         </Menu>
         <div className='sidebar bg-gray-200' >
           <div className='flex flex-col justify-between h-full'>
@@ -321,7 +321,7 @@ class Chat extends Component {
                     if (this.state.profiles[f.id]) name = this.state.profiles[f.id].name
                     if (name.length > 12) name = name.slice(0, 12) + '...'
                     return <li
-                      className={`cursor-pointer ${c}`}
+                      className={`cursor-pointer text-gray-600 ${c}`}
                       key={f.id}
                       onClick={this.changeTopic([f.id, this.state.me.key].sort().join('-')).bind(this)}>
                          @{name}
