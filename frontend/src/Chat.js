@@ -88,7 +88,7 @@ class Chat extends Component {
 
   scrollMessage () {
     if (this.messageEndRef.current) {
-      this.messageEndRef.current.scrollIntoView({ behavior: 'smooth' })
+      this.messageEndRef.current.scrollIntoView()
     }
   }
 
