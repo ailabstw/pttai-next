@@ -410,6 +410,7 @@ class Chat extends Component {
               myKey={this.state.me.key}
               onAddReaction={this.onAddReaction.bind(this)}
               onNewFriend={this._newFriend.bind(this)}
+              allowReact={!currentActiveDM}
             /> : ''}
           <div id='end' ref={this.messageEndRef} />
         </div>
