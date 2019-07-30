@@ -285,7 +285,7 @@ class Chat extends Component {
   }
 
   handleAddReaction ({ event, props }) {
-    this.setState({ emojiPickerData: props, emojiPickerBottom: document.documentElement.clientHeight - event.clientY - 100, showEmojiPicker: true })
+    this.setState({ emojiPickerData: props, emojiPickerBottom: document.documentElement.clientHeight - event.clientY - 50, showEmojiPicker: true })
   }
 
   async handleSelectEmoji (emoji, e) {
