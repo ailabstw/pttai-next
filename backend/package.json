@@ -21,16 +21,17 @@
     "dotenv": "^8.0.0",
     "events": "^3.0.0",
     "express": "^4.17.1",
+    "express-pino-logger": "^4.0.0",
     "google-auth-library": "^4.2.5",
     "hyperdiscovery": "^10.0.0",
     "hyperdrive": "^9.15.0",
-    "morgan": "^1.9.1",
     "random-access-memory": "^3.1.1",
     "socket.io": "^2.2.0",
     "sodium-universal": "^2.0.0"
   },
   "devDependencies": {
     "axios": "^0.19.0",
+    "pino-pretty": "^3.2.0",
     "tape": "^4.10.2"
   }
 }

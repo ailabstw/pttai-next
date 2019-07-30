@@ -6,7 +6,7 @@ const storage = require('./storage/dat')
 const Discovery = require('hyperdiscovery')
 const bodyParser = require('body-parser')
 const cors = require('cors')
-const morgan = require('morgan')
+const pino = require('express-pino-logger')()
 const View = require('./lib/views/hub')
 const fs = require('fs')
 
@@ -22,7 +22,7 @@ async function main () {
   var http = require('http').Server(app)
   var io = require('socket.io')(http)
   app.use(bodyParser.json())
-  app.use(morgan('tiny'))
+  app.use(pino)
   app.use(cors())
 
   app.post('/join', async (req, res) => {
