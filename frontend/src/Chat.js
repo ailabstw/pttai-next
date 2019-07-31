@@ -5,8 +5,9 @@ import socketIOClient from 'socket.io-client'
 import 'emoji-mart/css/emoji-mart.css'
 import { Picker as EmojiPicker } from 'emoji-mart'
 import { Redirect } from 'react-router-dom'
-
 import { Menu, Item } from 'react-contexify'
+import { ReactTitle } from 'react-meta-tags'
+
 import Messages from './Messages'
 import 'react-contexify/dist/ReactContexify.min.css'
 
@@ -339,6 +340,7 @@ class Chat extends Component {
 
     return (
       <div className='w-screen h-screen app'>
+        {Object.keys(unread).length > 0 ? <ReactTitle title='(*) PTT.ai' /> : <ReactTitle title='PTT.ai' />}
         {this.state.disconnected ? <div className='absolute top-0 left-0 h-8 font-bold bg-red-800 text-gray-300 w-screen flex items-center justify-center'>Disconnected</div> : ''}
         {this.state.showEmojiPicker
           ? <EmojiPicker ref={this.emojiPickerRef} style={{ right: 0, bottom: this.state.emojiPickerBottom, position: 'absolute' }} onClick={this.handleSelectEmoji.bind(this)} />
