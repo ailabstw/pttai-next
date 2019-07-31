@@ -102,7 +102,7 @@ async function main () {
           await user.init(archive)
 
           await user.createTopic(archive, 'general')
-          await user.postToTopic(archive, 'general', { id: Date.now(), message: { type: 'action', value: 'joined the channel' } })
+          await user.postToTopic(archive, 'general', { id: Date.now(), message: { type: 'action', value: 'joined the topic' } })
         } catch (e) {
           console.error(e)
         }
