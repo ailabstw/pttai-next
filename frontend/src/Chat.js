@@ -57,7 +57,7 @@ class Chat extends Component {
   componentDidMount () {
     this.load()
     document.addEventListener('mousedown', this.onClickOutSideEmojiPicker.bind(this))
-    if (this.inputRef) {
+    if (this.inputRef.current) {
       this.inputRef.current.focus()
     }
   }
