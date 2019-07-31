@@ -4,6 +4,8 @@ import Reactions from './Reactions'
 import Linkify from 'react-linkify'
 import nameColors from './name_colors'
 
+import moment from 'moment'
+
 class Messages extends Component {
   onNewFriend (id) {
     return () => {
@@ -27,6 +29,7 @@ class Messages extends Component {
             className='flex flex-col hover:bg-gray-100'>
             <div className='flex flex-row justify-between'>
               <span className='break-all'>
+                <span className='text-gray-600 inline-block mr-4'>{moment(m.date).format('HH:mm')}</span>
                 <span className={`font-bold cursor-pointer hover:underline ${this.id2color(m.author)}`} onClick={this.onNewFriend(m.author)}>
                   {m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 16) : m.author.substring(0, 16) + '...') : ''}
                 </span>
@@ -47,8 +50,9 @@ class Messages extends Component {
             key={m.id}
             className='message flex flex-col hover:bg-gray-100'>
             <div className='flex flex-row justify-between'>
-              <span className='text-gray-500 italic'>
-                <span className='font-bold cursor-pointer hover:underline' onClick={this.onNewFriend(m.author)}>
+              <span className='text-gray-500'>
+                <span className='text-gray-600 inline-block mr-4'>{moment(m.date).format('HH:mm')}</span>
+                <span className='font-bold cursor-pointer hover:underline italic' onClick={this.onNewFriend(m.author)}>
                   {m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 16) : m.author.substring(0, 16) + '...') : ''}
                 </span>
                 <Linkify properties={{ target: '_blank', className: 'text-blue-400 underline' }}>{` ${m.message.value}`}</Linkify>
