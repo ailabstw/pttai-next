@@ -367,7 +367,7 @@ class Chat extends Component {
           <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
           {/* <Item onClick={this.handleModeration.bind(this)}>Hide</Item> */}
         </Menu>
-        <div className='header bg-gray-200 sm:hidden w-full h-full flex flex-row items-center justify-between px-2'>
+        <div className='header shadow-lg bg-gray-200 sm:hidden w-full h-full flex flex-row items-center justify-between px-2'>
           <FontAwesomeIcon icon='bars' size='lg' onClick={this.onClickHeaderMenu.bind(this)} />
 
           <span className='font-bold'>{header}</span>
