@@ -97,6 +97,7 @@ async function main () {
       let archive = hyperdrive(storage(`gateway/storage/${token}`, { secretDir: 'gateway/secrets' }), { latest: true })
 
       archive.on('ready', async () => {
+        view.addArchive(token, archive)
         archives[token] = archive
         try {
           await user.init(archive)

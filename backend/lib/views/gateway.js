@@ -22,6 +22,11 @@ class GatewayView extends EventEmitter {
     this.on('gossip', this.__onGossip)
   }
 
+  addArchive (token, archive) {
+    this.archives[token] = archive
+    this.emit('gossip')
+  }
+
   collectDM (receiverKey, authorKey, id, message) {
     let dmChannelID = [authorKey, receiverKey].sort().join('-')
 
@@ -70,11 +75,16 @@ class GatewayView extends EventEmitter {
     }
 
     this.pendingDMs = nextPendingDMs
+    console.log('gossip finished, pending', this.pendingDMs.length)
   }
 
   apply (archive) {
     let key = archive.key.toString('hex')
-    if (!this.state.currentVersion[key]) this.state.currentVersion[key] = 0
+    if (!this.state.currentVersion[key]) {
+      this.state.currentVersion[key] = 0
+      // check all pending dm since this is a new archive
+      this.emit('gossip')
+    }
 
     let diff = archive.createDiffStream(this.state.currentVersion[key])
     diff.on('data', async (d) => {
@@ -89,7 +99,7 @@ class GatewayView extends EventEmitter {
 
         this.pendingDMs.unshift({ author: archive, nonce, cipher, id })
 
-        this.emit('gossip', { author: archive, nonce, cipher, id })
+        this.emit('gossip')
       }
     })
 
