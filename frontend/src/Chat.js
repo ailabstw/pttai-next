@@ -20,7 +20,7 @@ class Chat extends Component {
   constructor () {
     super()
     this.state = {
-      currentTopic: '#general',
+      currentTopic: window.localStorage.getItem('currentTopic') || '#general',
       friends: [],
       me: { key: '' },
       messages: {},
@@ -276,6 +276,7 @@ class Chat extends Component {
       let lastReadTime = Object.assign({}, this.state.lastReadTime)
       lastReadTime[topic] = Date.now()
       window.localStorage.setItem('lastReadTime', JSON.stringify(lastReadTime))
+      window.localStorage.setItem('currentTopic', topic)
       if (this.inputRef) {
         this.inputRef.current.focus()
       }
