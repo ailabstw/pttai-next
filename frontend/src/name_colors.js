@@ -1,8 +1,21 @@
 export default [
-  'text-red-700',
-  'text-orange-700',
-  'text-yellow-700',
-  'text-green-700',
-  'text-teal-700',
-  'text-blue-700'
+  '#02111B',
+  '#3F4045',
+  '#30292F',
+  '#5D737E',
+  '#453750',
+
+  '#73648A',
+  '#A4BEF3',
+  '#CAB1BD',
+  '#570000',
+  '#B10F2E',
+
+  '#DE7C5A',
+  '#23B5D3',
+  '#F17300',
+  '#054A91',
+  '#493B2A',
+
+  '#FAA275'
 ]

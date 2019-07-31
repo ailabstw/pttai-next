@@ -12,7 +12,8 @@ class Messages extends Component {
   }
 
   id2color (id) {
-    let n = parseInt(id, 16)
+    let n = parseInt(id.slice(0, 16), 16) / 1000
+    console.log('id', n, n % nameColors.length)
     return nameColors[n % nameColors.length]
   }
 
@@ -27,7 +28,7 @@ class Messages extends Component {
             className='flex flex-col hover:bg-gray-100'>
             <div className='flex flex-row justify-between'>
               <span className='break-all'>
-                <span className={`font-bold cursor-pointer hover:underline ${this.id2color(m.author)}`} onClick={this.onNewFriend(m.author)}>
+                <span className='font-bold cursor-pointer hover:underline' onClick={this.onNewFriend(m.author)} style={{ color: this.id2color(m.author) }}>
                   {m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 16) : m.author.substring(0, 16) + '...') : ''}
                 </span>
                 : <Linkify properties={{ target: '_blank', className: 'text-blue-600 underline' }}>{m.message.value}</Linkify>
