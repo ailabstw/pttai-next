@@ -7,6 +7,7 @@ import { Picker as EmojiPicker } from 'emoji-mart'
 import { Redirect } from 'react-router-dom'
 import { Menu, Item } from 'react-contexify'
 import { ReactTitle } from 'react-meta-tags'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import Messages from './Messages'
 import 'react-contexify/dist/ReactContexify.min.css'
@@ -34,12 +35,14 @@ class Chat extends Component {
       token: window.localStorage.getItem('token'),
       lastReadTime: JSON.parse(window.localStorage.getItem('lastReadTime') || '{}'),
       lastMessageTime: {},
-      disconnected: false
+      disconnected: false,
+      mobileShowSidebar: false
     }
 
     this.messageEndRef = React.createRef()
     this.emojiPickerRef = React.createRef()
     this.inputRef = React.createRef()
+    this.sideBarRef = React.createRef()
   }
 
   async req (method, url, data) {
@@ -84,6 +87,12 @@ class Chat extends Component {
   onClickOutSideEmojiPicker (e) {
     if (this.emojiPickerRef.current && !ReactDOM.findDOMNode(ReactDOM.findDOMNode(this.emojiPickerRef.current)).contains(e.target)) {
       this.setState({ showEmojiPicker: false })
+    }
+
+    if (this.state.mobileShowSidebar) {
+      if (this.sideBarRef && !ReactDOM.findDOMNode(ReactDOM.findDOMNode(this.sideBarRef.current)).contains(e.target)) {
+        this.setState({ mobileShowSidebar: false })
+      }
     }
   }
 
@@ -270,7 +279,7 @@ class Chat extends Component {
       if (this.inputRef) {
         this.inputRef.current.focus()
       }
-      this.setState({ currentTopic: topic, lastReadTime }, () => {
+      this.setState({ currentTopic: topic, lastReadTime, mobileShowSidebar: false }, () => {
         this.scrollMessage()
       })
     }
@@ -288,6 +297,10 @@ class Chat extends Component {
 
   handleAddReaction ({ event, props }) {
     this.setState({ emojiPickerData: props, emojiPickerBottom: document.documentElement.clientHeight - event.clientY - 50, showEmojiPicker: true })
+  }
+
+  onClickHeaderMenu () {
+    this.setState({ mobileShowSidebar: true })
   }
 
   async handleSelectEmoji (emoji, e) {
@@ -338,6 +351,11 @@ class Chat extends Component {
       return <Redirect to={{ path: '/' }} />
     }
 
+    let header = this.state.currentTopic
+    if (currentActiveDM) {
+      if (this.state.profiles[currentActiveDM]) header = `@${this.state.profiles[currentActiveDM].name}`
+    }
+
     return (
       <div className='w-screen h-screen app'>
         {Object.keys(unread).length > 0 ? <ReactTitle title='(*) PTT.ai' /> : <ReactTitle title='PTT.ai' />}
@@ -349,7 +367,13 @@ class Chat extends Component {
           <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
           {/* <Item onClick={this.handleModeration.bind(this)}>Hide</Item> */}
         </Menu>
-        <div className='sidebar bg-gray-200' >
+        <div className='header bg-gray-200 sm:hidden w-full h-full flex flex-row items-center justify-between px-2'>
+          <FontAwesomeIcon icon='bars' size='lg' onClick={this.onClickHeaderMenu.bind(this)} />
+
+          <span className='font-bold'>{header}</span>
+          <FontAwesomeIcon icon='bars' size='lg' className='invisible' />{/* just for alignment */}
+        </div>
+        <div className={`z-10 sidebar bg-gray-200 ${this.state.mobileShowSidebar ? '' : 'hidden'} sm:block shadow-lg sm:shadow-none`} ref={this.sideBarRef}>
           <div className='flex flex-col justify-between h-full'>
             <div className='overflow-y-auto p-2'>
               <div className='mb-4'>
@@ -365,9 +389,9 @@ class Chat extends Component {
                   let textStyle = 'text-gray-600'
                   if (unread[t]) textStyle = `text-black font-bold`
                   if (t === this.state.currentTopic) {
-                    return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`rounded bg-gray-400 cursor-pointer ${textStyle}`}>{t}</li>
+                    return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`mt-1 rounded bg-gray-400 cursor-pointer ${textStyle}`}>{t}</li>
                   } else if (!t.startsWith('__')) {
-                    return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`cursor-pointer ${textStyle}`}>{t}</li>
+                    return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`mt-1 cursor-pointer ${textStyle}`}>{t}</li>
                   }
                   return ''
                 })}
@@ -390,7 +414,7 @@ class Chat extends Component {
                     if (this.state.profiles[f.id]) name = this.state.profiles[f.id].name
                     if (name.length > 12) name = name.slice(0, 12) + '...'
                     return <li
-                      className={`cursor-pointer ${textStyle} ${c}`}
+                      className={`mt-1 cursor-pointer ${textStyle} ${c}`}
                       key={f.id}
                       onClick={this.changeTopic(channelID).bind(this)}>
                          @{name}

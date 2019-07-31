@@ -5,6 +5,11 @@ import Chat from './Chat'
 import Login from './Login'
 import TestLogin from './TestLogin'
 
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faBars, faCoffee } from '@fortawesome/free-solid-svg-icons'
+
+library.add(faBars, faCoffee)
+
 class App extends Component {
   render () {
     return <Router>
