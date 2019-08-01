@@ -400,7 +400,7 @@ class Chat extends Component {
               <div className='mt-4'>
                 <div className='flex flex-row justify-between'>
                   <h2>Friends</h2>
-                  <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.newFriend.bind(this)}>+</h2>
+                  {/* <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.newFriend.bind(this)}>+</h2> */}
                 </div>
                 <ul>
                   {this.state.friends.map(f => {
