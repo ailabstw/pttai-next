@@ -57,6 +57,7 @@ class Chat extends Component {
   componentDidMount () {
     this.load()
     document.addEventListener('mousedown', this.onClickOutSideEmojiPicker.bind(this))
+    document.addEventListener('touchstart', this.onClickOutSideEmojiPicker.bind(this))
     if (this.inputRef.current) {
       this.inputRef.current.focus()
     }
@@ -64,6 +65,7 @@ class Chat extends Component {
 
   componentWillUnmount () {
     document.removeEventListener('mousedown', this.onClickOutSideEmojiPicker.bind(this))
+    document.removeEventListener('touchstart', this.onClickOutSideEmojiPicker.bind(this))
   }
 
   async updateProfile () {
