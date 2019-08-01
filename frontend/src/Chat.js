@@ -90,7 +90,7 @@ class Chat extends Component {
     }
 
     if (this.state.mobileShowSidebar) {
-      if (this.sideBarRef && !ReactDOM.findDOMNode(ReactDOM.findDOMNode(this.sideBarRef.current)).contains(e.target)) {
+      if (this.sideBarRef.current && !ReactDOM.findDOMNode(ReactDOM.findDOMNode(this.sideBarRef.current)).contains(e.target)) {
         this.setState({ mobileShowSidebar: false })
       }
     }
@@ -277,7 +277,7 @@ class Chat extends Component {
       lastReadTime[topic] = Date.now()
       window.localStorage.setItem('lastReadTime', JSON.stringify(lastReadTime))
       window.localStorage.setItem('currentTopic', topic)
-      if (this.inputRef) {
+      if (this.inputRef.current) {
         this.inputRef.current.focus()
       }
       this.setState({ currentTopic: topic, lastReadTime, mobileShowSidebar: false }, () => {
