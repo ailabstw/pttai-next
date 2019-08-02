@@ -11,6 +11,9 @@ const hyperdrive = require('hyperdrive')
 const Discovery = require('hyperdiscovery')
 const storage = require('./storage/dat')
 const box = require('./lib/box')
+const AsyncLock = require('async-lock')
+
+var archivesLock = new AsyncLock()
 
 // no-op auth for testing
 const authGoogle = require('./auth/google')
@@ -92,39 +95,51 @@ async function main () {
   function loadArchive (token) {
     return new Promise((resolve, reject) => {
       console.log('loading archive', token, archives[token] ? archives[token].key.toString('hex') : 'not found')
-      if (archives[token]) return resolve(archives[token])
-
-      let archive = hyperdrive(storage(`gateway/storage/${token}`, { secretDir: 'gateway/secrets' }), { latest: true })
-
-      archive.on('ready', async () => {
-        view.addArchive(token, archive)
-        archives[token] = archive
-        try {
-          await user.init(archive)
-
-          await user.createTopic(archive, 'general')
-          await user.postToTopic(archive, 'general', { id: Date.now(), message: { type: 'action', value: 'joined the topic' } })
-        } catch (e) {
-          console.error(e)
+      archivesLock.acquire('lock', (done) => {
+        if (archives[token]) {
+          archives[token].ready(() => {
+            return resolve(archives[token])
+          })
         }
-        if (!disc) {
-          disc = Discovery(archive)
-        } else {
-          disc.add(archive)
-        }
+        let archive = hyperdrive(storage(`gateway/storage/${token}`, { secretDir: 'gateway/secrets' }), { latest: true })
 
-        resolve(archive)
-      })
+        archive.on('ready', async () => {
+          view.addArchive(token, archive)
+          archives[token] = archive
+          try {
+            await user.init(archive)
 
-      archive.on('sync', () => { console.log('sync') })
-      archive.on('update', () => {
-        console.log('update')
-        console.log(archive.metadata.listenerCount('append'))
-        view.apply(archive)
-      })
-      archive.on('content', () => {
-        console.log('content')
-        view.apply(archive)
+            await user.createTopic(archive, 'general')
+            await user.postToTopic(archive, 'general', { id: Date.now(), message: { type: 'action', value: 'joined the topic' } })
+          } catch (e) {
+            console.error(e)
+          }
+          if (!disc) {
+            disc = Discovery(archive)
+            disc.on('connection', function (peer, type) {
+              console.log('gateway got connection')
+              console.log('gateway connected to', disc.connections.length, 'peers')
+              peer.on('close', function () {
+                console.log('peer disconnected')
+              })
+            })
+          } else {
+            disc.add(archive)
+          }
+          archive.on('sync', () => { console.log('sync') })
+          archive.on('update', () => {
+            console.log('update')
+            console.log(archive.metadata.listenerCount('append'))
+            view.apply(archive)
+          })
+          archive.on('content', () => {
+            console.log('content')
+            view.apply(archive)
+          })
+
+          resolve(archive)
+          done()
+        })
       })
     })
   }
