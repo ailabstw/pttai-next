@@ -98,6 +98,7 @@ async function main () {
       archivesLock.acquire('lock', (done) => {
         if (archives[token]) {
           archives[token].ready(() => {
+            done()
             return resolve(archives[token])
           })
         }
