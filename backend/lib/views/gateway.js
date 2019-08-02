@@ -51,21 +51,23 @@ class GatewayView extends EventEmitter {
         let keyPair = { publicKey: archive.key, secretKey: archive.metadata.secretKey }
 
         // console.log('decrypting', keyPair.secretKey)
-        let decrypted = box.decrypt(author.key, keyPair.secretKey, Buffer.from(cipher, 'hex'), Buffer.from(nonce, 'hex'))
-        // console.log('trying', decrypted.toString())
-        let success = false
-        for (let i = 0; i < decrypted.length; i++) {
-          if (decrypted[i] !== 0) {
-            success = true
+        if (author.key && keyPair.secretKey) {
+          let decrypted = box.decrypt(author.key, keyPair.secretKey, Buffer.from(cipher, 'hex'), Buffer.from(nonce, 'hex'))
+          // console.log('trying', decrypted.toString())
+          let success = false
+          for (let i = 0; i < decrypted.length; i++) {
+            if (decrypted[i] !== 0) {
+              success = true
+              break
+            }
+          }
+
+          if (success) {
+            foundReceiver = true
+            this.emit('decrypted', { receiver: archive, msg: decrypted, author, id })
+            this.collectDM(archive.key.toString('hex'), author.key.toString('hex'), id, decrypted.toString())
             break
           }
-        }
-
-        if (success) {
-          foundReceiver = true
-          this.emit('decrypted', { receiver: archive, msg: decrypted, author, id })
-          this.collectDM(archive.key.toString('hex'), author.key.toString('hex'), id, decrypted.toString())
-          break
         }
       }
 
