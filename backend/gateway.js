@@ -140,16 +140,6 @@ async function main () {
     })
   }
 
-  function replicate (key) {
-    let archive = hyperdrive(storage(`gateway/replicates/${key}`, { secretdir: 'gateway/secrets' }), key, { latest: true })
-
-    if (!disc) {
-      disc = Discovery(archive)
-    } else {
-      disc.add(archive)
-    }
-  }
-
   app.post('/login', async (req, res) => {
     let { token, name } = await authGoogle(req.body.id_token.id_token)
     let archive = await loadArchive(token)
@@ -240,8 +230,6 @@ async function main () {
   app.post('/friends', async (req, res) => {
     let archive = await loadArchive(req.query.token)
     await user.createFriend(archive, req.body.data)
-
-    // await replicate(req.body.data.id)
 
     res.json({ result: 'ok' })
   })
