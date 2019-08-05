@@ -132,6 +132,9 @@ async function main () {
             view.apply(archive)
           })
 
+          // load saved data
+          view.apply(archive)
+
           console.log('new archive loaded')
           resolve(archive)
           done()
