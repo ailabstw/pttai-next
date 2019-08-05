@@ -11,6 +11,7 @@
     "moment": "^2.24.0",
     "react": "^16.8.6",
     "react-contexify": "^4.1.1",
+    "react-div-100vh": "^0.3.4",
     "react-dom": "^16.8.6",
     "react-google-login": "^5.0.4",
     "react-linkify": "^0.2.2",

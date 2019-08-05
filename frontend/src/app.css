@@ -65,3 +65,7 @@ code {
 .border-box {
   box-sizing: border-box;
 }
+
+.app {
+  -webkit-overflow-scrolling: touch;
+}

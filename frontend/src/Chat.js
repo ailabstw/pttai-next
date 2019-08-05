@@ -9,6 +9,8 @@ import { Menu, Item } from 'react-contexify'
 import { ReactTitle } from 'react-meta-tags'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
+import Div100vh from 'react-div-100vh'
+
 import Messages from './Messages'
 import 'react-contexify/dist/ReactContexify.min.css'
 
@@ -360,98 +362,100 @@ class Chat extends Component {
     }
 
     return (
-      <div className='w-screen h-screen app'>
-        {Object.keys(unread).length > 0 ? <ReactTitle title='(*) PTT.ai' /> : <ReactTitle title='PTT.ai' />}
-        {this.state.disconnected ? <div className='absolute top-0 left-0 h-8 font-bold bg-red-800 text-gray-300 w-screen flex items-center justify-center z-20'>Disconnected</div> : ''}
-        {this.state.showEmojiPicker
-          ? <EmojiPicker ref={this.emojiPickerRef} style={{ right: 0, bottom: this.state.emojiPickerBottom, position: 'absolute' }} onClick={this.handleSelectEmoji.bind(this)} />
-          : ''}
-        <Menu id='menu_id'>
-          <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
-          {/* <Item onClick={this.handleModeration.bind(this)}>Hide</Item> */}
-        </Menu>
-        <div className='header shadow-lg bg-gray-200 sm:hidden w-full h-full flex flex-row items-center justify-between px-2'>
-          <FontAwesomeIcon icon='bars' size='lg' onClick={this.onClickHeaderMenu.bind(this)} />
+      <Div100vh>
+        <div className='w-screen h-full app'>
+          {Object.keys(unread).length > 0 ? <ReactTitle title='(*) PTT.ai' /> : <ReactTitle title='PTT.ai' />}
+          {this.state.disconnected ? <div className='absolute top-0 left-0 h-8 font-bold bg-red-800 text-gray-300 w-screen flex items-center justify-center z-20'>Disconnected</div> : ''}
+          {this.state.showEmojiPicker
+            ? <EmojiPicker ref={this.emojiPickerRef} style={{ right: 0, bottom: this.state.emojiPickerBottom, position: 'absolute' }} onClick={this.handleSelectEmoji.bind(this)} />
+            : ''}
+          <Menu id='menu_id'>
+            <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
+            {/* <Item onClick={this.handleModeration.bind(this)}>Hide</Item> */}
+          </Menu>
+          <div className='header shadow-lg bg-gray-200 sm:hidden w-full h-full flex flex-row items-center justify-between px-2'>
+            <FontAwesomeIcon icon='bars' size='lg' onClick={this.onClickHeaderMenu.bind(this)} />
 
-          <span className='font-bold'>{header}</span>
-          <FontAwesomeIcon icon='bars' size='lg' className='invisible' />{/* just for alignment */}
-        </div>
-        <div className={`z-10 sidebar bg-gray-200 ${this.state.mobileShowSidebar ? '' : 'hidden'} sm:block shadow-lg sm:shadow-none`} ref={this.sideBarRef}>
-          <div className='flex flex-col justify-between h-full'>
-            <div className='overflow-y-auto p-2'>
-              <div className='mb-4'>
-                <h2 className='font-bold'>P.me</h2>
-                <input className='p-1 border border-gray-500 rounded font-mono text-xs w-full bg-gray-200' value={process.env.REACT_APP_GATEWAY_URL} readOnly />
-              </div>
-              <div className='flex flex-row justify-between'>
-                <h2>Topics</h2>
-                <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.createTopic.bind(this)}>+</h2>
-              </div>
-              <ul>
-                {Object.keys(this.state.messages).sort().map(t => {
-                  let textStyle = 'text-gray-600'
-                  if (unread[t]) textStyle = `text-black font-bold`
-                  if (t === this.state.currentTopic) {
-                    return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`mt-1 rounded bg-gray-400 cursor-pointer ${textStyle}`}>{t}</li>
-                  } else if (!t.startsWith('__')) {
-                    return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`mt-1 cursor-pointer ${textStyle}`}>{t}</li>
-                  }
-                  return ''
-                })}
-              </ul>
-              <div className='mt-4'>
+            <span className='font-bold'>{header}</span>
+            <FontAwesomeIcon icon='bars' size='lg' className='invisible' />{/* just for alignment */}
+          </div>
+          <div className={`z-10 sidebar bg-gray-200 ${this.state.mobileShowSidebar ? '' : 'hidden'} sm:block shadow-lg sm:shadow-none`} ref={this.sideBarRef}>
+            <div className='flex flex-col justify-between h-full'>
+              <div className='overflow-y-auto p-2'>
+                <div className='mb-4'>
+                  <h2 className='font-bold'>P.me</h2>
+                  <input className='p-1 border border-gray-500 rounded font-mono text-xs w-full bg-gray-200' value={process.env.REACT_APP_GATEWAY_URL} readOnly />
+                </div>
                 <div className='flex flex-row justify-between'>
-                  <h2>Friends</h2>
-                  {/* <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.newFriend.bind(this)}>+</h2> */}
+                  <h2>Topics</h2>
+                  <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.createTopic.bind(this)}>+</h2>
                 </div>
                 <ul>
-                  {this.state.friends.map(f => {
-                    let c = ''
-                    if (currentActiveDM === f.id) {
-                      c = 'bg-gray-400 rounded'
-                    }
-                    let name = f.id
+                  {Object.keys(this.state.messages).sort().map(t => {
                     let textStyle = 'text-gray-600'
-                    let channelID = [f.id, this.state.me.key].sort().join('-')
-                    if (unread[channelID]) textStyle = `text-black font-bold`
-                    if (this.state.profiles[f.id]) name = this.state.profiles[f.id].name
-                    if (name.length > 12) name = name.slice(0, 12) + '...'
-                    return <li
-                      className={`mt-1 cursor-pointer ${textStyle} ${c}`}
-                      key={f.id}
-                      onClick={this.changeTopic(channelID).bind(this)}>
-                         @{name}
-                    </li>
+                    if (unread[t]) textStyle = `text-black font-bold`
+                    if (t === this.state.currentTopic) {
+                      return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`mt-1 rounded bg-gray-400 cursor-pointer ${textStyle}`}>{t}</li>
+                    } else if (!t.startsWith('__')) {
+                      return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`mt-1 cursor-pointer ${textStyle}`}>{t}</li>
+                    }
+                    return ''
                   })}
                 </ul>
+                <div className='mt-4'>
+                  <div className='flex flex-row justify-between'>
+                    <h2>Friends</h2>
+                    {/* <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.newFriend.bind(this)}>+</h2> */}
+                  </div>
+                  <ul>
+                    {this.state.friends.map(f => {
+                      let c = ''
+                      if (currentActiveDM === f.id) {
+                        c = 'bg-gray-400 rounded'
+                      }
+                      let name = f.id
+                      let textStyle = 'text-gray-600'
+                      let channelID = [f.id, this.state.me.key].sort().join('-')
+                      if (unread[channelID]) textStyle = `text-black font-bold`
+                      if (this.state.profiles[f.id]) name = this.state.profiles[f.id].name
+                      if (name.length > 12) name = name.slice(0, 12) + '...'
+                      return <li
+                        className={`mt-1 cursor-pointer ${textStyle} ${c}`}
+                        key={f.id}
+                        onClick={this.changeTopic(channelID).bind(this)}>
+                         @{name}
+                      </li>
+                    })}
+                  </ul>
+                </div>
+              </div>
+              <div className='bg-gray-100 h-20 flex flex-col justify-around px-2'>
+                <div className='flex flex-row justify-between items-center'>
+                  <h2>@{this.state.username.slice(0, 16)}</h2>
+                  <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.updateProfile.bind(this)}>✎</h2>
+                </div>
+                <input className='bg-gray-400 px-1 border border-gray-500 w-full' value={this.state.me.key} readOnly />
               </div>
             </div>
-            <div className='bg-gray-100 h-20 flex flex-col justify-around px-2'>
-              <div className='flex flex-row justify-between items-center'>
-                <h2>@{this.state.username.slice(0, 16)}</h2>
-                <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.updateProfile.bind(this)}>✎</h2>
-              </div>
-              <input className='bg-gray-400 px-1 border border-gray-500 w-full' value={this.state.me.key} readOnly />
-            </div>
-          </div>
 
+          </div>
+          <div className='message bg-red overflow-y-auto px-2' >
+            {messages
+              ? <Messages
+                profiles={this.state.profiles}
+                messages={messages}
+                myKey={this.state.me.key}
+                onAddReaction={this.onAddReaction.bind(this)}
+                onNewFriend={this._newFriend.bind(this)}
+                allowReact={!currentActiveDM}
+              /> : ''}
+            <div id='end' ref={this.messageEndRef} />
+          </div>
+          <div className='prompt bg-blue'>
+            <input onKeyPress={this.onKeyPress.bind(this)} type='text' placeholder='say something...' className='focus:border-gray-900 border border-gray-400 w-full h-full p-2 rounded border-box outline-none' ref={this.inputRef} />
+          </div>
         </div>
-        <div className='message bg-red overflow-y-auto px-2' >
-          {messages
-            ? <Messages
-              profiles={this.state.profiles}
-              messages={messages}
-              myKey={this.state.me.key}
-              onAddReaction={this.onAddReaction.bind(this)}
-              onNewFriend={this._newFriend.bind(this)}
-              allowReact={!currentActiveDM}
-            /> : ''}
-          <div id='end' ref={this.messageEndRef} />
-        </div>
-        <div className='prompt bg-blue'>
-          <input onKeyPress={this.onKeyPress.bind(this)} type='text' placeholder='say something...' className='focus:border-gray-900 border border-gray-400 w-full h-full p-2 rounded border-box outline-none' ref={this.inputRef} />
-        </div>
-      </div>
+      </Div100vh>
     )
   }
 }
