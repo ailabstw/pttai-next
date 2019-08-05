@@ -117,13 +117,6 @@ async function main () {
           }
           if (!disc) {
             disc = Discovery(archive)
-            disc.on('connection', function (peer, type) {
-              console.log('gateway got connection')
-              console.log('gateway connected to', disc.connections.length, 'peers')
-              peer.on('close', function () {
-                console.log('peer disconnected')
-              })
-            })
           } else {
             disc.add(archive)
           }

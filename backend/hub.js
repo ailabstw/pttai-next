@@ -81,13 +81,6 @@ async function main () {
         // let socket = net.connect(port)
         // socket.pipe(d1.replicate({ live: true })).pipe(socket)
         discovery = Discovery(d1, { live: true })
-        discovery.on('connection', function (peer, type) {
-          console.log('peer got connection')
-          console.log('peer connected to', discovery.connections.length, 'peers')
-          peer.on('close', function () {
-            console.log('peer disconnected')
-          })
-        })
       } else {
         console.log('joining discovery', d1.key.toString('hex'))
         discovery.add(d1)
