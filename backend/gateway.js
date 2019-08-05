@@ -98,6 +98,7 @@ async function main () {
       archivesLock.acquire('lock', (done) => {
         if (archives[token]) {
           return archives[token].ready(() => {
+            console.log('existed archive loaded')
             done()
             return resolve(archives[token])
           })
@@ -138,6 +139,7 @@ async function main () {
             view.apply(archive)
           })
 
+          console.log('new archive loaded')
           resolve(archive)
           done()
         })
@@ -246,7 +248,7 @@ async function main () {
     let archive = await loadArchive(req.query.token)
     await user.createFriend(archive, req.body.data)
 
-    await replicate(req.body.data.id)
+    // await replicate(req.body.data.id)
 
     res.json({ result: 'ok' })
   })
