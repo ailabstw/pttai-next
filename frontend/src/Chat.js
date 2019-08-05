@@ -173,9 +173,12 @@ class Chat extends Component {
       // current topic is always read
       lastReadTime[this.state.currentTopic] = Date.now()
 
-      this.setState({ messages, lastMessageTime, lastReadTime })
       window.localStorage.setItem('lastReadTime', JSON.stringify(lastReadTime))
-      this.scrollMessage()
+      this.setState({ messages, lastMessageTime, lastReadTime }, () => {
+        window.setTimeout(() => {
+          this.scrollMessage()
+        }, 100)
+      })
     })
     this.hubSocket.on('profiles', (profiles) => {
       console.log('profiles', profiles)
