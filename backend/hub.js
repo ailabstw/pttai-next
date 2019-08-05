@@ -75,13 +75,24 @@ async function main () {
     d1.on('error', console.error)
     // const net = require('net')
 
-    // let socket = net.connect(port)
-    // socket.pipe(d1.replicate({ live: true })).pipe(socket)
-    if (!discovery) {
-      discovery = Discovery(d1)
-    } else {
-      discovery.add(d1)
-    }
+    d1.on('ready', () => {
+      if (!discovery) {
+        console.log('initing discovery', d1.key.toString('hex'))
+        // let socket = net.connect(port)
+        // socket.pipe(d1.replicate({ live: true })).pipe(socket)
+        discovery = Discovery(d1, { live: true })
+        discovery.on('connection', function (peer, type) {
+          console.log('peer got connection')
+          console.log('peer connected to', discovery.connections.length, 'peers')
+          peer.on('close', function () {
+            console.log('peer disconnected')
+          })
+        })
+      } else {
+        console.log('joining discovery', d1.key.toString('hex'))
+        discovery.add(d1)
+      }
+    })
 
     // d1.metadata.on('download', (idx, data) => console.log('download', idx, data))
 

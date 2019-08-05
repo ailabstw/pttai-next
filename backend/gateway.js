@@ -97,13 +97,12 @@ async function main () {
       console.log('loading archive', token, archives[token] ? archives[token].key.toString('hex') : 'not found')
       archivesLock.acquire('lock', (done) => {
         if (archives[token]) {
-          archives[token].ready(() => {
+          return archives[token].ready(() => {
             done()
             return resolve(archives[token])
           })
         }
         let archive = hyperdrive(storage(`gateway/storage/${token}`, { secretDir: 'gateway/secrets' }), { latest: true })
-
         archive.on('ready', async () => {
           view.addArchive(token, archive)
           archives[token] = archive
@@ -127,6 +126,7 @@ async function main () {
           } else {
             disc.add(archive)
           }
+
           archive.on('sync', () => { console.log('sync') })
           archive.on('update', () => {
             console.log('update')
