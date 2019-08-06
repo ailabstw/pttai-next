@@ -107,6 +107,7 @@ async function main () {
         }
 
         if (rejectNotFound) {
+          done()
           return reject(new Error('archive not found'))
         }
 
