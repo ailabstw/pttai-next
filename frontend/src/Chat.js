@@ -38,7 +38,8 @@ class Chat extends Component {
       lastReadTime: JSON.parse(window.localStorage.getItem('lastReadTime') || '{}'),
       lastMessageTime: {},
       disconnected: false,
-      mobileShowSidebar: false
+      mobileShowSidebar: false,
+      failed: false
     }
 
     this.messageEndRef = React.createRef()
@@ -129,16 +130,20 @@ class Chat extends Component {
   async load () {
     let res
 
-    res = await this.req('get', `/friends`)
-    let friends = res.data.result
+    try {
+      res = await this.req('get', `/friends`)
+      let friends = res.data.result
 
-    res = await this.req('get', `/me`)
-    let me = res.data.result
+      res = await this.req('get', `/me`)
+      let me = res.data.result
 
-    res = await this.req('get', `/profile`)
-    let profile = res.data.result
+      res = await this.req('get', `/profile`)
+      let profile = res.data.result
 
-    this.setState({ friends, me, username: profile.name }, this.connect)
+      this.setState({ friends, me, username: profile.name }, this.connect)
+    } catch (e) {
+      this.setState({ failed: true })
+    }
   }
 
   async connect () {
@@ -355,7 +360,7 @@ class Chat extends Component {
     }
     console.log('unread', unread)
 
-    if (!this.state.token) {
+    if (!this.state.token || this.state.failed) {
       return <Redirect to={{ path: '/' }} />
     }
 
