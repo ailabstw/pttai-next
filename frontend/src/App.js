@@ -14,7 +14,7 @@ class App extends Component {
   render () {
     return <Router>
       <Route exact path='/' component={Login} />
-      <Route path='/test-login' component={TestLogin} />
+      {process.env.REACT_APP_ENABLE_TEST_LOGIN ? <Route path='/test-login' component={TestLogin} /> : ''}
       <Route path='/chat' component={Chat} />
     </Router>
   }
