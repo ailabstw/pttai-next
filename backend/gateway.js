@@ -286,10 +286,12 @@ async function main () {
     if (err.message === 'archive not found') {
       res.status(403)
       return res.json({ error: err.message })
+    } else if (err) {
+      res.status(500)
+      res.json({ error: 'Internal Server Error' })
     }
 
-    res.status(500)
-    res.json({ error: 'Internal Server Error' })
+    next()
   })
 
   let port = process.argv[2] || '9988'
