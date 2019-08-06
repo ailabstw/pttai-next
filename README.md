@@ -24,7 +24,7 @@ $ node backend/hub.js
 
 ```
 $ cp frontend/env.example frontend/.env
-$ yarn && yarn start
+$ yarn && yarn build-style && yarn start
 ```
 
 ## How it works
