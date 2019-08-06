@@ -1,28 +1,30 @@
 # PTT.ai-next
 
-A decentralized social network without trusting a centralized server.
+A decentralized social network.
 
 ## Usage
 
-1. clone repo
+1. clone repo and install dependencies
 
 ```
 $ git clone git@github.com:ailabstw/pttai-next.git
 $ cd pttai-next
-```
-
-2. Setup backend, install dependencies, start backend server
-
-```
-$ cd backend
 $ yarn
+```
+
+2. Setup backend, start backend server
+
+```
+$ cp backend/env.example backend/.env
 $ node backend/gateway.js
 $ node backend/hub.js
 ```
 
 3. Start frontend
+
 ```
-$ cd frontend && yarn && yarn start
+$ cp frontend/env.example frontend/.env
+$ yarn && yarn start
 ```
 
 ## How it works
