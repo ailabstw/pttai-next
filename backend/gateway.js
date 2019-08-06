@@ -15,6 +15,8 @@ const AsyncLock = require('async-lock')
 
 var archivesLock = new AsyncLock()
 
+require('express-async-errors')
+
 // no-op auth for testing
 const authGoogle = require('./auth/google')
 const authTest = require('./auth/noop')
@@ -92,7 +94,7 @@ async function main () {
     return ret
   }
 
-  function loadArchive (token) {
+  function loadArchive (token, rejectNotFound) {
     return new Promise((resolve, reject) => {
       console.log('loading archive', token, archives[token] ? archives[token].key.toString('hex') : 'not found')
       archivesLock.acquire('lock', (done) => {
@@ -103,6 +105,11 @@ async function main () {
             return resolve(archives[token])
           })
         }
+
+        if (rejectNotFound) {
+          return reject(new Error('archive not found'))
+        }
+
         let archive = hyperdrive(storage(`gateway/storage/${token}`, { secretDir: 'gateway/secrets' }), { latest: true })
         archive.on('ready', async () => {
           view.addArchive(token, archive)
@@ -162,83 +169,83 @@ async function main () {
   })
 
   app.get('/me', async (req, res) => {
-    let archive = await loadArchive(req.query.token)
+    let archive = await loadArchive(req.query.token, true)
     console.log(Object.keys(archives))
     res.json({ result: { key: archive.key.toString('hex') } })
   })
 
   app.get('/topics', async (req, res) => {
-    let archive = await loadArchive(req.query.token)
+    let archive = await loadArchive(req.query.token, true)
     let ts = await user.getTopics(archive)
 
     res.json({ result: ts })
   })
 
   app.post('/topics', async (req, res) => {
-    let archive = await loadArchive(req.query.token)
+    let archive = await loadArchive(req.query.token, true)
     await user.createTopic(archive, req.body.data)
 
     res.json({ result: 'ok' })
   })
 
   app.get('/topics/:id', async (req, res) => {
-    let archive = await loadArchive(req.query.token)
+    let archive = await loadArchive(req.query.token, true)
     let t = await user.getTopic(archive, req.params.id)
 
     res.json({ result: t })
   })
 
   app.post('/topics/:id', async (req, res) => {
-    let archive = await loadArchive(req.query.token)
+    let archive = await loadArchive(req.query.token, true)
     await user.postToTopic(archive, req.params.id, req.body.data)
 
     res.json({ result: 'ok' })
   })
 
   app.get('/topics/:id/curators', async (req, res) => {
-    let archive = await loadArchive(req.query.token)
+    let archive = await loadArchive(req.query.token, true)
     let cs = await user.getCurators(archive, req.params.id)
 
     res.json({ result: cs })
   })
 
   app.post('/topics/:id/curators', async (req, res) => {
-    let archive = await loadArchive(req.query.token)
+    let archive = await loadArchive(req.query.token, true)
     await user.addCurator(archive, req.params.id, req.body.data)
 
     res.json({ result: 'ok' })
   })
 
   app.post('/topics/:id/moderation', async (req, res) => {
-    let archive = await loadArchive(req.query.token)
+    let archive = await loadArchive(req.query.token, true)
     await user.moderate(archive, req.params.id, req.body.data)
 
     res.json({ result: 'ok' })
   })
 
   app.post('/topics/:id/reactions', async (req, res) => {
-    let archive = await loadArchive(req.query.token)
+    let archive = await loadArchive(req.query.token, true)
     await user.react(archive, req.params.id, req.body.data)
 
     res.json({ result: 'ok' })
   })
 
   app.get('/friends', async (req, res) => {
-    let archive = await loadArchive(req.query.token)
+    let archive = await loadArchive(req.query.token, true)
     let fs = await user.getFriends(archive)
 
     res.json({ result: fs })
   })
 
   app.post('/friends', async (req, res) => {
-    let archive = await loadArchive(req.query.token)
+    let archive = await loadArchive(req.query.token, true)
     await user.createFriend(archive, req.body.data)
 
     res.json({ result: 'ok' })
   })
 
   app.post('/dm', async (req, res) => {
-    let archive = await loadArchive(req.query.token)
+    let archive = await loadArchive(req.query.token, true)
 
     let receiverPublicKey = Buffer.from(req.body.data.receiver, 'hex')
     let msg = req.body.data.message
@@ -262,17 +269,27 @@ async function main () {
   })
 
   app.get('/profile', async (req, res) => {
-    let archive = await loadArchive(req.query.token)
+    let archive = await loadArchive(req.query.token, true)
     let profile = await user.getProfile(archive)
 
     res.json({ result: profile })
   })
 
   app.post('/profile', async (req, res) => {
-    let archive = await loadArchive(req.query.token)
+    let archive = await loadArchive(req.query.token, true)
     await user.setProfile(archive, req.body.data)
 
     res.json({ result: 'ok' })
+  })
+
+  app.use((err, req, res, next) => {
+    if (err.message === 'archive not found') {
+      res.status(403)
+      return res.json({ error: err.message })
+    }
+
+    res.status(500)
+    res.json({ error: 'Internal Server Error' })
   })
 
   let port = process.argv[2] || '9988'
