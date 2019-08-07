@@ -24,9 +24,9 @@ class Messages extends Component {
     return <ul className='min-h-full flex flex-col justify-end'>
       {this.props.showScrollButton
         ? <div
-          className='cursor-pointer absolute shadow-lg border border-gray-300 rounded-full p-1 px-3 bg-gray-300'
+          className='cursor-pointer absolute shadow-lg border border-gray-300 rounded-full p-1 px-3 bg-gray-300 sm:hidden'
           onClick={this.props.onClickScrollButton}
-          style={{ bottom: '60px', left: '70%' }}>
+          style={{ bottom: '60px', left: '50%' }}>
             Scroll to bottom
         </div>
         : ''}
