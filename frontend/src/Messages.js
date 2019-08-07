@@ -22,6 +22,14 @@ class Messages extends Component {
     console.log('rendering messages', this.props.messages)
 
     return <ul className='min-h-full flex flex-col justify-end'>
+      {this.props.showScrollButton
+        ? <div
+          className='cursor-pointer absolute shadow-lg border border-gray-300 rounded-full p-1 px-3 bg-gray-300'
+          onClick={this.props.onClickScrollButton}
+          style={{ bottom: '60px', left: '70%' }}>
+            Scroll to bottom
+        </div>
+        : ''}
       {this.props.messages.length > 0 ? <div className='h-48' /> : ''}
       {this.props.messages.map((m, i) => {
         let shouldRenderDate = true

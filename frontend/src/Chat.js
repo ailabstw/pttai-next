@@ -39,13 +39,15 @@ class Chat extends Component {
       lastMessageTime: {},
       disconnected: false,
       mobileShowSidebar: false,
-      failed: false
+      failed: false,
+      messageListScrolled: false
     }
 
     this.messageEndRef = React.createRef()
     this.emojiPickerRef = React.createRef()
     this.inputRef = React.createRef()
     this.sideBarRef = React.createRef()
+    this.messagesRef = React.createRef()
   }
 
   async req (method, url, data) {
@@ -101,9 +103,13 @@ class Chat extends Component {
     }
   }
 
-  scrollMessage () {
+  scrollMessage (force) {
     if (this.messageEndRef.current) {
-      this.messageEndRef.current.scrollIntoView()
+      if (force) {
+        this.messageEndRef.current.scrollIntoView()
+      } else if (!this.state.messageListScrolled) {
+        this.messageEndRef.current.scrollIntoView()
+      }
     }
   }
 
@@ -335,6 +341,20 @@ class Chat extends Component {
     }
   }
 
+  onScrollMessage (e) {
+    let scrollDistance = this.messagesRef.current.scrollHeight - (this.messagesRef.current.scrollTop + this.messagesRef.current.clientHeight)
+
+    if (scrollDistance > 50) {
+      this.setState({ messageListScrolled: true })
+    } else {
+      this.setState({ messageListScrolled: false })
+    }
+  }
+
+  onClickMessageListScrollButton () {
+    this.scrollMessage(true)
+  }
+
   render () {
     let messages = []
     let currentActiveDM
@@ -447,7 +467,7 @@ class Chat extends Component {
             </div>
 
           </div>
-          <div className='message bg-red overflow-y-auto px-2' >
+          <div className='message bg-red overflow-y-auto px-2' onScroll={this.onScrollMessage.bind(this)} ref={this.messagesRef}>
             {messages
               ? <Messages
                 profiles={this.state.profiles}
@@ -456,6 +476,8 @@ class Chat extends Component {
                 onAddReaction={this.onAddReaction.bind(this)}
                 onNewFriend={this._newFriend.bind(this)}
                 allowReact={!currentActiveDM}
+                showScrollButton={this.state.messageListScrolled}
+                onClickScrollButton={this.onClickMessageListScrollButton.bind(this)}
               /> : ''}
             <div id='end' ref={this.messageEndRef} />
           </div>
