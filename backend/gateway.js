@@ -288,6 +288,7 @@ async function main () {
       res.status(403)
       return res.json({ error: err.message })
     } else if (err) {
+      console.error(err)
       res.status(500)
       res.json({ error: 'Internal Server Error' })
     }
