@@ -156,9 +156,20 @@ class Chat extends Component {
     if (this.hubSocket) this.hubSocket.close()
     let hub = HUBS[this.state.hubID]
 
-    await axios.post(`${hub}/join`, { public_key: this.state.me.key })
+    await axios.request({
+      method: 'POST',
+      url: `${hub}/join`,
+      data: { public_key: this.state.me.key },
+      params: { token: this.state.token }
+    })
+    // await axios.post(`${hub}/join`, { public_key: this.state.me.key })
 
-    let socket = socketIOClient(hub, { path: process.env.REACT_APP_HUB_PATH })
+    let socket = socketIOClient(
+      hub,
+      {
+        path: process.env.REACT_APP_HUB_PATH,
+        query: { token: this.state.token }
+      })
     this.hubSocket = socket
     this.hubSocket.on('update', (msgs) => {
       console.log('hub update', msgs)
@@ -205,11 +216,14 @@ class Chat extends Component {
     this.hubSocket.on('event', console.log)
     this.hubSocket.on('error', console.error)
 
-    let gatewaySocket = socketIOClient(this.state.api, { path: process.env.REACT_APP_GATEWAY_PATH, forceNew: true })
+    let gatewaySocket = socketIOClient(
+      this.state.api,
+      {
+        path: process.env.REACT_APP_GATEWAY_PATH,
+        forceNew: true,
+        query: { token: this.state.token }
+      })
     this.gatewaySocket = gatewaySocket
-    this.gatewaySocket.on('hello', () => {
-      this.gatewaySocket.emit('register', this.state.token)
-    })
     this.gatewaySocket.on('disconnect', (reason) => {
       this.setState({ disconnected: true })
     })

@@ -9,6 +9,9 @@ const cors = require('cors')
 const pino = require('express-pino-logger')()
 const View = require('./lib/views/hub')
 const fs = require('fs')
+const jwt = require('jsonwebtoken')
+
+const JWT_SECRET = process.env.JWT_SECRET
 
 async function main () {
   let view = new View()
@@ -26,11 +29,16 @@ async function main () {
   app.use(cors())
 
   app.post('/join', async (req, res) => {
-  // verify the user did get a valid invitation
-  // or, if the user already have an approved join from a trusted master, also consider it valid
-  // if the user have an approve from an unknown master, add it the the temporary trust list?
+    if (!req.query.token) {
+      res.status(403)
+      return res.json({ error: 'invalid token' })
+    }
 
-    // TODO: pass hub_key.sign('pttai') to the user as userdata
+    let { id } = jwt.verify(req.query.token, JWT_SECRET)
+    if (!id) {
+      res.status(403)
+      return res.json({ error: 'invalid token' })
+    }
 
     if (!users.find(x => x === req.body.public_key)) {
       users.push(req.body.public_key)
@@ -48,6 +56,21 @@ async function main () {
 
   if (process.env.HUB_SOCKET_IO_NAMESPACE) {
     ns = io.of(process.env.HUB_SOCKET_IO_NAMESPACE)
+  }
+
+  if (JWT_SECRET) {
+    ns.use(function (socket, next) {
+      if (!socket.handshake.query.token) {
+        return next(new Error('invalid token'))
+      }
+      let { id } = jwt.verify(socket.handshake.query.token, JWT_SECRET)
+      if (!id) {
+        return next(new Error('invalid token'))
+      }
+
+      socket.archiveID = id
+      next()
+    })
   }
 
   ns.on('connection', (socket) => {

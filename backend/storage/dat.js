@@ -1,5 +1,5 @@
 const storage = require('dat-storage')
 
-module.exports = function (token, opts) {
-  return storage(token, opts)
+module.exports = function (id, opts) {
+  return storage(id, opts)
 }

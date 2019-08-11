@@ -22,17 +22,17 @@ class GatewayView extends EventEmitter {
     this.on('gossip', this.__onGossip)
   }
 
-  addArchive (token, archive) {
-    this.archives[token] = archive
+  addArchive (id, archive) {
+    this.archives[id] = archive
     this.emit('gossip')
   }
 
-  collectDM (receiverKey, authorKey, id, message) {
+  collectDM (receiverKey, authorKey, dmID, message) {
     let dmChannelID = [authorKey, receiverKey].sort().join('-')
 
     if (!this.state.dmChannels[dmChannelID]) this.state.dmChannels[dmChannelID] = []
 
-    this.state.dmChannels[dmChannelID].push({ author: authorKey, message: JSON.parse(message), id })
+    this.state.dmChannels[dmChannelID].push({ author: authorKey, message: JSON.parse(message), id: dmID })
 
     this.state.dmChannels[dmChannelID] = this.state.dmChannels[dmChannelID].sort((x, y) => x.message.date - y.message.date)
 
@@ -43,11 +43,11 @@ class GatewayView extends EventEmitter {
     console.log('gossip received, pending', this.pendingDMs.length)
     let nextPendingDMs = []
     for (let i = 0; i < this.pendingDMs.length; i++) {
-      let { author, nonce, cipher, id } = this.pendingDMs[i]
+      let { author, nonce, cipher, id: dmID } = this.pendingDMs[i]
 
       let foundReceiver = false
-      for (let token in this.archives) {
-        let archive = this.archives[token]
+      for (let archiveID in this.archives) {
+        let archive = this.archives[archiveID]
         let keyPair = { publicKey: archive.key, secretKey: archive.metadata.secretKey }
 
         // console.log('decrypting', keyPair.secretKey)
@@ -64,8 +64,8 @@ class GatewayView extends EventEmitter {
 
           if (success) {
             foundReceiver = true
-            this.emit('decrypted', { receiver: archive, msg: decrypted, author, id })
-            this.collectDM(archive.key.toString('hex'), author.key.toString('hex'), id, decrypted.toString())
+            this.emit('decrypted', { receiver: archive, msg: decrypted, author, id: dmID })
+            this.collectDM(archive.key.toString('hex'), author.key.toString('hex'), dmID, decrypted.toString())
             break
           }
         }
@@ -95,11 +95,9 @@ class GatewayView extends EventEmitter {
       if (d.name.match(/^\/topics\/__gossiping\/(.+)$/)) {
         let data = await user.readFile(archive, d.name)
 
-        let { nonce, cipher, id } = JSON.parse(data)
+        let { nonce, cipher, id: dmID } = JSON.parse(data)
 
-        // console.log('gossiping!', key, d.name, { nonce, cipher })
-
-        this.pendingDMs.unshift({ author: archive, nonce, cipher, id })
+        this.pendingDMs.unshift({ author: archive, nonce, cipher, id: dmID })
 
         this.emit('gossip')
       }

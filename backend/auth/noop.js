@@ -1,6 +1,6 @@
 // for testing
-async function authToken (token) {
-  return token
+async function authID (id) {
+  return id
 }
 
-module.exports = authToken
+module.exports = authID

@@ -13,8 +13,8 @@ class TestLogin extends Component {
     this.inputRef = React.createRef()
   }
 
-  async login (token) {
-    let resp = await axios.post(`${process.env.REACT_APP_GATEWAY_URL}/test-login`, { id_token: token, name: token })
+  async login (id) {
+    let resp = await axios.post(`${process.env.REACT_APP_GATEWAY_URL}/test-login`, { id_token: id, name: id })
     window.localStorage.setItem('token', resp.data.result.token)
 
     this.setState({ loggedIn: true })

@@ -23,7 +23,7 @@ async function authGoogle (idToken) {
 
   let userID = payload['sub']
   let nickname = payload['email'].split('@')[0]
-  return { token: userID, name: nickname }
+  return { id: userID, name: nickname }
 }
 
 module.exports = authGoogle
