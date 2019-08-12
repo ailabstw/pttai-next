@@ -29,15 +29,17 @@ async function main () {
   app.use(cors())
 
   app.post('/join', async (req, res) => {
-    if (!req.query.token) {
-      res.status(403)
-      return res.json({ error: 'invalid token' })
-    }
+    if (JWT_SECRET) {
+      if (!req.query.token) {
+        res.status(403)
+        return res.json({ error: 'invalid token' })
+      }
 
-    let { id } = jwt.verify(req.query.token, JWT_SECRET)
-    if (!id) {
-      res.status(403)
-      return res.json({ error: 'invalid token' })
+      let { id } = jwt.verify(req.query.token, JWT_SECRET)
+      if (!id) {
+        res.status(403)
+        return res.json({ error: 'invalid token' })
+      }
     }
 
     if (!users.find(x => x === req.body.public_key)) {
