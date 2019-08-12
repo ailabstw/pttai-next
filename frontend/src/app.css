@@ -13,8 +13,8 @@ code {
 @media screen and (min-width: 640px) {
 .app {
   display: grid;
-  grid-template-columns: 250px 1fr;
-  grid-template-rows: 1fr 40px;
+  grid-template-columns: 250px minmax(1px, 1fr);
+  grid-template-rows: minmax(1px, 1fr) 40px;
 }
 
 .sidebar {
@@ -36,8 +36,8 @@ code {
 @media screen and (max-width: 640px) {
 .app {
   display: grid;
-  grid-template-columns: 250px 1fr;
-  grid-template-rows: 50px 1fr 40px;
+  grid-template-columns: 250px minmax(1px, 1fr);
+  grid-template-rows: 50px minmax(1px, 1fr) 40px;
 }
 
 .sidebar {
