@@ -34,7 +34,7 @@ class Chat extends Component {
       emojiPickerBottom: 0,
       emojiPickerData: null,
       profiles: {},
-      token: window.localStorage.getItem('token'),
+      token: window.localStorage.getItem('token').trim(),
       lastReadTime: JSON.parse(window.localStorage.getItem('lastReadTime') || '{}'),
       lastMessageTime: {},
       disconnected: false,
