@@ -17,6 +17,7 @@ const jwt = require('jsonwebtoken')
 
 assert.ok(process.env.JWT_SECRET)
 const JWT_SECRET = process.env.JWT_SECRET
+const ENABLE_TEST_LOGIN = process.env.ENABLE_TEST_LOGIN
 
 var archivesLock = new AsyncLock()
 
@@ -187,6 +188,18 @@ async function main () {
     let token = jwt.sign({ id }, JWT_SECRET)
     res.json({ result: { key: archive.key.toString('hex'), token } })
   })
+
+  if (ENABLE_TEST_LOGIN) {
+    app.post('/test-login', async (req, res) => {
+      let id = req.body.id_token
+      let archive = await loadArchive(id)
+
+      await user.setProfile(archive, { name: id })
+
+      let token = jwt.sign({ id }, JWT_SECRET)
+      res.json({ result: { key: archive.key.toString('hex'), token } })
+    })
+  }
 
   app.get('/me', authToken, async (req, res) => {
     let archive = await loadArchive(req.archiveID, true)
