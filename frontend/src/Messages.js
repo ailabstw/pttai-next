@@ -48,7 +48,7 @@ class Messages extends Component {
             {shouldRenderDate ? <div className='text-sm text-center border-b border-gray-300 mb-2'>{moment(m.date).format('YYYY-MM-DD')}</div> : ''}
             <div className='flex flex-row justify-between'>
               <span className='break-all'>
-                <span className='text-gray-600 inline-block mr-4 text-sm w-10'>{moment(m.date).format('HH:mm')}</span>
+                <span className='text-gray-600 inline-block mr-4 text-sm w-10'>{moment(m.date || m.message.date).format('HH:mm')}</span>
                 <span className={`font-bold cursor-pointer hover:underline ${this.id2color(m.author)}`} onClick={this.onNewFriend(m.author)}>
                   {m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 16) : m.author.substring(0, 16) + '...') : ''}
                 </span>
@@ -70,7 +70,7 @@ class Messages extends Component {
             className='message flex flex-col hover:bg-gray-100'>
             <div className='flex flex-row justify-between'>
               <span className='text-gray-500'>
-                <span className='text-gray-600 inline-block mr-4 text-sm w-10'>{moment(m.date).format('HH:mm')}</span>
+                <span className='text-gray-600 inline-block mr-4 text-sm w-10'>{moment(m.date || m.message.date).format('HH:mm')}</span>
                 <span className='font-bold cursor-pointer hover:underline italic' onClick={this.onNewFriend(m.author)}>
                   {m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 16) : m.author.substring(0, 16) + '...') : ''}
                 </span>
