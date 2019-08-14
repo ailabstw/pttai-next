@@ -21,8 +21,6 @@ class Messages extends Component {
   render () {
     console.log('rendering messages', this.props.messages)
 
-    let date = m.date || m.message
-
     return <ul className='min-h-full flex flex-col justify-end'>
       {this.props.showScrollButton
         ? <div
@@ -35,6 +33,7 @@ class Messages extends Component {
       {this.props.messages.length > 0 ? <div className='h-48' /> : ''}
       {this.props.messages.map((m, i) => {
         let shouldRenderDate = true
+        let date = m.date || m.message
 
         if (i > 0) {
           let lastMessage = this.props.messages[i - 1]
