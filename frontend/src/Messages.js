@@ -33,7 +33,7 @@ class Messages extends Component {
       {this.props.messages.length > 0 ? <div className='h-48' /> : ''}
       {this.props.messages.map((m, i) => {
         let shouldRenderDate = true
-        let date = m.date || m.message
+        let date = m.date || m.message.date
 
         if (i > 0) {
           let lastMessage = this.props.messages[i - 1]
