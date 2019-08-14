@@ -41,7 +41,7 @@ class Message extends Component {
         : ''}
       <div className='flex flex-row justify-between'>
         <span className='text-gray-600 inline-block mr-4 text-sm w-10'>{moment(date).format('HH:mm')}</span>
-        <span className={textStyle}>
+        <span className={`${textStyle} flex-grow`}>
           <span
             className={`font-bold cursor-pointer hover:underline ${authorStyle}`}
             onClick={this.props.onNewFriend(m.author)}>
