@@ -21,6 +21,8 @@ class Messages extends Component {
   render () {
     console.log('rendering messages', this.props.messages)
 
+    let date = m.date || m.message
+
     return <ul className='min-h-full flex flex-col justify-end'>
       {this.props.showScrollButton
         ? <div
@@ -36,7 +38,7 @@ class Messages extends Component {
 
         if (i > 0) {
           let lastMessage = this.props.messages[i - 1]
-          if (moment(m.date).date() === moment(lastMessage.date).date()) {
+          if (moment(date).date() === moment(lastMessage.date || lastMessage.message.date).date()) {
             shouldRenderDate = false
           }
         }
@@ -45,10 +47,10 @@ class Messages extends Component {
           return <li
             key={m.id}
             className='flex flex-col hover:bg-gray-100'>
-            {shouldRenderDate ? <div className='text-sm text-center border-b border-gray-300 mb-2'>{moment(m.date).format('YYYY-MM-DD')}</div> : ''}
+            {shouldRenderDate ? <div className='text-sm text-center border-b border-gray-300 mb-2'>{moment(date).format('YYYY-MM-DD')}</div> : ''}
             <div className='flex flex-row justify-between'>
               <span className='break-all'>
-                <span className='text-gray-600 inline-block mr-4 text-sm w-10'>{moment(m.date || m.message.date).format('HH:mm')}</span>
+                <span className='text-gray-600 inline-block mr-4 text-sm w-10'>{moment(date).format('HH:mm')}</span>
                 <span className={`font-bold cursor-pointer hover:underline ${this.id2color(m.author)}`} onClick={this.onNewFriend(m.author)}>
                   {m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 16) : m.author.substring(0, 16) + '...') : ''}
                 </span>
@@ -70,7 +72,7 @@ class Messages extends Component {
             className='message flex flex-col hover:bg-gray-100'>
             <div className='flex flex-row justify-between'>
               <span className='text-gray-500'>
-                <span className='text-gray-600 inline-block mr-4 text-sm w-10'>{moment(m.date || m.message.date).format('HH:mm')}</span>
+                <span className='text-gray-600 inline-block mr-4 text-sm w-10'>{moment(date).format('HH:mm')}</span>
                 <span className='font-bold cursor-pointer hover:underline italic' onClick={this.onNewFriend(m.author)}>
                   {m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 16) : m.author.substring(0, 16) + '...') : ''}
                 </span>
