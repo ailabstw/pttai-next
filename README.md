@@ -66,9 +66,7 @@ PTT.ai is based on a [secure, realtime distributed file system](https://github.c
 * **Gateway**: A server which hosts multiple nodes. Anyone can run their own gateway instance. Multiple users can share a single gateway to reduce management cost or for authentication.
 * **Hub**: A public server that acts as a "social hub". People discover each other through hubs. Users can freely switch to a new hub without losing their data whenever they want.
 
-## Security & Privacy
-
-Direct messages are encrypted. However, the keys to preform the encryption is stored on the gateway server. To make sure your message is safe, you need to host your data with your own gateway server.
+Direct messages are encrypted. However, the keys used to encrypt is stored on the gateway server. To make sure your message is safe, you need to run your own gateway.
 
 We're actively working on the encryption of group messages.
 
