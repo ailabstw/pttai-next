@@ -3,5 +3,11 @@
   "workspaces": [
     "backend",
     "frontend"
-  ]
+  ],
+  "scripts": {
+    "test": "npx tape backend/tests/*",
+    "hub": "node backend/hub.js",
+    "gateway": "node backend/gateway.js",
+    "frontend": "cd frontend && yarn start"
+  }
 }

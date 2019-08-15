@@ -1,8 +1,6 @@
 {
-  "name": "backend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "hub.js",
+  "name": "pttai-next-backend",
+  "version": "0.1.0",
   "directories": {
     "lib": "lib"
   },
@@ -12,7 +10,7 @@
     "gateway": "node gateway.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "PTT.ai developers",
   "license": "MIT",
   "dependencies": {
     "async-lock": "^1.2.2",
