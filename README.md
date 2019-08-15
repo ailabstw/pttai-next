@@ -2,27 +2,28 @@
 
 # PTT.ai-next
 
+A decentralized data exchange platform.
+
+For the ideas behind the project, check the website: [https://ptt.ai](https://ptt.ai).
+
 <!-- Stability -->
 <a href="https://nodejs.org/api/documentation.html#documentation_stability_index">
-<img src="https://img.shields.io/badge/stability-experimental-orange.svg?style=flat-square"
+<img src="https://img.shields.io/badge/stability-experimental-orange.svg"
   alt="API stability" />
 </a>
 
 <!-- Build Status -->
 <a href="https://travis-ci.org/choojs/choo">
-<img src="https://travis-ci.org/ailabstw/pttai-next.svg?branch=master?style=flat-square"
+<img src="https://travis-ci.org/ailabstw/pttai-next.svg?branch=master"
   alt="Build Status" />
 </a>
 
 <!-- Standard -->
 <a href="https://standardjs.com">
-<img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square"
+<img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg"
   alt="Standard" />
 </a>
 
-A decentralized data exchange platform.
-
-For the ideas behind the project, check the website: [https://ptt.ai](https://ptt.ai).
 
 ## Usage
 
