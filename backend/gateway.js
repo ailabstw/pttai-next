@@ -25,7 +25,6 @@ require('express-async-errors')
 
 // no-op auth for testing
 const authGoogle = require('./auth/google')
-const authTest = require('./auth/noop')
 
 const View = require('./lib/views/gateway')
 
