@@ -14,8 +14,8 @@ const jwt = require('jsonwebtoken')
 const JWT_SECRET = process.env.JWT_SECRET
 
 async function main () {
-  let view = new View()
-  let users = []
+  const view = new View()
+  const users = []
 
   let discovery = null
 
@@ -35,7 +35,7 @@ async function main () {
         return res.json({ error: 'invalid token' })
       }
 
-      let { id } = jwt.verify(req.query.token, JWT_SECRET)
+      const { id } = jwt.verify(req.query.token, JWT_SECRET)
       if (!id) {
         res.status(403)
         return res.json({ error: 'invalid token' })
@@ -65,7 +65,7 @@ async function main () {
       if (!socket.handshake.query.token) {
         return next(new Error('invalid token'))
       }
-      let { id } = jwt.verify(socket.handshake.query.token, JWT_SECRET)
+      const { id } = jwt.verify(socket.handshake.query.token, JWT_SECRET)
       if (!id) {
         return next(new Error('invalid token'))
       }
@@ -90,13 +90,13 @@ async function main () {
     ns.emit('profiles', profiles)
   })
 
-  let port = process.argv[2] || 3003
+  const port = process.argv[2] || 3003
 
   http.listen(port, () => { console.log(`listening ${port}`) })
 
   function loadArchive (k1) {
     console.log('reading user', k1)
-    let d1 = hyperdrive(storage(`hub/storage/${k1}`), Buffer.from(k1, 'hex'), { latest: true })
+    const d1 = hyperdrive(storage(`hub/storage/${k1}`), Buffer.from(k1, 'hex'), { latest: true })
     d1.on('error', console.error)
     // const net = require('net')
 
@@ -129,10 +129,10 @@ async function main () {
   async function loadExistingArchives () {
     console.log('loading existing archives')
     try {
-      let keys = fs.readdirSync(path.resolve('./hub/storage'))
+      const keys = fs.readdirSync(path.resolve('./hub/storage'))
       console.log(keys)
       for (let i = 0; i < keys.length; i++) {
-        let k = keys[i]
+        const k = keys[i]
         await loadArchive(k)
       }
       console.log('loaded')

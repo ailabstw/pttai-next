@@ -28,7 +28,7 @@ class GatewayView extends EventEmitter {
   }
 
   collectDM (receiverKey, authorKey, dmID, message) {
-    let dmChannelID = [authorKey, receiverKey].sort().join('-')
+    const dmChannelID = [authorKey, receiverKey].sort().join('-')
 
     if (!this.state.dmChannels[dmChannelID]) this.state.dmChannels[dmChannelID] = []
 
@@ -41,18 +41,18 @@ class GatewayView extends EventEmitter {
 
   __onGossip () {
     console.log('gossip received, pending', this.pendingDMs.length)
-    let nextPendingDMs = []
+    const nextPendingDMs = []
     for (let i = 0; i < this.pendingDMs.length; i++) {
-      let { author, nonce, cipher, id: dmID } = this.pendingDMs[i]
+      const { author, nonce, cipher, id: dmID } = this.pendingDMs[i]
 
       let foundReceiver = false
-      for (let archiveID in this.archives) {
-        let archive = this.archives[archiveID]
-        let keyPair = { publicKey: archive.key, secretKey: archive.metadata.secretKey }
+      for (const archiveID in this.archives) {
+        const archive = this.archives[archiveID]
+        const keyPair = { publicKey: archive.key, secretKey: archive.metadata.secretKey }
 
         // console.log('decrypting', keyPair.secretKey)
         if (author.key && keyPair.secretKey) {
-          let decrypted = box.decrypt(author.key, keyPair.secretKey, Buffer.from(cipher, 'hex'), Buffer.from(nonce, 'hex'))
+          const decrypted = box.decrypt(author.key, keyPair.secretKey, Buffer.from(cipher, 'hex'), Buffer.from(nonce, 'hex'))
           // console.log('trying', decrypted.toString())
           let success = false
           for (let i = 0; i < decrypted.length; i++) {
@@ -81,21 +81,21 @@ class GatewayView extends EventEmitter {
   }
 
   apply (archive) {
-    let key = archive.key.toString('hex')
+    const key = archive.key.toString('hex')
     if (!this.state.currentVersion[key]) {
       this.state.currentVersion[key] = 0
       // check all pending dm since this is a new archive
       this.emit('gossip')
     }
 
-    let diff = archive.createDiffStream(this.state.currentVersion[key])
+    const diff = archive.createDiffStream(this.state.currentVersion[key])
     diff.on('data', async (d) => {
       console.log('gateway', archive.key.toString('hex'), d.name)
       if (d.value.size === 0) return // skip directories
       if (d.name.match(/^\/topics\/__gossiping\/(.+)$/)) {
-        let data = await user.readFile(archive, d.name)
+        const data = await user.readFile(archive, d.name)
 
-        let { nonce, cipher, id: dmID } = JSON.parse(data)
+        const { nonce, cipher, id: dmID } = JSON.parse(data)
 
         this.pendingDMs.unshift({ author: archive, nonce, cipher, id: dmID })
 

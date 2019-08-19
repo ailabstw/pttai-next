@@ -5,7 +5,7 @@ const user = require('../lib')
 
 tape('init', function (t) {
   t.plan(4)
-  let a = hyperdrive(ram)
+  const a = hyperdrive(ram)
   a.on('ready', async () => {
     await user.init(a)
 
@@ -21,7 +21,7 @@ tape('init', function (t) {
 })
 
 tape('list and create topic', function (t) {
-  let a = hyperdrive(ram)
+  const a = hyperdrive(ram)
   a.on('ready', async () => {
     await user.init(a)
 
@@ -37,14 +37,14 @@ tape('list and create topic', function (t) {
 })
 
 tape('read and write in topic', function (t) {
-  let a = hyperdrive(ram)
+  const a = hyperdrive(ram)
   a.on('ready', async () => {
     await user.init(a)
 
     await user.createTopic(a, 'foo')
     await user.postToTopic(a, 'foo', { id: 123, title: 'hello' })
 
-    let posts = await user.getTopic(a, 'foo')
+    const posts = await user.getTopic(a, 'foo')
     t.same(posts[0].id, 123)
     t.same(posts[0].title, 'hello')
     t.same(posts[0].topic, 'foo')
@@ -54,7 +54,7 @@ tape('read and write in topic', function (t) {
 })
 
 tape('add, list, and get friend', function (t) {
-  let a = hyperdrive(ram)
+  const a = hyperdrive(ram)
   a.on('ready', async () => {
     await user.init(a)
 
@@ -64,9 +64,9 @@ tape('add, list, and get friend', function (t) {
     await user.createFriend(a, { id: 'abc', name: 'jack' })
 
     friends = await user.getFriends(a)
-    t.same(friends, [ { id: 'abc', name: 'jack' } ])
+    t.same(friends, [{ id: 'abc', name: 'jack' }])
 
-    let f = await user.getFriend(a, 'abc')
+    const f = await user.getFriend(a, 'abc')
     t.same(f, { id: 'abc', name: 'jack' })
 
     t.end()
@@ -74,7 +74,7 @@ tape('add, list, and get friend', function (t) {
 })
 
 tape('add & get curators', function (t) {
-  let a = hyperdrive(ram)
+  const a = hyperdrive(ram)
   a.on('ready', async () => {
     await user.init(a)
 
@@ -85,7 +85,7 @@ tape('add & get curators', function (t) {
     await user.addCurator(a, 'foo', { id: 'x', name: 'bar' })
 
     cs = await user.getCurators(a, 'foo')
-    t.same(cs, [ { id: 'x', name: 'bar', topic: 'foo' } ])
+    t.same(cs, [{ id: 'x', name: 'bar', topic: 'foo' }])
 
     t.end()
   })

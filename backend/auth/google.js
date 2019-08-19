@@ -21,8 +21,8 @@ async function authGoogle (idToken) {
     }
   }
 
-  let userID = payload['sub']
-  let nickname = payload['email'].split('@')[0]
+  const userID = payload['sub']
+  const nickname = payload['email'].split('@')[0]
   return { id: userID, name: nickname }
 }
 

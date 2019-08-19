@@ -8,17 +8,17 @@ import moment from 'moment'
 
 class Message extends Component {
   id2color (id) {
-    let n = parseInt(id, 16)
+    const n = parseInt(id, 16)
     return nameColors[n % nameColors.length]
   }
 
   render () {
-    let m = this.props.message
+    const m = this.props.message
     let shouldRenderDate = true
-    let date = m.date || m.message.date
+    const date = m.date || m.message.date
 
     if (this.props.lastMessage) {
-      let lastMessage = this.props.lastMessage
+      const lastMessage = this.props.lastMessage
       if (moment(date).date() === moment(lastMessage.date || lastMessage.message.date).date()) {
         shouldRenderDate = false
       }

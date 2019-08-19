@@ -105,13 +105,13 @@ function getTopic (archive, id) {
     archive.readdir(`/topics/${id}`, async (err, list) => {
       if (err) return reject(err)
 
-      let result = []
+      const result = []
       for (let i = 0; i < list.length; i++) {
         if (list[i] === 'curators') continue
         if (list[i] === 'moderation') continue
         if (list[i] === 'reactions') continue
 
-        let data = await readFile(archive, `/topics/${id}/${list[i]}`)
+        const data = await readFile(archive, `/topics/${id}/${list[i]}`)
 
         result.push(JSON.parse(data))
       }
@@ -139,9 +139,9 @@ function getCurators (archive, topicID) {
     archive.readdir(`/topics/${topicID}/curators`, async (err, list) => {
       if (err) return reject(err)
 
-      let result = []
+      const result = []
       for (let i = 0; i < list.length; i++) {
-        let data = await readFile(archive, `/topics/${topicID}/curators/${list[i]}`)
+        const data = await readFile(archive, `/topics/${topicID}/curators/${list[i]}`)
         result.push(JSON.parse(data))
       }
 
@@ -180,9 +180,9 @@ function getFriends (archive) {
     archive.readdir(`/friends`, async (err, list) => {
       if (err) return reject(err)
 
-      let result = []
+      const result = []
       for (let i = 0; i < list.length; i++) {
-        let data = await getFriend(archive, list[i])
+        const data = await getFriend(archive, list[i])
         result.push(data)
       }
 
@@ -195,7 +195,7 @@ function createFriend (archive, friend) {
   return new Promise((resolve, reject) => {
     if (!friend.id) return reject(new Error('undefined friend.id'))
 
-    let b = box.encrypt(archive.metadata.secretKey, archive.key, Buffer.from(JSON.stringify(friend)))
+    const b = box.encrypt(archive.metadata.secretKey, archive.key, Buffer.from(JSON.stringify(friend)))
 
     archive.writeFile(`/friends/${friend.id}`, JSON.stringify({ nonce: b.nonce.toString('hex'), cipher: b.cipher.toString('hex') }), (err) => {
       if (err) return reject(err)
@@ -217,24 +217,16 @@ function setProfile (archive, profile) {
   })
 }
 
-function getProfile (archive) {
-  return new Promise(async (resolve, reject) => {
-    let data = await readFile(archive, '/profile.json')
-    resolve(JSON.parse(data))
-  })
+async function getProfile (archive) {
+  const data = await readFile(archive, '/profile.json')
+  return JSON.parse(data)
 }
 
-function getFriend (archive, id) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let b = await readFile(archive, `/friends/${id}`)
-      let { nonce, cipher } = JSON.parse(b)
+async function getFriend (archive, id) {
+  const b = await readFile(archive, `/friends/${id}`)
+  const { nonce, cipher } = JSON.parse(b)
 
-      let data = box.decrypt(archive.key, archive.metadata.secretKey, Buffer.from(cipher, 'hex'), Buffer.from(nonce, 'hex'))
+  const data = box.decrypt(archive.key, archive.metadata.secretKey, Buffer.from(cipher, 'hex'), Buffer.from(nonce, 'hex'))
 
-      resolve(JSON.parse(data))
-    } catch (e) {
-      reject(e)
-    }
-  })
+  return JSON.parse(data)
 }

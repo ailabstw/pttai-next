@@ -23,7 +23,7 @@ class Messages extends Component {
         : ''}
       {this.props.messages.length > 0 ? <div className='h-48' /> : ''}
       {this.props.messages.map((m, i) => {
-        let author = m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 16) : m.author.substring(0, 16) + '...') : ''
+        const author = m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 16) : m.author.substring(0, 16) + '...') : ''
         return <Message
           key={m.id}
           message={m}

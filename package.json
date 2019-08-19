@@ -9,5 +9,8 @@
     "hub": "node backend/hub.js",
     "gateway": "node backend/gateway.js",
     "frontend": "cd frontend && yarn start"
+  },
+  "standard": {
+    "parser": "babel-eslint"
   }
 }

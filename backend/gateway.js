@@ -29,18 +29,18 @@ const authGoogle = require('./auth/google')
 const View = require('./lib/views/gateway')
 
 async function main () {
-  let archives = {}
+  const archives = {}
   let disc
 
-  let app = express()
+  const app = express()
   var http = require('http').Server(app)
   var io = require('socket.io')(http)
   app.use(bodyParser.json())
   app.use(cors())
   app.use(pino)
 
-  let authToken = function (req, res, next) {
-    let { id } = jwt.verify(req.query.token, JWT_SECRET)
+  const authToken = function (req, res, next) {
+    const { id } = jwt.verify(req.query.token, JWT_SECRET)
 
     if (id) {
       req.archiveID = id
@@ -50,7 +50,7 @@ async function main () {
     }
   }
 
-  let view = new View(archives)
+  const view = new View(archives)
   await loadExistingArchives()
 
   let ns = io
@@ -59,14 +59,14 @@ async function main () {
     ns = io.of(process.env.GATEWAY_SOCKET_IO_NAMESPACE)
   }
 
-  let id2socket = {}
+  const id2socket = {}
 
   ns.use(function (socket, next) {
     if (!socket.handshake.query.token) {
       return next(new Error('invalid token'))
     }
 
-    let { id } = jwt.verify(socket.handshake.query.token, JWT_SECRET)
+    const { id } = jwt.verify(socket.handshake.query.token, JWT_SECRET)
     if (!id) {
       return next(new Error('invalid token'))
     }
@@ -76,23 +76,23 @@ async function main () {
   })
 
   ns.on('connection', async (socket) => {
-    let id = socket.archiveID
+    const id = socket.archiveID
     console.log('registering connection from', id)
     await loadArchive(id)
     id2socket[id] = socket
 
     if (archives[id]) {
-      let ret = filterDMChannels(view.state.dmChannels, archives[id])
+      const ret = filterDMChannels(view.state.dmChannels, archives[id])
       socket.emit('dm', ret)
     }
   })
 
   view.on('dm', (dmChannels) => {
-    for (let id in id2socket) {
-      let socket = id2socket[id]
-      let socketArchive = archives[id]
+    for (const id in id2socket) {
+      const socket = id2socket[id]
+      const socketArchive = archives[id]
       if (socket && socketArchive) {
-        let ret = filterDMChannels(dmChannels, archives[id])
+        const ret = filterDMChannels(dmChannels, archives[id])
         socket.emit('dm', ret)
       } else {
         console.error('unable to find archive for socket with id:', id)
@@ -101,10 +101,10 @@ async function main () {
   })
 
   function filterDMChannels (dmChannels, archive) {
-    let ret = {}
-    for (let channelID in dmChannels) {
+    const ret = {}
+    for (const channelID in dmChannels) {
       try {
-        let archiveKey = archive.key.toString('hex')
+        const archiveKey = archive.key.toString('hex')
         if (channelID.startsWith(archiveKey) || channelID.endsWith(archiveKey)) {
           ret[channelID] = dmChannels[channelID]
         } else {
@@ -136,7 +136,7 @@ async function main () {
           return reject(new Error('archive not found'))
         }
 
-        let archive = hyperdrive(storage(`gateway/storage/${id}`, { secretDir: 'gateway/secrets' }), { latest: true })
+        const archive = hyperdrive(storage(`gateway/storage/${id}`, { secretDir: 'gateway/secrets' }), { latest: true })
         archive.on('ready', async () => {
           view.addArchive(id, archive)
           archives[id] = archive
@@ -177,116 +177,116 @@ async function main () {
   }
 
   app.post('/login', async (req, res) => {
-    let { id, name } = await authGoogle(req.body.id_token.id_token)
-    let archive = await loadArchive(id)
+    const { id, name } = await authGoogle(req.body.id_token.id_token)
+    const archive = await loadArchive(id)
 
     if (name) {
       await user.setProfile(archive, { name })
     }
 
-    let token = jwt.sign({ id }, JWT_SECRET)
+    const token = jwt.sign({ id }, JWT_SECRET)
     res.json({ result: { key: archive.key.toString('hex'), token } })
   })
 
   if (ENABLE_TEST_LOGIN) {
     app.post('/test-login', async (req, res) => {
-      let id = req.body.id_token
-      let archive = await loadArchive(id)
+      const id = req.body.id_token
+      const archive = await loadArchive(id)
 
       await user.setProfile(archive, { name: id })
 
-      let token = jwt.sign({ id }, JWT_SECRET)
+      const token = jwt.sign({ id }, JWT_SECRET)
       res.json({ result: { key: archive.key.toString('hex'), token } })
     })
   }
 
   app.get('/me', authToken, async (req, res) => {
-    let archive = await loadArchive(req.archiveID, true)
+    const archive = await loadArchive(req.archiveID, true)
     console.log(Object.keys(archives))
     res.json({ result: { key: archive.key.toString('hex') } })
   })
 
   app.get('/topics', authToken, async (req, res) => {
-    let archive = await loadArchive(req.archiveID, true)
-    let ts = await user.getTopics(archive)
+    const archive = await loadArchive(req.archiveID, true)
+    const ts = await user.getTopics(archive)
 
     res.json({ result: ts })
   })
 
   app.post('/topics', authToken, async (req, res) => {
-    let archive = await loadArchive(req.archiveID, true)
+    const archive = await loadArchive(req.archiveID, true)
     await user.createTopic(archive, req.body.data)
 
     res.json({ result: 'ok' })
   })
 
   app.get('/topics/:id', authToken, async (req, res) => {
-    let archive = await loadArchive(req.archiveID, true)
-    let t = await user.getTopic(archive, req.params.id)
+    const archive = await loadArchive(req.archiveID, true)
+    const t = await user.getTopic(archive, req.params.id)
 
     res.json({ result: t })
   })
 
   app.post('/topics/:id', authToken, async (req, res) => {
-    let archive = await loadArchive(req.archiveID, true)
+    const archive = await loadArchive(req.archiveID, true)
     await user.postToTopic(archive, req.params.id, req.body.data)
 
     res.json({ result: 'ok' })
   })
 
   app.get('/topics/:id/curators', authToken, async (req, res) => {
-    let archive = await loadArchive(req.archiveID, true)
-    let cs = await user.getCurators(archive, req.params.id)
+    const archive = await loadArchive(req.archiveID, true)
+    const cs = await user.getCurators(archive, req.params.id)
 
     res.json({ result: cs })
   })
 
   app.post('/topics/:id/curators', authToken, async (req, res) => {
-    let archive = await loadArchive(req.archiveID, true)
+    const archive = await loadArchive(req.archiveID, true)
     await user.addCurator(archive, req.params.id, req.body.data)
 
     res.json({ result: 'ok' })
   })
 
   app.post('/topics/:id/moderation', authToken, async (req, res) => {
-    let archive = await loadArchive(req.archiveID, true)
+    const archive = await loadArchive(req.archiveID, true)
     await user.moderate(archive, req.params.id, req.body.data)
 
     res.json({ result: 'ok' })
   })
 
   app.post('/topics/:id/reactions', authToken, async (req, res) => {
-    let archive = await loadArchive(req.archiveID, true)
+    const archive = await loadArchive(req.archiveID, true)
     await user.react(archive, req.params.id, req.body.data)
 
     res.json({ result: 'ok' })
   })
 
   app.get('/friends', authToken, async (req, res) => {
-    let archive = await loadArchive(req.archiveID, true)
-    let fs = await user.getFriends(archive)
+    const archive = await loadArchive(req.archiveID, true)
+    const fs = await user.getFriends(archive)
 
     res.json({ result: fs })
   })
 
   app.post('/friends', authToken, async (req, res) => {
-    let archive = await loadArchive(req.archiveID, true)
+    const archive = await loadArchive(req.archiveID, true)
     await user.createFriend(archive, req.body.data)
 
     res.json({ result: 'ok' })
   })
 
   app.post('/dm', authToken, async (req, res) => {
-    let archive = await loadArchive(req.archiveID, true)
+    const archive = await loadArchive(req.archiveID, true)
 
-    let receiverPublicKey = Buffer.from(req.body.data.receiver, 'hex')
+    const receiverPublicKey = Buffer.from(req.body.data.receiver, 'hex')
     let msg = req.body.data.message
     if (!msg.date) msg.date = Date.now()
     msg = Buffer.from(JSON.stringify(req.body.data.message))
 
     // console.log('sending dm', { receiver: receiverPublicKey, secretKey: archive.metadata.secretKey })
 
-    let b = box.encrypt(archive.metadata.secretKey, receiverPublicKey, msg)
+    const b = box.encrypt(archive.metadata.secretKey, receiverPublicKey, msg)
 
     await user.postToTopic(
       archive,
@@ -301,14 +301,14 @@ async function main () {
   })
 
   app.get('/profile', authToken, async (req, res) => {
-    let archive = await loadArchive(req.archiveID, true)
-    let profile = await user.getProfile(archive)
+    const archive = await loadArchive(req.archiveID, true)
+    const profile = await user.getProfile(archive)
 
     res.json({ result: profile })
   })
 
   app.post('/profile', authToken, async (req, res) => {
-    let archive = await loadArchive(req.archiveID, true)
+    const archive = await loadArchive(req.archiveID, true)
     await user.setProfile(archive, req.body.data)
 
     res.json({ result: 'ok' })
@@ -327,17 +327,17 @@ async function main () {
     next()
   })
 
-  let port = process.argv[2] || '9988'
+  const port = process.argv[2] || '9988'
 
   http.listen(port, () => { console.log(`listening ${port}`) })
 
   async function loadExistingArchives () {
     console.log('loading existing archives')
     try {
-      let ids = fs.readdirSync(path.resolve('./gateway/storage'))
+      const ids = fs.readdirSync(path.resolve('./gateway/storage'))
       console.log(ids)
       for (let i = 0; i < ids.length; i++) {
-        let id = ids[i]
+        const id = ids[i]
         await loadArchive(id)
       }
       console.log('loaded')

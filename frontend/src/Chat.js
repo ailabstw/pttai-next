@@ -74,7 +74,7 @@ class Chat extends Component {
   }
 
   async updateProfile () {
-    let name = window.prompt('Enter new name')
+    const name = window.prompt('Enter new name')
 
     if (name) {
       await this.req('post', '/profile', { name })
@@ -116,12 +116,12 @@ class Chat extends Component {
   async postToTopic (data) {
     if (this.state.currentTopic[0] === '#') {
     // to channel
-      let topic = this.state.currentTopic.slice(1)
+      const topic = this.state.currentTopic.slice(1)
       data.id = Date.now()
       await this.req('post', `/topics/${topic}`, data)
     } else {
       // dm
-      let keys = this.state.currentTopic.split('-')
+      const keys = this.state.currentTopic.split('-')
       let key
       if (keys[0] === this.state.me.key) {
         key = keys[1]
@@ -138,13 +138,13 @@ class Chat extends Component {
 
     try {
       res = await this.req('get', `/friends`)
-      let friends = res.data.result
+      const friends = res.data.result
 
       res = await this.req('get', `/me`)
-      let me = res.data.result
+      const me = res.data.result
 
       res = await this.req('get', `/profile`)
-      let profile = res.data.result
+      const profile = res.data.result
 
       this.setState({ friends, me, username: profile.name }, this.connect)
     } catch (e) {
@@ -154,7 +154,7 @@ class Chat extends Component {
 
   async connect () {
     if (this.hubSocket) this.hubSocket.close()
-    let hub = HUBS[this.state.hubID]
+    const hub = HUBS[this.state.hubID]
 
     await axios.request({
       method: 'POST',
@@ -164,7 +164,7 @@ class Chat extends Component {
     })
     // await axios.post(`${hub}/join`, { public_key: this.state.me.key })
 
-    let socket = socketIOClient(
+    const socket = socketIOClient(
       hub,
       {
         path: process.env.REACT_APP_HUB_PATH,
@@ -174,12 +174,12 @@ class Chat extends Component {
     this.hubSocket.on('update', (msgs) => {
       console.log('hub update', msgs)
 
-      let messages = {}
-      let lastMessageTime = Object.assign({}, this.state.lastMessageTime)
-      let lastReadTime = Object.assign({}, this.state.lastReadTime)
+      const messages = {}
+      const lastMessageTime = Object.assign({}, this.state.lastMessageTime)
+      const lastReadTime = Object.assign({}, this.state.lastReadTime)
       for (let i = 0; i < msgs.length; i++) {
-        let m = msgs[i]
-        let topic = `#${m.topic}`
+        const m = msgs[i]
+        const topic = `#${m.topic}`
         if (!messages[topic]) messages[topic] = []
         messages[topic].push(m)
 
@@ -216,7 +216,7 @@ class Chat extends Component {
     this.hubSocket.on('event', console.log)
     this.hubSocket.on('error', console.error)
 
-    let gatewaySocket = socketIOClient(
+    const gatewaySocket = socketIOClient(
       this.state.api,
       {
         path: process.env.REACT_APP_GATEWAY_PATH,
@@ -234,10 +234,10 @@ class Chat extends Component {
     this.gatewaySocket.on('dm', (dmChannels) => {
       console.log('dm', dmChannels)
       this.setState({ dmChannels })
-      let lastMessageTime = Object.assign({}, this.state.lastMessageTime)
-      let lastReadTime = Object.assign({}, this.state.lastReadTime)
-      for (let channelID in dmChannels) {
-        let keys = channelID.split('-')
+      const lastMessageTime = Object.assign({}, this.state.lastMessageTime)
+      const lastReadTime = Object.assign({}, this.state.lastReadTime)
+      for (const channelID in dmChannels) {
+        const keys = channelID.split('-')
         let key
         if (keys[0] === this.state.me.key) {
           key = keys[1]
@@ -249,8 +249,8 @@ class Chat extends Component {
         }
         if (!lastReadTime[channelID]) lastReadTime[channelID] = Date.now()
 
-        for (let dm of dmChannels[channelID]) {
-          let m = dm.message
+        for (const dm of dmChannels[channelID]) {
+          const m = dm.message
           if (!lastMessageTime[channelID]) {
             lastMessageTime[channelID] = m.date
           } else if (lastMessageTime[channelID] < m.date) {
@@ -283,7 +283,7 @@ class Chat extends Component {
   }
 
   async newFriend () {
-    let id = window.prompt('friend\'s ID')
+    const id = window.prompt('friend\'s ID')
     if (id) {
       await this._newFriend(id)
     }
@@ -296,8 +296,8 @@ class Chat extends Component {
     }
     await this.req('post', '/friends', { id })
     await this.req('post', '/dm', { message: { type: 'action', value: 'started the conversation' }, receiver: id })
-    let res = await this.req('get', `/friends`)
-    let friends = res.data.result
+    const res = await this.req('get', `/friends`)
+    const friends = res.data.result
     this.setState({ friends }, () => {
       this.changeTopic([id, this.state.me.key].sort().join('-'))()
     })
@@ -305,7 +305,7 @@ class Chat extends Component {
 
   changeTopic (topic) {
     return () => {
-      let lastReadTime = Object.assign({}, this.state.lastReadTime)
+      const lastReadTime = Object.assign({}, this.state.lastReadTime)
       lastReadTime[topic] = Date.now()
       window.localStorage.setItem('lastReadTime', JSON.stringify(lastReadTime))
       window.localStorage.setItem('currentTopic', topic)
@@ -319,11 +319,11 @@ class Chat extends Component {
   }
 
   async handleModeration ({ event, props }) {
-    let ok = window.confirm('hide the message?')
+    const ok = window.confirm('hide the message?')
 
     if (ok) {
       console.log('mod', props)
-      let ret = await this.req('post', `/topics/${props.topic}/moderation`, { id: props.id, action: 'delete' })
+      const ret = await this.req('post', `/topics/${props.topic}/moderation`, { id: props.id, action: 'delete' })
       console.log(ret.data)
     }
   }
@@ -338,8 +338,8 @@ class Chat extends Component {
 
   async handleSelectEmoji (emoji, e) {
     this.setState({ showEmojiPicker: false })
-    let props = this.state.emojiPickerData
-    let ret = await this.req('post', `/topics/${props.topic}/reactions`, { id: Date.now(), react: emoji.native, msgID: props.id })
+    const props = this.state.emojiPickerData
+    const ret = await this.req('post', `/topics/${props.topic}/reactions`, { id: Date.now(), react: emoji.native, msgID: props.id })
     console.log(ret.data)
   }
 
@@ -356,7 +356,7 @@ class Chat extends Component {
   }
 
   onScrollMessage (e) {
-    let scrollDistance = this.messagesRef.current.scrollHeight - (this.messagesRef.current.scrollTop + this.messagesRef.current.clientHeight)
+    const scrollDistance = this.messagesRef.current.scrollHeight - (this.messagesRef.current.scrollTop + this.messagesRef.current.clientHeight)
 
     if (scrollDistance > 50) {
       this.setState({ messageListScrolled: true })
@@ -378,7 +378,7 @@ class Chat extends Component {
       messages = this.state.messages[this.state.currentTopic]
     } else {
       messages = this.state.dmChannels[this.state.currentTopic]
-      let keys = this.state.currentTopic.split('-')
+      const keys = this.state.currentTopic.split('-')
       if (keys[0] === this.state.me.key) {
         currentActiveDM = keys[1]
       } else {
@@ -386,8 +386,8 @@ class Chat extends Component {
       }
     }
 
-    let unread = {}
-    for (let topic in this.state.lastReadTime) {
+    const unread = {}
+    for (const topic in this.state.lastReadTime) {
       if (this.state.lastMessageTime[topic] > this.state.lastReadTime[topic]) {
         unread[topic] = true
       }
@@ -457,7 +457,7 @@ class Chat extends Component {
                       }
                       let name = f.id
                       let textStyle = 'text-gray-600'
-                      let channelID = [f.id, this.state.me.key].sort().join('-')
+                      const channelID = [f.id, this.state.me.key].sort().join('-')
                       if (unread[channelID]) textStyle = `text-black font-bold`
                       if (this.state.profiles[f.id]) name = this.state.profiles[f.id].name
                       if (name.length > 12) name = name.slice(0, 12) + '...'
