@@ -40,7 +40,7 @@ class Message extends Component {
         ? <div className='text-sm text-center border-b border-gray-300 mb-2'>{moment(date).format('YYYY-MM-DD')}</div>
         : ''}
       <div className='flex flex-row justify-between'>
-        <span className='text-gray-600 inline-block mr-4 text-sm w-10'>{moment(date).format('HH:mm')}</span>
+        <span className='text-gray-600 inline-block mr-2 text-xs pt-1 font-mono'>{moment(date).format('HH:mm')}</span>
         <span className={`${textStyle} flex-grow`}>
           <span
             className={`font-bold cursor-pointer hover:underline ${authorStyle}`}
