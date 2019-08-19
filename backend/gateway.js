@@ -22,7 +22,6 @@ var archivesLock = new AsyncLock()
 
 require('express-async-errors')
 
-// no-op auth for testing
 const authGoogle = require('./auth/google')
 
 const View = require('./lib/views/gateway')
