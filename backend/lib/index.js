@@ -8,6 +8,7 @@ module.exports = {
   getTopic,
   createTopic,
   postToTopic,
+  postGossip,
   moderate,
   react,
 
@@ -163,6 +164,25 @@ function postToTopic (archive, id, data) {
       resolve()
     })
   })
+}
+
+async function postGossip (archive, receiverPublicKey, message) {
+  let msg = message
+  if (!msg.date) msg.date = Date.now()
+  msg = Buffer.from(JSON.stringify(msg))
+
+  // console.log('sending dm', { receiver: receiverPublicKey, secretKey: archive.metadata.secretKey })
+
+  const b = box.encrypt(archive.metadata.secretKey, receiverPublicKey, msg)
+
+  await postToTopic(
+    archive,
+    '__gossiping',
+    {
+      id: Date.now(),
+      nonce: b.nonce.toString('hex'),
+      cipher: b.cipher.toString('hex')
+    })
 }
 
 function readFile (archive, fn) {

@@ -280,23 +280,9 @@ async function main () {
     const archive = await loadArchive(req.archiveID, true)
 
     const receiverPublicKey = Buffer.from(req.body.data.receiver, 'hex')
-    let msg = req.body.data.message
-    if (!msg.date) msg.date = Date.now()
-    msg = Buffer.from(JSON.stringify(req.body.data.message))
+    const msg = req.body.data.message
 
-    // console.log('sending dm', { receiver: receiverPublicKey, secretKey: archive.metadata.secretKey })
-
-    const b = box.encrypt(archive.metadata.secretKey, receiverPublicKey, msg)
-
-    await user.postToTopic(
-      archive,
-      '__gossiping',
-      {
-        id: Date.now(),
-        nonce: b.nonce.toString('hex'),
-        cipher: b.cipher.toString('hex')
-      })
-
+    await user.postGossip(archive, receiverPublicKey, msg)
     res.json({ result: 'ok' })
   })
 
