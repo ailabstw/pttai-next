@@ -11,7 +11,6 @@ const user = require('./lib')
 const hyperdrive = require('hyperdrive')
 const Discovery = require('hyperdiscovery')
 const storage = require('./storage/dat')
-const box = require('./lib/box')
 const AsyncLock = require('async-lock')
 const jwt = require('jsonwebtoken')
 
