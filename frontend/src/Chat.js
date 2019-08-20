@@ -39,7 +39,7 @@ class Chat extends Component {
       lastMessageTime: {},
       disconnected: false,
       mobileShowSidebar: false,
-      failed: false,
+      loadFailed: false,
       messageListScrolled: false
     }
 
@@ -148,7 +148,7 @@ class Chat extends Component {
 
       this.setState({ friends, me, username: profile.name }, this.connect)
     } catch (e) {
-      this.setState({ failed: true })
+      this.setState({ loadFailed: true })
     }
   }
 
@@ -394,7 +394,7 @@ class Chat extends Component {
     }
     console.log('unread', unread)
 
-    if (!this.state.token || this.state.failed) {
+    if (!this.state.token || this.state.loadFailed) {
       return <Redirect to={{ path: '/' }} />
     }
 
