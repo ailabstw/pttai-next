@@ -9,7 +9,6 @@ const pino = require('express-pino-logger')()
 const cors = require('cors')
 const user = require('./lib')
 const hyperdrive = require('hyperdrive')
-const Discovery = require('hyperdiscovery')
 const storage = require('./storage/dat')
 const AsyncLock = require('async-lock')
 const jwt = require('jsonwebtoken')
@@ -23,12 +22,11 @@ var archivesLock = new AsyncLock()
 require('express-async-errors')
 
 const authGoogle = require('./auth/google')
-
 const View = require('./lib/views/gateway')
+const joinNetwork = require('./network/hyperdiscovery')
 
 async function main () {
   const archives = {}
-  let disc
 
   const app = express()
   var http = require('http').Server(app)
@@ -146,11 +144,8 @@ async function main () {
           } catch (e) {
             console.error(e)
           }
-          if (!disc) {
-            disc = Discovery(archive)
-          } else {
-            disc.add(archive)
-          }
+
+          joinNetwork(archive)
 
           archive.on('sync', () => { console.log('sync') })
           archive.on('update', () => {

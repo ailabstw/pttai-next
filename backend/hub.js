@@ -3,7 +3,6 @@ require('dotenv').config({ path: path.join(__dirname, '.env') })
 
 const hyperdrive = require('hyperdrive')
 const storage = require('./storage/dat')
-const Discovery = require('hyperdiscovery')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const pino = require('express-pino-logger')()
@@ -13,11 +12,11 @@ const jwt = require('jsonwebtoken')
 
 const JWT_SECRET = process.env.JWT_SECRET
 
+const joinNetwork = require('./network/hyperdiscovery')
+
 async function main () {
   const view = new View()
   const users = []
-
-  let discovery = null
 
   await loadExistingArchives()
 
@@ -101,15 +100,7 @@ async function main () {
     // const net = require('net')
 
     d1.on('ready', () => {
-      if (!discovery) {
-        console.log('initing discovery', d1.key.toString('hex'))
-        // let socket = net.connect(port)
-        // socket.pipe(d1.replicate({ live: true })).pipe(socket)
-        discovery = Discovery(d1, { live: true })
-      } else {
-        console.log('joining discovery', d1.key.toString('hex'))
-        discovery.add(d1)
-      }
+      joinNetwork(d1)
     })
 
     // d1.metadata.on('download', (idx, data) => console.log('download', idx, data))
