@@ -90,3 +90,21 @@ tape('add & get curators', function (t) {
     t.end()
   })
 })
+
+tape('post encrypted gossip', function (t) {
+  const a = hyperdrive(ram)
+  const b = hyperdrive(ram)
+  a.on('ready', async () => {
+    b.on('ready', async () => {
+      await user.init(a)
+
+      await user.postGossip(a, b.key, { text: 'foobar', id: 123 })
+      const posts = await user.getTopic(a, '__gossiping')
+      t.ok(posts[0].id, 'should have envelop id')
+      t.ok(posts[0].nonce, 'should have nonce')
+      t.ok(posts[0].cipher, 'should have cipher')
+
+      t.end()
+    })
+  })
+})
