@@ -70,6 +70,78 @@ Direct messages are encrypted. However, the keys used to encrypt is stored on th
 
 We're actively working on the encryption of group messages.
 
+## API
+
+### Gateway
+
+The documentation is a work in progress. check `backend/gateway.js` for more detail.
+
+##### `POST /login`
+
+Login with an `id_token. PTT.ai doesn't require you to use a 3rd-party authentication. However, currently only Google oauth is implemented.
+
+##### `GET /me?token=`
+
+Get the current user's archive public key.
+
+##### `GET /topics`
+
+Get the list of topics of the current user have posted to.
+
+##### `POST /topics`
+
+Create a new topic
+
+##### `GET /topics/:id`
+
+Get all messages with a given topic.
+
+##### `POST /topics/:id`
+
+Post a new message to a given topic.
+
+##### `GET /topics/:id/curators`
+
+Get the list of curators the user trust of a given topic.
+
+##### `POST /topics/:id/curators`
+
+Add a new trusted user to the list of curators.
+
+##### `POST /topics/:id/moderation`
+
+Add a new personal moderation to the topic
+
+##### `POST /topics/:id?reactions`
+
+Add a new reaction to the topic.
+
+##### `GET /friends`
+
+Get the friend list
+
+##### `POST /friends`
+
+Add a new key to the friend list
+
+##### `POST /dm`
+
+Post a direct message to a friend as an encrypted gossip.
+
+##### `GET /profile`
+
+Get user's profile
+
+##### `POST /profile`
+
+Update user's profile
+
+### Hub
+
+##### `POST /join`
+
+Add a new key to the hub.
+
 ## License
 
 The MIT License
