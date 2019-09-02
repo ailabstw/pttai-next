@@ -27,7 +27,6 @@ const joinNetwork = require('./network/hyperdiscovery')
 
 async function main () {
   const archives = {}
-  const inNetwork = {}
 
   const app = express()
   var http = require('http').Server(app)
@@ -116,36 +115,6 @@ async function main () {
     return ret
   }
 
-  function replicateArchive (key) {
-    console.log('replicating archive', key)
-    return new Promise((resolve, reject) => {
-      archivesLock.acquire('lock', (done) => {
-        if (Object.values(archives).find(a => a.key.toString('hex') === key)) {
-          console.log('replicate in archive', key)
-          done()
-          return resolve()
-        }
-
-        if (Object.values(archives).find(a => a.key.toString('hex') === key)) {
-          console.log('replicate in inNetwork', key)
-          done()
-          return resolve()
-        }
-
-        console.log('replicate new', key)
-        const archive = hyperdrive(storage(`gateway/replicate/${key}`, { secretDir: 'gateway/secrets' }), key, { latest: true })
-        archive.on('ready', async () => {
-          inNetwork[key] = archive
-
-          joinNetwork(archive)
-
-          done()
-          return resolve()
-        })
-      })
-    })
-  }
-
   function loadArchive (id, rejectNotFound) {
     return new Promise((resolve, reject) => {
       console.log('loading archive', id, archives[id] ? archives[id].key.toString('hex') : 'not found')
@@ -176,11 +145,7 @@ async function main () {
             console.error(e)
           }
 
-          const archiveKey = archive.key.toString('hex')
-          if (!inNetwork[archiveKey]) {
-            inNetwork[archiveKey] = archive
-            joinNetwork(archive)
-          }
+          joinNetwork(archive)
 
           archive.on('sync', () => { console.log('sync') })
           archive.on('update', () => {
@@ -197,13 +162,6 @@ async function main () {
           view.apply(archive)
 
           console.log('new archive loaded')
-
-          // replicate friend's archive
-          const friends = await user.getFriends(archive)
-          friends.map(f => f.key || f.id).forEach(key => {
-            replicateArchive(key)
-          })
-
           resolve(archive)
           done()
         })
@@ -299,18 +257,14 @@ async function main () {
 
   app.get('/friends', authToken, async (req, res) => {
     const archive = await loadArchive(req.archiveID, true)
-    const friends = await user.getFriends(archive)
+    const fs = await user.getFriends(archive)
 
-    res.json({ result: friends })
+    res.json({ result: fs })
   })
 
   app.post('/friends', authToken, async (req, res) => {
     const archive = await loadArchive(req.archiveID, true)
     await user.createFriend(archive, req.body.data)
-
-    if (req.body.data.key) {
-      replicateArchive(req.body.data.key)
-    }
 
     res.json({ result: 'ok' })
   })
