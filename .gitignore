@@ -7,3 +7,4 @@ frontend/build
 /hub
 backend/gateway
 backend/hub
+backend/replicator

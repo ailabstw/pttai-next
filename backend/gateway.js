@@ -12,10 +12,12 @@ const hyperdrive = require('hyperdrive')
 const storage = require('./storage/dat')
 const AsyncLock = require('async-lock')
 const jwt = require('jsonwebtoken')
+const axios = require('axios')
 
 assert.ok(process.env.JWT_SECRET)
 const JWT_SECRET = process.env.JWT_SECRET
 const ENABLE_TEST_LOGIN = process.env.ENABLE_TEST_LOGIN
+const REPLICATOR_URL = process.env.REPLICATOR_URL
 
 var archivesLock = new AsyncLock()
 
@@ -116,33 +118,17 @@ async function main () {
     return ret
   }
 
-  function replicateArchive (key) {
-    console.log('replicating archive', key)
-    return new Promise((resolve, reject) => {
-      archivesLock.acquire('lock', (done) => {
-        if (Object.values(archives).find(a => a.key.toString('hex') === key)) {
-          console.log('replicate in archive', key)
-          done()
-          return resolve()
-        }
+  async function replicateArchive (key) {
+    if (!REPLICATOR_URL) {
+      return console.warn('REPLICATOR_URL undefined, replicating archive is an no-op')
+    }
 
-        if (Object.values(archives).find(a => a.key.toString('hex') === key)) {
-          console.log('replicate in inNetwork', key)
-          done()
-          return resolve()
-        }
-
-        console.log('replicate new', key)
-        const archive = hyperdrive(storage(`gateway/replicate/${key}`, { secretDir: 'gateway/secrets' }), key, { latest: true })
-        archive.on('ready', async () => {
-          inNetwork[key] = archive
-
-          joinNetwork(archive)
-
-          done()
-          return resolve()
-        })
-      })
+    await axios({
+      method: 'POST',
+      url: `${REPLICATOR_URL}/load`,
+      data: {
+        key: key
+      }
     })
   }
 
