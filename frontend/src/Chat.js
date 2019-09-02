@@ -8,6 +8,7 @@ import { Redirect } from 'react-router-dom'
 import { Menu, Item } from 'react-contexify'
 import { ReactTitle } from 'react-meta-tags'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import uuid from 'uuid/v4'
 
 import Div100vh from 'react-div-100vh'
 
@@ -244,7 +245,7 @@ class Chat extends Component {
         } else {
           key = keys[0]
         }
-        if (this.state.friends.findIndex(x => x.id === key) === -1) {
+        if (this.state.friends.findIndex(f => (f.key || f.id) === key) === -1) {
           this.setState({ friends: this.state.friends.concat([{ id: key }]) })
         }
         if (!lastReadTime[channelID]) lastReadTime[channelID] = Date.now()
@@ -289,17 +290,17 @@ class Chat extends Component {
     }
   }
 
-  async _newFriend (id) {
-    if (this.state.me.key === id) return
-    if (this.state.friends.find(f => f.id === id)) {
-      return this.changeTopic([id, this.state.me.key].sort().join('-'))()
+  async _newFriend (key) {
+    if (this.state.me.key === key) return
+    if (this.state.friends.find(f => f.id === key)) {
+      return this.changeTopic([key, this.state.me.key].sort().join('-'))()
     }
-    await this.req('post', '/friends', { id })
-    await this.req('post', '/dm', { message: { type: 'action', value: 'started the conversation' }, receiver: id })
+    await this.req('post', '/friends', { id: uuid(), key })
+    await this.req('post', '/dm', { message: { type: 'action', value: 'started the conversation' }, receiver: key })
     const res = await this.req('get', `/friends`)
     const friends = res.data.result
     this.setState({ friends }, () => {
-      this.changeTopic([id, this.state.me.key].sort().join('-'))()
+      this.changeTopic([key, this.state.me.key].sort().join('-'))()
     })
   }
 
@@ -451,19 +452,21 @@ class Chat extends Component {
                   </div>
                   <ul>
                     {this.state.friends.map(f => {
+                      const id = f.key || f.id
+
                       let c = ''
-                      if (currentActiveDM === f.id) {
+                      if (currentActiveDM === id) {
                         c = 'bg-gray-400 rounded'
                       }
-                      let name = f.id
+                      let name = id
                       let textStyle = 'text-gray-600'
-                      const channelID = [f.id, this.state.me.key].sort().join('-')
+                      const channelID = [id, this.state.me.key].sort().join('-')
                       if (unread[channelID]) textStyle = `text-black font-bold`
-                      if (this.state.profiles[f.id]) name = this.state.profiles[f.id].name
+                      if (this.state.profiles[id]) name = this.state.profiles[id].name
                       if (name.length > 12) name = name.slice(0, 12) + '...'
                       return <li
                         className={`mt-1 cursor-pointer ${textStyle} ${c}`}
-                        key={f.id}
+                        key={id}
                         onClick={this.changeTopic(channelID).bind(this)}>
                          @{name}
                       </li>
