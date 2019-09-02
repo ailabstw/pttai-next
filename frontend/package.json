@@ -19,7 +19,8 @@
     "react-router-dom": "^5.0.1",
     "react-scripts": "3.0.1",
     "socket.io-client": "^2.2.0",
-    "tailwindcss": "^1.0.4"
+    "tailwindcss": "^1.0.4",
+    "uuid": "^3.3.3"
   },
   "scripts": {
     "start": "yarn build-style && react-scripts start",
