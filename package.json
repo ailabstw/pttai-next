@@ -8,6 +8,7 @@
     "test": "npx standard && npx tape backend/tests/*",
     "hub": "node backend/hub.js",
     "gateway": "node backend/gateway.js",
+    "replicator": "node backend/replicator.js",
     "frontend": "cd frontend && yarn start"
   },
   "standard": {

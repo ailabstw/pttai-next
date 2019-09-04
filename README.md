@@ -51,6 +51,7 @@ $ cp frontend/env.example frontend/.env
 
 $ yarn hub
 $ yarn gateway
+$ yarn replicator
 $ yarn start
 ```
 
