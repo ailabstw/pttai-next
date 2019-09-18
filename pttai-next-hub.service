@@ -9,3 +9,6 @@ Type=simple
 User=ubuntu
 Restart=always
 TimeoutSec=15
+
+[Install]
+WantedBy=multi-user.target
