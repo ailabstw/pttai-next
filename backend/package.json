@@ -7,7 +7,8 @@
   "scripts": {
     "test": "npx tape tests/*",
     "hub": "node hub.js",
-    "gateway": "node gateway.js"
+    "gateway": "node gateway.js",
+    "replicator": "node replicator.js"
   },
   "keywords": [],
   "author": "PTT.ai developers",

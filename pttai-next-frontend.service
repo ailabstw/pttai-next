@@ -1,0 +1,11 @@
+[Unit]
+Description=PTT.ai-next-Frontend
+After=network.target
+
+[Service]
+ExecStart=npx serve -s build -p 3000
+WorkingDirectory=/home/ubuntu/pttai-next/frontend
+Type=simple
+User=ubuntu
+Restart=always
+TimeoutSec=15

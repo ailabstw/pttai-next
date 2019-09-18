@@ -1,0 +1,11 @@
+[Unit]
+Description=PTT.ai-next-Replicator
+After=network.target
+
+[Service]
+ExecStart=node replicator.js
+WorkingDirectory=/home/ubuntu/pttai-next/backend
+Type=simple
+User=ubuntu
+Restart=always
+TimeoutSec=15

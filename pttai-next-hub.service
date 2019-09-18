@@ -1,0 +1,11 @@
+[Unit]
+Description=PTT.ai-next-Hub
+After=network.target
+
+[Service]
+ExecStart=node hub.js
+WorkingDirectory=/home/ubuntu/pttai-next/backend
+Type=simple
+User=ubuntu
+Restart=always
+TimeoutSec=15
