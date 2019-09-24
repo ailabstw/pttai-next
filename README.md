@@ -66,6 +66,7 @@ PTT.ai is based on a [secure, realtime distributed file system](https://github.c
 * **Node(P.me)**: A Node is a personal repository for your data.
 * **Gateway**: A server which hosts multiple nodes. Anyone can run their own gateway instance. Multiple users can share a single gateway to reduce management cost or for authentication.
 * **Hub**: A public server that acts as a "social hub". People discover each other through hubs. Users can freely switch to a new hub without losing their data whenever they want.
+* **Replicator**: A server provides reliable replication for archives, used to replicate friend's archive.
 
 Direct messages are encrypted. However, the keys used to encrypt is stored on the gateway server. To make sure your message is safe, you need to run your own gateway.
 

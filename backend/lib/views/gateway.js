@@ -31,9 +31,7 @@ class GatewayView extends EventEmitter {
     const dmChannelID = [authorKey, receiverKey].sort().join('-')
 
     if (!this.state.dmChannels[dmChannelID]) this.state.dmChannels[dmChannelID] = []
-
     this.state.dmChannels[dmChannelID].push({ author: authorKey, message: JSON.parse(message), id: dmID })
-
     this.state.dmChannels[dmChannelID] = this.state.dmChannels[dmChannelID].sort((x, y) => x.message.date - y.message.date)
 
     this.emit('dm', this.state.dmChannels)
