@@ -2,7 +2,7 @@
 
 # PTT.ai-next
 
-A decentralized data exchange platform.
+A decentralized data exchange platform. Currently implemented a slack-like chat room as a PoC.
 
 For the ideas behind the project, check the website: [https://ptt.ai](https://ptt.ai).
 
