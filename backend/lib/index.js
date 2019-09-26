@@ -11,6 +11,7 @@ module.exports = {
   postGossip,
   moderate,
   react,
+  deletePost,
 
   getFriends,
   getFriend,
@@ -94,6 +95,16 @@ function react (archive, topicID, react) {
 
     if (!react.topic) react.topic = topicID
     archive.writeFile(`/topics/${topicID}/reactions/${react.id}`, JSON.stringify(react), (err) => {
+      if (err) return reject(err)
+
+      resolve()
+    })
+  })
+}
+
+function deletePost (archive, topicID, postID) {
+  return new Promise((resolve, reject) => {
+    archive.unlink(`/topics/${topicID}/${postID}`, (err) => {
       if (err) return reject(err)
 
       resolve()
