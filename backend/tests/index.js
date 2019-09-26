@@ -36,7 +36,7 @@ tape('list and create topic', function (t) {
   })
 })
 
-tape('read, write, and delete in topic', function (t) {
+tape('read, write, update, and delete in topic', function (t) {
   const a = hyperdrive(ram)
   a.on('ready', async () => {
     await user.init(a)
@@ -49,9 +49,15 @@ tape('read, write, and delete in topic', function (t) {
     t.same(posts[0].title, 'hello')
     t.same(posts[0].topic, 'foo')
 
-    await user.deletePost(a, 'foo', 123)
+    await user.updatePost(a, 'foo', 123, { id: 123, title: 'hello2' })
     const posts2 = await user.getTopic(a, 'foo')
-    t.same(posts2.length, 0)
+    t.same(posts2[0].id, 123)
+    t.same(posts2[0].title, 'hello2')
+    t.same(posts2[0].topic, 'foo')
+
+    await user.deletePost(a, 'foo', 123)
+    const posts3 = await user.getTopic(a, 'foo')
+    t.same(posts3.length, 0)
 
     t.end()
   })

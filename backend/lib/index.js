@@ -12,6 +12,7 @@ module.exports = {
   moderate,
   react,
   deletePost,
+  updatePost,
 
   getFriends,
   getFriend,
@@ -105,6 +106,20 @@ function react (archive, topicID, react) {
 function deletePost (archive, topicID, postID) {
   return new Promise((resolve, reject) => {
     archive.unlink(`/topics/${topicID}/${postID}`, (err) => {
+      if (err) return reject(err)
+
+      resolve()
+    })
+  })
+}
+
+function updatePost (archive, topicID, postID, data) {
+  return new Promise((resolve, reject) => {
+    if (!data.id) return reject(new Error('undefined data.id'))
+    if (!data.topic) data.topic = topicID
+    if (!data.date) data.date = Date.now()
+
+    archive.writeFile(`/topics/${topicID}/${postID}`, JSON.stringify(data), (err) => {
       if (err) return reject(err)
 
       resolve()
