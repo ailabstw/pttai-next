@@ -329,6 +329,20 @@ class Chat extends Component {
     }
   }
 
+  async handleDelete ({ event, props }) {
+    const ok = window.confirm('delete message?')
+
+    if (ok) {
+      console.log('mod', props)
+      try {
+        const ret = await this.req('delete', `/topics/${props.topic}/${props.id}`)
+        console.log(ret.data)
+      } catch (e) {
+        window.alert('刪除失敗')
+      }
+    }
+  }
+
   handleAddReaction ({ event, props }) {
     this.setState({ emojiPickerData: props, emojiPickerBottom: document.documentElement.clientHeight - event.clientY - 50, showEmojiPicker: true })
   }
@@ -414,7 +428,7 @@ class Chat extends Component {
             : ''}
           <Menu id='menu_id'>
             <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
-            {/* <Item onClick={this.handleModeration.bind(this)}>Hide</Item> */}
+            <Item onClick={this.handleDelete.bind(this)}>Delete</Item>
           </Menu>
           <div className='header shadow-lg bg-gray-200 sm:hidden w-full h-full flex flex-row items-center justify-between px-2'>
             <FontAwesomeIcon icon='bars' size='lg' onClick={this.onClickHeaderMenu.bind(this)} />

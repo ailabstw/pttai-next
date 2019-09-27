@@ -26,29 +26,45 @@ class View extends EventEmitter {
   }
 
   applyDiff (key, d, data) {
-    if (d.name.match(/__gossiping/)) {
+    if (d.type === 'del') {
+      // a new file is added
+      if (d.name.match(/__gossiping/)) {
       // skip hidden topic
-    } else if (d.name.match(/^\/topics\/(.+)\/moderation\/(.+)$/)) {
-      const action = JSON.parse(data)
-      this.state.mods.push(action)
-    } else if (d.name.match(/^\/topics\/(.+)\/reactions\/(.+)$/)) {
-      const react = JSON.parse(data)
-      if (!this.state.reacts[react.msgID]) this.state.reacts[react.msgID] = []
-      react.author = key
-      this.state.reacts[react.msgID].push(react)
-    } else if (d.name.match(/^\/topics\/(.+)$/)) {
-      const m = JSON.parse(data)
-      m.author = key
-      if (!this.state.messages.find(x => x.id === m.id)) {
-        this.state.messages.push(m)
+      } else if (d.name.match(/^\/topics\/(.+)\/moderation\/(.+)$/)) {
+        const action = JSON.parse(data)
+        this.state.mods.push(action)
+      } else if (d.name.match(/^\/topics\/(.+)\/reactions\/(.+)$/)) {
+        const react = JSON.parse(data)
+        if (!this.state.reacts[react.msgID]) this.state.reacts[react.msgID] = []
+        react.author = key
+        this.state.reacts[react.msgID].push(react)
+      } else if (d.name.match(/^\/topics\/(.+)$/)) {
+        const m = JSON.parse(data)
+        m.author = key
+        if (!this.state.messages.find(x => x.id === m.id)) {
+          this.state.messages.push(m)
 
-        this.state.messages = this.state.messages.sort((x, y) => x.date - y.date)
+          this.state.messages = this.state.messages.sort((x, y) => x.date - y.date)
+        }
+      } else if (d.name.match(/^\/profile.json/)) {
+        const profile = JSON.parse(data)
+        this.state.profiles[key] = profile
+
+        this.emit('profiles', this.state.profiles)
       }
-    } else if (d.name.match(/^\/profile.json/)) {
-      const profile = JSON.parse(data)
-      this.state.profiles[key] = profile
+    } else if (d.type === 'put') {
+      // a new file is deleted
 
-      this.emit('profiles', this.state.profiles)
+      // TODO: currently we only support deleting message files
+      if (d.name.match(/^\/topics\/(.+)$/)) {
+        const mID = d.name.match(/^\/topics\/.+\/(.+)$/)[1]
+        console.log(this.state.messages.map(x => x.id))
+        const i = this.state.messages.findIndex(x => `${x.id}` === mID)
+        console.log('deleting mID', mID, i)
+        if (i !== -1) {
+          this.state.messages.splice(i, 1)
+        }
+      }
     }
   }
 
@@ -58,12 +74,19 @@ class View extends EventEmitter {
 
     const diff = archive.createDiffStream(this.state.currentVersion[key])
     diff.on('data', async (d) => {
-      console.log('hub', archive.key.toString('hex'), d.name)
+      console.log('hub', archive.key.toString('hex'), d, d.name)
       if (d.value.size === 0) return // skip directories
 
-      const data = await user.readFile(archive, d.name)
-      this.applyDiff(key, d, data)
-      this.reduce()
+      if (d.type === 'del') {
+        // a new file is added
+        const data = await user.readFile(archive, d.name)
+        this.applyDiff(key, d, data)
+        this.reduce()
+      } else if (d.type === 'put') {
+        // a file is deleted
+        this.applyDiff(key, d)
+        this.reduce()
+      }
     })
 
     this.state.currentVersion[key] = archive.version

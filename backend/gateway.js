@@ -281,6 +281,20 @@ async function main () {
     res.json({ result: 'ok' })
   })
 
+  app.put('/topics/:topicID/:id', authToken, async (req, res) => {
+    const archive = await loadArchive(req.archiveID, true)
+    await user.updatePost(archive, req.params.topicID, req.params.id, req.body.data)
+
+    res.json({ result: 'ok' })
+  })
+
+  app.delete('/topics/:topicID/:id', authToken, async (req, res) => {
+    const archive = await loadArchive(req.archiveID, true)
+    await user.deletePost(archive, req.params.topicID, req.params.id)
+
+    res.json({ result: 'ok' })
+  })
+
   app.get('/friends', authToken, async (req, res) => {
     const archive = await loadArchive(req.archiveID, true)
     const friends = await user.getFriends(archive)
