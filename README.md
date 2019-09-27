@@ -102,14 +102,13 @@ Get all messages with a given topic.
 
 Post a new message to a given topic.
 
-#### `PUT /topics/:id/:postID`
+##### `PUT /topics/:id/:postID`
 
 Update specified post.
 
-#### `DELETE /topics/:id/:postID`
+##### `DELETE /topics/:id/:postID`
 
 Delete specified post.
-
 ##### `GET /topics/:id/curators`
 
 Get the list of curators the user trust of a given topic.
