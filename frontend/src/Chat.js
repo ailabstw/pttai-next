@@ -5,7 +5,7 @@ import socketIOClient from 'socket.io-client'
 import 'emoji-mart/css/emoji-mart.css'
 import { Picker as EmojiPicker } from 'emoji-mart'
 import { Redirect } from 'react-router-dom'
-import { Menu, Item } from 'react-contexify'
+import { Menu, Item, Separator } from 'react-contexify'
 import { ReactTitle } from 'react-meta-tags'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import uuid from 'uuid/v4'
@@ -343,6 +343,20 @@ class Chat extends Component {
     }
   }
 
+  async handleUpdate ({ event, props }) {
+    const update = window.prompt('編輯訊息', props.message.value)
+
+    if (update) {
+      console.log('mod', props)
+      try {
+        const ret = await this.req('put', `/topics/${props.topic}/${props.id}`, { id: props.id, message: { type: 'text', value: update } })
+        console.log(ret.data)
+      } catch (e) {
+        window.alert('編輯失敗')
+      }
+    }
+  }
+
   handleAddReaction ({ event, props }) {
     this.setState({ emojiPickerData: props, emojiPickerBottom: document.documentElement.clientHeight - event.clientY - 50, showEmojiPicker: true })
   }
@@ -428,6 +442,8 @@ class Chat extends Component {
             : ''}
           <Menu id='menu_id'>
             <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
+            <Item onClick={this.handleUpdate.bind(this)}>Update</Item>
+            <Separator />
             <Item onClick={this.handleDelete.bind(this)}>Delete</Item>
           </Menu>
           <div className='header shadow-lg bg-gray-200 sm:hidden w-full h-full flex flex-row items-center justify-between px-2'>
