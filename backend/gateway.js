@@ -134,7 +134,7 @@ async function main () {
     await loadArchive(key)
   }
 
-  function loadArchive (id, rejectNotFound) {
+  function loadArchive (id, rejectNotFound, unmanaged) {
     return new Promise((resolve, reject) => {
       console.log('loading archive', id, archives[id] ? archives[id].key.toString('hex') : 'not found')
       archivesLock.acquire('lock', (done) => {
@@ -151,7 +151,12 @@ async function main () {
           return reject(new Error('archive not found'))
         }
 
-        const archive = hyperdrive(storage(`gateway/storage/${id}`, { secretDir: 'gateway/secrets' }), { latest: true })
+        let archive
+        if (unmanaged) {
+          archive = hyperdrive(storage(`gateway/storage/${id}`, { secretDir: 'gateway/secrets' }), id, { latest: true })
+        } else {
+          archive = hyperdrive(storage(`gateway/storage/${id}`, { secretDir: 'gateway/secrets' }), { latest: true })
+        }
         archive.on('ready', async () => {
           view.addArchive(id, archive)
           archives[id] = archive
