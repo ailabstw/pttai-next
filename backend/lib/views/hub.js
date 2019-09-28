@@ -29,7 +29,7 @@ class View extends EventEmitter {
     if (d.type === 'del') {
       // a new file is added
       if (d.name.match(/__gossiping/)) {
-      // skip hidden topic
+        // skip hidden topic
       } else if (d.name.match(/^\/topics\/(.+)\/moderation\/(.+)$/)) {
         const action = JSON.parse(data)
         this.state.mods.push(action)

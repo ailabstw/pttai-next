@@ -123,13 +123,15 @@ async function main () {
       return console.warn('REPLICATOR_URL undefined, replicating archive is an no-op')
     }
 
-    axios({
+    await axios({
       method: 'POST',
       url: `${REPLICATOR_URL}/load`,
       data: {
         key: key
       }
     })
+
+    await loadArchive(key)
   }
 
   function loadArchive (id, rejectNotFound) {
