@@ -131,7 +131,7 @@ async function main () {
       }
     })
 
-    await loadArchive(key)
+    await loadArchive(key, false, true)
   }
 
   function loadArchive (id, rejectNotFound, unmanaged) {
