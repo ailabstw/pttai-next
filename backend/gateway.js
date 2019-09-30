@@ -130,11 +130,9 @@ async function main () {
         key: key
       }
     })
-
-    await loadArchive(key, false, true)
   }
 
-  function loadArchive (id, rejectNotFound, unmanaged) {
+  function loadArchive (id, rejectNotFound) {
     return new Promise((resolve, reject) => {
       console.log('loading archive', id, archives[id] ? archives[id].key.toString('hex') : 'not found')
       archivesLock.acquire('lock', (done) => {
@@ -151,12 +149,7 @@ async function main () {
           return reject(new Error('archive not found'))
         }
 
-        let archive
-        if (unmanaged) {
-          archive = hyperdrive(storage(`gateway/storage/${id}`, { secretDir: 'gateway/secrets' }), id, { latest: true })
-        } else {
-          archive = hyperdrive(storage(`gateway/storage/${id}`, { secretDir: 'gateway/secrets' }), { latest: true })
-        }
+        const archive = hyperdrive(storage(`gateway/storage/${id}`, { secretDir: 'gateway/secrets' }), { latest: true })
         archive.on('ready', async () => {
           view.addArchive(id, archive)
           archives[id] = archive
@@ -340,6 +333,12 @@ async function main () {
   app.post('/profile', authToken, async (req, res) => {
     const archive = await loadArchive(req.archiveID, true)
     await user.setProfile(archive, req.body.data)
+
+    res.json({ result: 'ok' })
+  })
+
+  app.post('/gossip', async (req, res) => {
+    view.applyGossip(req.body.authorArchive, req.body.nonce, req.body.cipher, req.body.dmID)
 
     res.json({ result: 'ok' })
   })

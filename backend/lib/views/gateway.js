@@ -19,6 +19,9 @@ class GatewayView extends EventEmitter {
     // 暫時還不知道發給誰的 DM 先存起來，等有新的 archive 加入時再試試
     this.pendingDMs = []
 
+    // 記住已經解開過的 dm ID，避免重複
+    this.resolvedDMIDs = []
+
     this.on('gossip', this.__onGossip)
   }
 
@@ -44,27 +47,38 @@ class GatewayView extends EventEmitter {
       const { author, nonce, cipher, id: dmID } = this.pendingDMs[i]
 
       let foundReceiver = false
-      for (const archiveID in this.archives) {
-        const archive = this.archives[archiveID]
-        const keyPair = { publicKey: archive.key, secretKey: archive.metadata.secretKey }
 
-        // console.log('decrypting', keyPair.secretKey)
-        if (author.key && keyPair.secretKey) {
-          const decrypted = box.decrypt(author.key, keyPair.secretKey, Buffer.from(cipher, 'hex'), Buffer.from(nonce, 'hex'))
-          // console.log('trying', decrypted.toString())
-          let success = false
-          for (let i = 0; i < decrypted.length; i++) {
-            if (decrypted[i] !== 0) {
-              success = true
+      if (this.resolvedDMIDs[dmID]) {
+        foundReceiver = true
+        if (this.resolvedDMIDs.indexOf(dmID) !== -1) {
+          this.resolvedDMIDs.push(dmID)
+        }
+      } else {
+        for (const archiveID in this.archives) {
+          const archive = this.archives[archiveID]
+          const keyPair = { publicKey: archive.key, secretKey: archive.metadata.secretKey }
+
+          // console.log('decrypting', keyPair.secretKey)
+          if (author.key && keyPair.secretKey) {
+            const decrypted = box.decrypt(author.key, keyPair.secretKey, Buffer.from(cipher, 'hex'), Buffer.from(nonce, 'hex'))
+            // console.log('trying', decrypted.toString())
+            let success = false
+            for (let i = 0; i < decrypted.length; i++) {
+              if (decrypted[i] !== 0) {
+                success = true
+                break
+              }
+            }
+
+            if (success) {
+              foundReceiver = true
+              this.emit('decrypted', { receiver: archive, msg: decrypted, author, id: dmID })
+              if (this.resolvedDMIDs.indexOf(dmID) !== -1) {
+                this.resolvedDMIDs.push(dmID)
+                this.collectDM(archive.key.toString('hex'), author.key.toString('hex'), dmID, decrypted.toString())
+              }
               break
             }
-          }
-
-          if (success) {
-            foundReceiver = true
-            this.emit('decrypted', { receiver: archive, msg: decrypted, author, id: dmID })
-            this.collectDM(archive.key.toString('hex'), author.key.toString('hex'), dmID, decrypted.toString())
-            break
           }
         }
       }
@@ -102,6 +116,12 @@ class GatewayView extends EventEmitter {
     })
 
     this.state.currentVersion[key] = archive.version
+  }
+
+  // manually add a new gossip to the view, use to add gossip from unmanaged friend's archive
+  applyGossip (authorArchive, nonce, cipher, dmID) {
+    this.pendingDMs.unshift({ author: authorArchive, nonce, cipher, id: dmID })
+    this.emit('gossip')
   }
 }
 
