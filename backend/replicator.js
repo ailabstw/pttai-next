@@ -16,6 +16,52 @@ var archivesLock = new AsyncLock()
 assert.ok(process.env.JWT_SECRET)
 const GATEWAY_URL = process.env.GATEWAY_URL
 
+const EventEmitter = require('events')
+const user = require('./lib')
+const axios = require('axios')
+
+class View extends EventEmitter {
+  constructor () {
+    super()
+
+    this.state = {
+      currentVersion: {}
+    }
+  }
+
+  apply (archive) {
+    const key = archive.key.toString('hex')
+    if (!this.state.currentVersion[key]) {
+      this.state.currentVersion[key] = 0
+    }
+
+    const diff = archive.createDiffStream(this.state.currentVersion[key])
+    diff.on('data', async (d) => {
+      console.log('replicator', archive.key.toString('hex'), d.name)
+      if (d.value.size === 0) return // skip directories
+      if (d.name.match(/^\/topics\/__gossiping\/(.+)$/)) {
+        const data = await user.readFile(archive, d.name)
+
+        const { nonce, cipher, id: dmID } = JSON.parse(data)
+
+        // post to gateway
+        await axios({
+          method: 'POST',
+          url: `${GATEWAY_URL}/gossip`,
+          data: {
+            authorArchive: key,
+            dmID: dmID,
+            nonce,
+            cipher
+          }
+        })
+      }
+    })
+
+    this.state.currentVersion[key] = archive.version
+  }
+}
+
 async function main () {
   const archives = {}
   const app = express()
@@ -74,49 +120,3 @@ async function main () {
 }
 
 main()
-
-const EventEmitter = require('events')
-const user = require('..')
-const axios = require('axios')
-
-class View extends EventEmitter {
-  constructor () {
-    super()
-
-    this.state = {
-      currentVersion: {}
-    }
-  }
-
-  apply (archive) {
-    const key = archive.key.toString('hex')
-    if (!this.state.currentVersion[key]) {
-      this.state.currentVersion[key] = 0
-    }
-
-    const diff = archive.createDiffStream(this.state.currentVersion[key])
-    diff.on('data', async (d) => {
-      console.log('replicator', archive.key.toString('hex'), d.name)
-      if (d.value.size === 0) return // skip directories
-      if (d.name.match(/^\/topics\/__gossiping\/(.+)$/)) {
-        const data = await user.readFile(archive, d.name)
-
-        const { nonce, cipher, id: dmID } = JSON.parse(data)
-
-        // post to gateway
-        await axios({
-          method: 'POST',
-          url: `${GATEWAY_URL}/gossip`,
-          data: {
-            authorArchive: key,
-            dmID: dmID,
-            nonce,
-            cipher
-          }
-        })
-      }
-    })
-
-    this.state.currentVersion[key] = archive.version
-  }
-}

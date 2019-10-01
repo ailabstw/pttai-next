@@ -9,3 +9,4 @@ backend/gateway
 backend/hub
 backend/replicator
 yarn-error.log
+replicator

@@ -41,7 +41,7 @@ class GatewayView extends EventEmitter {
   }
 
   __onGossip () {
-    console.log('gossip received, pending', this.pendingDMs.length)
+    console.log('gossip received, pending', this.pendingDMs.length, this.resolvedDMIDs)
     const nextPendingDMs = []
     for (let i = 0; i < this.pendingDMs.length; i++) {
       const { author, nonce, cipher, id: dmID } = this.pendingDMs[i]
@@ -73,10 +73,10 @@ class GatewayView extends EventEmitter {
             if (success) {
               foundReceiver = true
               this.emit('decrypted', { receiver: archive, msg: decrypted, author, id: dmID })
-              if (this.resolvedDMIDs.indexOf(dmID) !== -1) {
+              if (this.resolvedDMIDs.indexOf(dmID) === -1) {
                 this.resolvedDMIDs.push(dmID)
-                this.collectDM(archive.key.toString('hex'), author.key.toString('hex'), dmID, decrypted.toString())
               }
+              this.collectDM(archive.key.toString('hex'), author.key.toString('hex'), dmID, decrypted.toString())
               break
             }
           }
@@ -89,7 +89,7 @@ class GatewayView extends EventEmitter {
     }
 
     this.pendingDMs = nextPendingDMs
-    console.log('gossip finished, pending', this.pendingDMs.length)
+    console.log('gossip finished, pending', this.pendingDMs.length, this.resolvedDMIDs)
   }
 
   apply (archive) {
