@@ -7,9 +7,9 @@ import QR from './QR'
 import TestLogin from './TestLogin'
 
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faBars, faCoffee } from '@fortawesome/free-solid-svg-icons'
+import { faBars, faCoffee, faQrcode } from '@fortawesome/free-solid-svg-icons'
 
-library.add(faBars, faCoffee)
+library.add(faBars, faCoffee, faQrcode)
 
 class App extends Component {
   render () {

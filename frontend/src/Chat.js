@@ -4,7 +4,7 @@ import axios from 'axios'
 import socketIOClient from 'socket.io-client'
 import 'emoji-mart/css/emoji-mart.css'
 import { Picker as EmojiPicker } from 'emoji-mart'
-import { Redirect } from 'react-router-dom'
+import { Redirect, Link } from 'react-router-dom'
 import { Menu, Item, Separator } from 'react-contexify'
 import { ReactTitle } from 'react-meta-tags'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -506,7 +506,12 @@ class Chat extends Component {
               </div>
               <div className='bg-gray-100 h-20 flex flex-col justify-around px-2'>
                 <div className='flex flex-row justify-between items-center'>
-                  <h2>@{this.state.username.slice(0, 16)}</h2>
+                  <Link to={`/QR?q=${window.location.origin}/#/?friend=${this.state.me.key}`} target='_blank'>
+                    <h2 className='hover:underline'>
+                      <FontAwesomeIcon icon='qrcode' className='mr-1 text-gray-500' />
+                      @{this.state.username.slice(0, 16)}
+                    </h2>
+                  </Link>
                   <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.updateProfile.bind(this)}>✎</h2>
                 </div>
                 <input className='bg-gray-400 px-1 border border-gray-500 w-full' value={this.state.me.key} readOnly />
