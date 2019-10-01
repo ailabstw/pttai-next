@@ -18,6 +18,7 @@ assert.ok(process.env.JWT_SECRET)
 const JWT_SECRET = process.env.JWT_SECRET
 const ENABLE_TEST_LOGIN = process.env.ENABLE_TEST_LOGIN
 const REPLICATOR_URL = process.env.REPLICATOR_URL
+const uuid = require('uuid/v4')
 
 var archivesLock = new AsyncLock()
 
@@ -203,6 +204,10 @@ async function main () {
       await user.setProfile(archive, { name })
     }
 
+    if (req.body.friend) {
+      await user.createFriend(archive, { id: uuid(), key: req.body.friend })
+    }
+
     const token = jwt.sign({ id }, JWT_SECRET)
     res.json({ result: { key: archive.key.toString('hex'), token } })
   })
@@ -213,6 +218,9 @@ async function main () {
       const archive = await loadArchive(id)
 
       await user.setProfile(archive, { name: id })
+      if (req.body.friend) {
+        await user.createFriend(archive, { id: uuid(), key: req.body.friend })
+      }
 
       const token = jwt.sign({ id }, JWT_SECRET)
       res.json({ result: { key: archive.key.toString('hex'), token } })

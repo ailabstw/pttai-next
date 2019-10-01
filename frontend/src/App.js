@@ -3,6 +3,7 @@ import { HashRouter as Router, Route } from 'react-router-dom'
 
 import Chat from './Chat'
 import Login from './Login'
+import QR from './QR'
 import TestLogin from './TestLogin'
 
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -16,6 +17,7 @@ class App extends Component {
       <Route exact path='/' component={Login} />
       {process.env.REACT_APP_ENABLE_TEST_LOGIN ? <Route path='/test-login' component={TestLogin} /> : ''}
       <Route path='/chat' component={Chat} />
+      <Route path='/qr' component={QR} />
     </Router>
   }
 }

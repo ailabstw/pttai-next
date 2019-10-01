@@ -20,7 +20,9 @@ class Login extends Component {
   }
 
   async login (token) {
-    const resp = await axios.post(`${process.env.REACT_APP_GATEWAY_URL}/login`, { id_token: token })
+    const params = new URLSearchParams(this.props.location.search)
+    const friendKey = params.get('friend')
+    const resp = await axios.post(`${process.env.REACT_APP_GATEWAY_URL}/login`, { id_token: token, friend: friendKey })
     window.localStorage.setItem('token', resp.data.result.token)
 
     this.setState({ loggedIn: true })
