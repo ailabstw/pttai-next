@@ -442,7 +442,7 @@ class Chat extends Component {
             : ''}
           <Menu id='menu_id'>
             <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
-            <Item onClick={this.handleUpdate.bind(this)}>Update</Item>
+            <Item onClick={this.handleUpdate.bind(this)}>Edit...</Item>
             <Separator />
             <Item onClick={this.handleDelete.bind(this)}>Delete</Item>
           </Menu>
