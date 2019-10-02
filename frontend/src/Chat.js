@@ -506,7 +506,7 @@ class Chat extends Component {
               </div>
               <div className='bg-gray-100 h-20 flex flex-col justify-around px-2'>
                 <div className='flex flex-row justify-between items-center'>
-                  <Link to={`/QR?q=${window.location.origin}/#/?friend=${this.state.me.key}`} target='_blank'>
+                  <Link to={`/QR?q=${encodeURIComponent(`${window.location.origin}/#/?friend=${this.state.me.key}`)}`} target='_blank'>
                     <h2 className='hover:underline'>
                       <FontAwesomeIcon icon='qrcode' className='mr-1 text-gray-500' />
                       @{this.state.username.slice(0, 16)}
