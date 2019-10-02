@@ -13,8 +13,5 @@
   },
   "standard": {
     "parser": "babel-eslint"
-  },
-  "devDependencies": {
-    "babel-eslint": "^10.0.3"
   }
 }
