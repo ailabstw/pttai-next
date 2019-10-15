@@ -2,9 +2,9 @@
 
 # PTT.ai-next
 
-A decentralized data exchange platform. Currently implemented a slack-like chat room as a PoC.
+A decentralized data exchange platform. For the ideas behind the project, check the website: [https://ptt.ai](https://ptt.ai).
 
-For the ideas behind the project, check the website: [https://ptt.ai](https://ptt.ai).
+Currently implemented a slack-like chat room as a PoC.
 
 <!-- Stability -->
 <a href="https://nodejs.org/api/documentation.html#documentation_stability_index">
