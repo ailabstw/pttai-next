@@ -82,7 +82,7 @@ async function main () {
     id2socket[id] = socket
 
     if (archives[id]) {
-      const ret = filterDMChannels(view.state.dmChannels, archives[id])
+      const ret = filterDMChannels(view.state.dmChannelsVisible, archives[id])
       socket.emit('dm', ret)
     }
   })
