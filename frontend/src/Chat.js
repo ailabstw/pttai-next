@@ -114,22 +114,25 @@ class Chat extends Component {
     }
   }
 
+  isPublicChannel () {
+    return this.state.currentTopic[0] === '#'
+  }
+
+  getReceiverKey (channelID) {
+    const keys = channelID.split('-')
+    if (keys[0] === this.state.me.key) {
+      return keys[1]
+    }
+    return keys[0]
+  }
+
   async postToTopic (data) {
-    if (this.state.currentTopic[0] === '#') {
-    // to channel
+    if (this.isPublicChannel()) {
       const topic = this.state.currentTopic.slice(1)
       data.id = Date.now()
       await this.req('post', `/topics/${topic}`, data)
     } else {
-      // dm
-      const keys = this.state.currentTopic.split('-')
-      let key
-      if (keys[0] === this.state.me.key) {
-        key = keys[1]
-      } else {
-        key = keys[0]
-      }
-      await this.req('post', '/dm', { message: data.message, receiver: key })
+      await this.req('post', '/dm', { message: data.message, receiver: this.getReceiverKey(this.state.currentTopic) })
     }
     this.scrollMessage()
   }
@@ -238,13 +241,7 @@ class Chat extends Component {
       const lastMessageTime = Object.assign({}, this.state.lastMessageTime)
       const lastReadTime = Object.assign({}, this.state.lastReadTime)
       for (const channelID in dmChannels) {
-        const keys = channelID.split('-')
-        let key
-        if (keys[0] === this.state.me.key) {
-          key = keys[1]
-        } else {
-          key = keys[0]
-        }
+        const key = this.getReceiverKey(channelID)
         if (this.state.friends.findIndex(f => (f.key || f.id) === key) === -1) {
           this.setState({ friends: this.state.friends.concat([{ id: key }]) })
         }
@@ -368,12 +365,42 @@ class Chat extends Component {
   async handleSelectEmoji (emoji, e) {
     this.setState({ showEmojiPicker: false })
     const props = this.state.emojiPickerData
-    const ret = await this.req('post', `/topics/${props.topic}/reactions`, { id: Date.now(), react: emoji.native, msgID: props.id })
-    console.log(ret.data)
+
+    if (this.isPublicChannel()) {
+      const ret = await this.req('post', `/topics/${props.topic}/reactions`, { id: Date.now(), react: emoji.native, msgID: props.id })
+      console.log(ret.data)
+    } else {
+      const ret = await this.req('post', '/dm', {
+        message: {
+          type: 'react',
+          value: {
+            id: Date.now(),
+            react: emoji.native,
+            msgID: props.id
+          }
+        },
+        receiver: this.getReceiverKey(this.state.currentTopic)
+      })
+      console.log(ret.data)
+    }
   }
 
   async onAddReaction (react, message) {
-    await this.req('post', `/topics/${message.topic}/reactions`, { id: Date.now(), react: react, msgID: message.id })
+    if (this.isPublicChannel()) {
+      await this.req('post', `/topics/${message.topic}/reactions`, { id: Date.now(), react: react, msgID: message.id })
+    } else {
+      await this.req('post', '/dm', {
+        message: {
+          type: 'react',
+          value: {
+            id: Date.now(),
+            react: react,
+            msgID: message.id
+          }
+        },
+        receiver: this.getReceiverKey(this.state.currentTopic)
+      })
+    }
   }
 
   setHub (id) {
@@ -407,12 +434,7 @@ class Chat extends Component {
       messages = this.state.messages[this.state.currentTopic]
     } else {
       messages = this.state.dmChannels[this.state.currentTopic]
-      const keys = this.state.currentTopic.split('-')
-      if (keys[0] === this.state.me.key) {
-        currentActiveDM = keys[1]
-      } else {
-        currentActiveDM = keys[0]
-      }
+      currentActiveDM = this.getReceiverKey(this.state.currentTopic)
     }
 
     const unread = {}
@@ -440,12 +462,15 @@ class Chat extends Component {
           {this.state.showEmojiPicker
             ? <EmojiPicker ref={this.emojiPickerRef} style={{ right: 0, bottom: this.state.emojiPickerBottom, position: 'absolute' }} onClick={this.handleSelectEmoji.bind(this)} />
             : ''}
-          <Menu id='menu_id'>
+          {this.isPublicChannel() ? <Menu id='menu_id'>
             <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
             <Item onClick={this.handleUpdate.bind(this)}>Edit...</Item>
             <Separator />
             <Item onClick={this.handleDelete.bind(this)}>Delete</Item>
+          </Menu> : <Menu id='menu_id'>
+            <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
           </Menu>
+          }
           <div className='header shadow-lg bg-gray-200 sm:hidden w-full h-full flex flex-row items-center justify-between px-2'>
             <FontAwesomeIcon icon='bars' size='lg' onClick={this.onClickHeaderMenu.bind(this)} />
 
@@ -527,7 +552,6 @@ class Chat extends Component {
                 myKey={this.state.me.key}
                 onAddReaction={this.onAddReaction.bind(this)}
                 onNewFriend={this._newFriend.bind(this)}
-                allowReact={!currentActiveDM}
                 showScrollButton={this.state.messageListScrolled}
                 onClickScrollButton={this.onClickMessageListScrollButton.bind(this)}
               /> : ''}

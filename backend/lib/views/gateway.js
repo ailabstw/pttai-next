@@ -9,6 +9,7 @@ class GatewayView extends EventEmitter {
     if (!state) {
       state = {
         dmChannels: {},
+        dmChannelsVisible: {},
         currentVersion: {}
       }
     }
@@ -34,10 +35,30 @@ class GatewayView extends EventEmitter {
     const dmChannelID = [authorKey, receiverKey].sort().join('-')
 
     if (!this.state.dmChannels[dmChannelID]) this.state.dmChannels[dmChannelID] = []
-    this.state.dmChannels[dmChannelID].push({ author: authorKey, message: JSON.parse(message), id: dmID })
-    this.state.dmChannels[dmChannelID] = this.state.dmChannels[dmChannelID].sort((x, y) => x.message.date - y.message.date)
 
-    this.emit('dm', this.state.dmChannels)
+    this.state.dmChannels[dmChannelID].push({ author: authorKey, message: JSON.parse(message), id: dmID })
+
+    // reduce
+    let dmReactions = this.state.dmChannels[dmChannelID].filter(m => m.message.type === 'react')
+    dmReactions = dmReactions.reduce((acc, m) => {
+      const messageID = m.message.value.msgID.toString()
+      if (!(messageID in acc)) {
+        acc[messageID] = []
+      }
+      m.message.value.author = authorKey
+      acc[messageID].push(m.message.value)
+      return acc
+    }, {})
+    this.state.dmChannels[dmChannelID] = this.state.dmChannels[dmChannelID].map((dmMessage) => {
+      if (dmMessage.id.toString() in dmReactions) {
+        dmMessage.reactions = dmReactions[dmMessage.id.toString()]
+      }
+      return dmMessage
+    })
+
+    this.state.dmChannels[dmChannelID] = this.state.dmChannels[dmChannelID].sort((x, y) => x.message.date - y.message.date)
+    this.state.dmChannelsVisible[dmChannelID] = this.state.dmChannels[dmChannelID].filter(m => m.message.type !== 'react')
+    this.emit('dm', this.state.dmChannelsVisible)
   }
 
   __onGossip () {

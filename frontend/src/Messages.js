@@ -30,7 +30,7 @@ class Messages extends Component {
           author={author}
           lastMessage={i > 0 ? this.props.messages[i - 1] : null}
           type={m.message.type}
-          allowReact={this.props.allowReact}
+          onAddReaction={this.props.onAddReaction}
           onNewFriend={this.onNewFriend.bind(this)} />
       })}
     </ul>

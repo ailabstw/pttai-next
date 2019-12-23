@@ -49,9 +49,9 @@ class Message extends Component {
           </span>
           <Linkify properties={{ target: '_blank', className: 'text-blue-400 underline' }}>{` ${m.message.value}`}</Linkify>
         </span>
-        {this.props.allowReact ? <MenuProvider id='menu_id' event='onClick' data={m}>
+        <MenuProvider id='menu_id' event='onClick' data={m}>
           <span className='text-gray-500 hover:text-black cursor-pointer'>...</span>
-        </MenuProvider> : ''}
+        </MenuProvider>
       </div>
       { m.reactions && m.reactions.length > 0
         ? <div className='my-1 mb-3 ml-16'>
