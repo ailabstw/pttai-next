@@ -241,7 +241,7 @@ class Chat extends Component {
       const lastMessageTime = Object.assign({}, this.state.lastMessageTime)
       const lastReadTime = Object.assign({}, this.state.lastReadTime)
       for (const channelID in dmChannels) {
-        let key = this.getReceiverKey(channelID)
+        const key = this.getReceiverKey(channelID)
         if (this.state.friends.findIndex(f => (f.key || f.id) === key) === -1) {
           this.setState({ friends: this.state.friends.concat([{ id: key }]) })
         }

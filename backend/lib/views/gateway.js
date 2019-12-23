@@ -41,7 +41,7 @@ class GatewayView extends EventEmitter {
     // reduce
     let dmReactions = this.state.dmChannels[dmChannelID].filter(m => m.message.type === 'react')
     dmReactions = dmReactions.reduce((acc, m) => {
-      let messageID = m.message.value.msgID.toString()
+      const messageID = m.message.value.msgID.toString()
       if (!(messageID in acc)) {
         acc[messageID] = []
       }
