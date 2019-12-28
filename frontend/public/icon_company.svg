@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="icon_company" width="38" height="38" viewBox="0 0 38 38">
+    <defs>
+        <style>
+            .cls-1{fill:#fff}.cls-2{fill:#1176a5}.cls-3{fill:#cf3a47}
+        </style>
+    </defs>
+    <circle id="Ellipse_3" cx="19" cy="19" r="19" class="cls-1" data-name="Ellipse 3"/>
+    <g id="Group_6" data-name="Group 6" transform="translate(158 18)">
+        <path id="Path_2" d="M16.195 1.9h-.958A15.244 15.244 0 0 0 0 17.137v6.286a1.119 1.119 0 0 0 1.124 1.124h4.538a.462.462 0 0 0 .458-.458v-3.83c0-8.243 3.664-12.031 10.7-12.2a.462.462 0 0 0 .458-.458V3.024A1.11 1.11 0 0 0 16.195 1.9z" class="cls-2" data-name="Path 2" transform="translate(-148 -13.109)"/>
+        <path id="Path_3" d="M24.7 35.1v3.83a.462.462 0 0 0 .458.458h5.412a1.119 1.119 0 0 0 1.124-1.124v-8.571c0-1.624-1.207-2.581-3.122-2.206-2.415.457-3.872 3.496-3.872 7.613z" class="cls-3" data-name="Path 3" transform="translate(-162.417 -27.996)"/>
+    </g>
+</svg>

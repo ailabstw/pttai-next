@@ -460,7 +460,7 @@ class Chat extends Component {
           {Object.keys(unread).length > 0 ? <ReactTitle title='(*) PTT.ai' /> : <ReactTitle title='PTT.ai' />}
           {this.state.disconnected ? <div className='absolute top-0 left-0 h-8 font-bold bg-red-800 text-gray-300 w-screen flex items-center justify-center z-20'>Disconnected</div> : ''}
           {this.state.showEmojiPicker
-            ? <EmojiPicker ref={this.emojiPickerRef} style={{ right: 0, bottom: this.state.emojiPickerBottom, position: 'absolute' }} onClick={this.handleSelectEmoji.bind(this)} />
+            ? <EmojiPicker ref={this.emojiPickerRef} style={{ right: 10, bottom: this.state.emojiPickerBottom, position: 'absolute' }} onClick={this.handleSelectEmoji.bind(this)} />
             : ''}
           {this.isPublicChannel() ? <Menu id='menu_id'>
             <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
@@ -477,59 +477,75 @@ class Chat extends Component {
             <span className='font-bold'>{header}</span>
             <FontAwesomeIcon icon='bars' size='lg' className='invisible' />{/* just for alignment */}
           </div>
-          <div className={`z-10 sidebar bg-gray-200 ${this.state.mobileShowSidebar ? '' : 'hidden'} sm:block shadow-lg sm:shadow-none`} ref={this.sideBarRef}>
+          <div className={`z-10 sidebar bg-side-bar-color ${this.state.mobileShowSidebar ? '' : 'hidden'} sm:block shadow-lg sm:shadow-none`} ref={this.sideBarRef}>
             <div className='flex flex-col justify-between h-full'>
-              <div className='overflow-y-auto p-2'>
-                <div className='mb-4'>
-                  <h2 className='font-bold'>P.me</h2>
-                  <input className='p-1 border border-gray-500 rounded font-mono text-xs w-full bg-gray-200' value={process.env.REACT_APP_GATEWAY_URL} readOnly />
+              <div className='overflow-y-auto p-0'>
+                <div className='flex flex-row items-start p-3'>
+                  <div className='w-10 flex-shrink-0 ml-0'>
+                    <img className='w-10' src='/icon_company.svg' alt='Company Icon'></img>
+                  </div>
+                  <div className='flex-shrink pl-3 mt-0'>
+                    <div className='text-base text-font-color font-bold'>台灣人工智慧實驗室</div>
+                    <div className='h-7 leading-loose text-sm text-font-color cursor-pointer hover:underline'>
+                      {this.state.username.slice(0, 16)}
+                    </div>
+                  </div>
                 </div>
-                <div className='flex flex-row justify-between'>
-                  <h2>Topics</h2>
-                  <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.createTopic.bind(this)}>+</h2>
+                <div className='pt-2'>
+                  <div className='p-3 flex flex-row justify-between'>
+                    <div className='leading-loose text-font-color font-bold'>Channels</div>
+                    <div className='cursor-pointer'>
+                      <img id='icon_add' className="w-7" src="/icon_add.svg" alt="Add new channel"
+                           onMouseOver={(e) => e.target.src = '/icon_add_hover.svg'}
+                           onMouseOut={(e) => e.target.src = '/icon_add.svg'}
+                           onMouseDown={(e) => e.target.value = '/icon_add_pressed.svg'}/>
+                    </div>
+                  </div>
+                  <ul>
+                    {Object.keys(this.state.messages).sort().map(t => {
+                      let textStyle = 'text-font-color'
+                      if (unread[t]) textStyle = `text-black font-bold`
+                      if (t === this.state.currentTopic) {
+                        return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`p-3 py-1 rounded bg-side-bar-color-active cursor-pointer ${textStyle}`}>{'# ' + t.substring(t.indexOf('#') + 1)}</li>
+                      } else if (!t.startsWith('__')) {
+                        return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`p-3 py-1 cursor-pointer ${textStyle}`}>{'# ' + t.substring(t.indexOf('#') + 1)}</li>
+                      }
+                      return ''
+                    })}
+                  </ul>
                 </div>
-                <ul>
-                  {Object.keys(this.state.messages).sort().map(t => {
-                    let textStyle = 'text-gray-600'
-                    if (unread[t]) textStyle = `text-black font-bold`
-                    if (t === this.state.currentTopic) {
-                      return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`mt-1 rounded bg-gray-400 cursor-pointer ${textStyle}`}>{t}</li>
-                    } else if (!t.startsWith('__')) {
-                      return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`mt-1 cursor-pointer ${textStyle}`}>{t}</li>
-                    }
-                    return ''
-                  })}
-                </ul>
-                <div className='mt-4'>
+                <div className='pt-2 mb-40'>
                   <div className='flex flex-row justify-between'>
-                    <h2>Friends</h2>
-                    {/* <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.newFriend.bind(this)}>+</h2> */}
+                    <div className='p-3 leading-loose text-font-color font-bold'>Friends</div>
+                      {/* <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.newFriend.bind(this)}>+</h2> */}
                   </div>
                   <ul>
                     {this.state.friends.map(f => {
-                      const id = f.key || f.id
-
+                        const id = f.key || f.id
                       let c = ''
+                      let avatarSrc = '/icon_avatar.svg'
                       if (currentActiveDM === id) {
-                        c = 'bg-gray-400 rounded'
+                        c = 'bg-side-bar-color-active rounded'
+                        avatarSrc = '/icon_avatar_pressed.svg'
                       }
                       let name = id
-                      let textStyle = 'text-gray-600'
+                      let textStyle = 'text-font-color'
                       const channelID = [id, this.state.me.key].sort().join('-')
                       if (unread[channelID]) textStyle = `text-black font-bold`
                       if (this.state.profiles[id]) name = this.state.profiles[id].name
                       if (name.length > 12) name = name.slice(0, 12) + '...'
                       return <li
-                        className={`mt-1 cursor-pointer ${textStyle} ${c}`}
+                        className={`p-3 py-1 flex flex-row cursor-pointer ${textStyle} ${c}`}
                         key={id}
                         onClick={this.changeTopic(channelID).bind(this)}>
-                         @{name}
+                          <img className="w-8 h-8 mr-2" src={avatarSrc} alt="Avatar"></img>
+                          <div className='leading-loose text-font-color'>{name}</div>
                       </li>
                     })}
                   </ul>
                 </div>
               </div>
-              <div className='bg-gray-100 h-20 flex flex-col justify-around px-2'>
+              <div className='hidden bg-gray-100 h-20 flex flex-col justify-around px-2'>
                 <div className='flex flex-row justify-between items-center'>
                   <Link to={`/QR?q=${encodeURIComponent(`${window.location.origin}/#/?friend=${this.state.me.key}`)}`} target='_blank'>
                     <h2 className='hover:underline'>
@@ -542,9 +558,8 @@ class Chat extends Component {
                 <input className='bg-gray-400 px-1 border border-gray-500 w-full' value={this.state.me.key} readOnly />
               </div>
             </div>
-
           </div>
-          <div className='message bg-red overflow-y-auto px-2' onScroll={this.onScrollMessage.bind(this)} ref={this.messagesRef}>
+          <div className='message bg-red overflow-y-auto' onScroll={this.onScrollMessage.bind(this)} ref={this.messagesRef}>
             {messages
               ? <Messages
                 profiles={this.state.profiles}
