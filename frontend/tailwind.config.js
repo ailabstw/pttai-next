@@ -10,6 +10,9 @@ module.exports = {
         'confirm-btn-color-hover': '#87949a',
         'cancel-btn-color': '#dde6eb',
         'cancel-btn-color-hover': '#d0dee4',
+        'create-btn-color': '#dde6eb',
+        'create-btn-color-hover': '#d0dee4',
+        'modal-header-color': '#f0f5f8',
       },
       textColor: {
         'font-color': '#707070',

@@ -12,6 +12,7 @@ import uuid from 'uuid/v4'
 import Div100vh from 'react-div-100vh'
 
 import Messages from './Messages'
+import FormDialog from './Modal/FormDialog'
 import 'react-contexify/dist/ReactContexify.min.css'
 
 const HUBS = [
@@ -44,6 +45,7 @@ class Chat extends Component {
       loadFailed: false,
       messageListScrolled: false,
       messageInEditKey: null,
+      openCreateChannelModal: false,
     }
 
     this.messageEndRef = React.createRef()
@@ -279,14 +281,14 @@ class Chat extends Component {
     this.gatewaySocket.on('error', console.error)
   }
 
-  async createTopic () {
-    let topic = window.prompt('enter a new topic (english only)')
+  async createTopic ({ name:topic }) {
     if (topic) {
       if (topic.match(/[\w-]+/) && topic.length <= 20) {
         await this.req('post', '/topics', topic)
         if (topic[0] !== '#') topic = `#${topic}`
         this.setState({ currentTopic: topic }, () => {
           this.postToTopic({ message: { type: 'action', value: 'joined the topic' } })
+          this.setState({ openCreateChannelModal: false })
         })
       } else {
         window.alert('invalid topic name')
@@ -529,7 +531,8 @@ class Chat extends Component {
                       <img id='icon_add' className="w-7" src="/icon_add.svg" alt="Add new channel"
                            onMouseOver={(e) => e.target.src = '/icon_add_hover.svg'}
                            onMouseOut={(e) => e.target.src = '/icon_add.svg'}
-                           onMouseDown={(e) => e.target.value = '/icon_add_pressed.svg'}/>
+                           onMouseDown={(e) => e.target.value = '/icon_add_pressed.svg'}
+                           onClick={(e) => this.setState({ openCreateChannelModal: true }) }/>
                     </div>
                   </div>
                   <ul>
@@ -612,6 +615,11 @@ class Chat extends Component {
             <textarea onKeyPress={this.onKeyPress.bind(this)} placeholder='say something...' className='border border-dialogue-color-normal focus:border-dialogue-color-pressed w-full h-full p-4 rounded border-box outline-none resize-none' ref={this.inputRef}></textarea>
           </div>
         </div>
+        <FormDialog
+          open={this.state.openCreateChannelModal}
+          handleClose={(e) => this.setState({ openCreateChannelModal: false })}
+          handleSubmit={this.createTopic.bind(this)}
+        />
       </Div100vh>
     )
   }
