@@ -30,6 +30,10 @@ class Messages extends Component {
           author={author}
           lastMessage={i > 0 ? this.props.messages[i - 1] : null}
           type={m.message.type}
+          isPublicChannel={this.props.isPublicChannel}
+          onMessageReactClicked={this.props.onMessageReactClicked}
+          onMessageEditClicked={this.props.onMessageEditClicked}
+          onMessageDeleteClicked={this.props.onMessageDeleteClicked}
           onAddReaction={this.props.onAddReaction}
           onNewFriend={this.onNewFriend.bind(this)} />
       })}

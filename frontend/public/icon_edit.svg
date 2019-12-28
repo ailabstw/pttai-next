@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="icon_edit" width="31" height="31" viewBox="0 0 31 31">
+    <defs>
+        <style>
+            .cls-1{fill:#97a5ac}.cls-2{fill:#9f9f9f;opacity:0}.cls-3{clip-path:url(#clip-path)}.cls-4{fill:#fff}
+        </style>
+        <clipPath id="clip-path">
+            <path id="Path_24" d="M9.5 0A9.5 9.5 0 1 1 0 9.5 9.5 9.5 0 0 1 9.5 0z" class="cls-1" data-name="Path 24" transform="translate(6 6)"/>
+        </clipPath>
+    </defs>
+    <path id="Path_7" d="M15.5 0A15.5 15.5 0 1 1 0 15.5 15.5 15.5 0 0 1 15.5 0z" class="cls-2" data-name="Path 7"/>
+    <path id="Path_10" d="M9.5 0A9.5 9.5 0 1 1 0 9.5 9.5 9.5 0 0 1 9.5 0z" class="cls-1" data-name="Path 10" transform="translate(6 6)"/>
+    <g id="Mask_Group_1" class="cls-3" data-name="Mask Group 1">
+        <g id="Group_50" data-name="Group 50" transform="translate(12.291 4.93)">
+            <path id="Path_16" d="M.253 12.729c.765.638 3.954-2.041 4.592-2.933L1.783 7.5c-.637.893-2.423 4.592-1.53 5.229z" class="cls-4" data-name="Path 16" transform="translate(0 2.069)"/>
+            <path id="Path_17" d="M10.573.386a1.878 1.878 0 0 0-2.678.383L1.9 8.8l3.061 2.3 5.995-8.035a1.878 1.878 0 0 0-.383-2.679z" class="cls-4" data-name="Path 17" transform="translate(.521)"/>
+        </g>
+    </g>
+</svg>

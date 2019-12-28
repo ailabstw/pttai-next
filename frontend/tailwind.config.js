@@ -16,6 +16,10 @@ module.exports = {
         'dialogue-color-hover': '#889aa3',
         'dialogue-color-pressed': '#62727a',
       },
+      inset: {
+        '1/2': '50%',
+        'minus-1': '-1rem',
+      },
     }
   },
   variants: {},

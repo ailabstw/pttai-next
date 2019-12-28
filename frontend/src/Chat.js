@@ -5,7 +5,6 @@ import socketIOClient from 'socket.io-client'
 import 'emoji-mart/css/emoji-mart.css'
 import { Picker as EmojiPicker } from 'emoji-mart'
 import { Redirect, Link } from 'react-router-dom'
-import { Menu, Item, Separator } from 'react-contexify'
 import { ReactTitle } from 'react-meta-tags'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import uuid from 'uuid/v4'
@@ -462,15 +461,6 @@ class Chat extends Component {
           {this.state.showEmojiPicker
             ? <EmojiPicker ref={this.emojiPickerRef} style={{ zIndex: 20, right: 10, bottom: this.state.emojiPickerBottom, position: 'absolute' }} onClick={this.handleSelectEmoji.bind(this)} />
             : ''}
-          {this.isPublicChannel() ? <Menu id='menu_id'>
-            <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
-            <Item onClick={this.handleUpdate.bind(this)}>Edit...</Item>
-            <Separator />
-            <Item onClick={this.handleDelete.bind(this)}>Delete</Item>
-          </Menu> : <Menu id='menu_id'>
-            <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
-          </Menu>
-          }
           <div className='header shadow-lg bg-gray-200 sm:hidden w-full h-full flex flex-row items-center justify-between px-2'>
             <FontAwesomeIcon icon='bars' size='lg' onClick={this.onClickHeaderMenu.bind(this)} />
 
@@ -569,6 +559,10 @@ class Chat extends Component {
                 onNewFriend={this._newFriend.bind(this)}
                 showScrollButton={this.state.messageListScrolled}
                 onClickScrollButton={this.onClickMessageListScrollButton.bind(this)}
+                isPublicChannel={this.isPublicChannel()}
+                onMessageReactClicked={this.handleAddReaction.bind(this)}
+                onMessageEditClicked={this.handleUpdate.bind(this)}
+                onMessageDeleteClicked={this.handleDelete.bind(this)}
               /> : ''}
             <div id='end' ref={this.messageEndRef} />
           </div>
