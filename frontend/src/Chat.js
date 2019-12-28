@@ -29,7 +29,9 @@ class Chat extends Component {
       dmChannels: {},
       hubID: 0,
       api: process.env.REACT_APP_GATEWAY_URL,
-      username: 'username',
+      username: '',
+      usernameInEdit: '',
+      usernameEditMode: false,
       showEmojiPicker: false,
       emojiPickerBottom: 0,
       emojiPickerData: null,
@@ -45,6 +47,7 @@ class Chat extends Component {
 
     this.messageEndRef = React.createRef()
     this.emojiPickerRef = React.createRef()
+    this.usernameInputRef = React.createRef()
     this.inputRef = React.createRef()
     this.sideBarRef = React.createRef()
     this.messagesRef = React.createRef()
@@ -68,19 +71,26 @@ class Chat extends Component {
     }
   }
 
+  componentDidUpdate (prevProps, prevState) {
+    if (this.usernameInputRef.current && this.usernameInputRef.current.getElementsByTagName('input')) {
+      this.usernameInputRef.current.getElementsByTagName('input')[0].focus()
+    }
+  }
+
   componentWillUnmount () {
     document.removeEventListener('mousedown', this.onClickOutSideEmojiPicker.bind(this))
     document.removeEventListener('touchstart', this.onClickOutSideEmojiPicker.bind(this))
   }
 
   async updateProfile () {
-    const name = window.prompt('Enter new name')
+    this.setState({ usernameEditMode: true, usernameInEdit: this.state.username })
+  }
 
-    if (name) {
-      await this.req('post', '/profile', { name })
-
-      this.setState({ username: name })
+  async updateUserName () {
+    if (this.state.usernameInEdit) {
+      await this.req('post', '/profile', { name: this.state.usernameInEdit })
     }
+    this.setState({ usernameEditMode: false, username: this.state.usernameInEdit })
   }
 
   onKeyPress (e) {
@@ -92,6 +102,10 @@ class Chat extends Component {
   }
 
   onClickOutSideEmojiPicker (e) {
+    if (this.state.usernameEditMode && !ReactDOM.findDOMNode(ReactDOM.findDOMNode(this.usernameInputRef.current)).contains(e.target)) {
+      this.setState({ usernameEditMode: false })
+    }
+
     if (this.emojiPickerRef.current && !ReactDOM.findDOMNode(ReactDOM.findDOMNode(this.emojiPickerRef.current)).contains(e.target)) {
       this.setState({ showEmojiPicker: false })
     }
@@ -424,6 +438,10 @@ class Chat extends Component {
     this.scrollMessage(true)
   }
 
+  onUserNameChange (e) {
+    this.setState({ usernameInEdit: e.target.value })
+  }
+
   render () {
     let messages = []
     let currentActiveDM
@@ -476,9 +494,20 @@ class Chat extends Component {
                   </div>
                   <div className='flex-shrink pl-3 mt-0'>
                     <div className='text-base text-font-color font-bold'>台灣人工智慧實驗室</div>
-                    <div className='h-7 leading-loose text-sm text-font-color cursor-pointer hover:underline'>
-                      {this.state.username.slice(0, 16)}
-                    </div>
+                    {
+                      this.state.usernameEditMode
+                        ? <div className='text-sm text-font-color flex flex-row mt-1' ref={this.usernameInputRef}>
+                            <input className='min-w-0 my-atuo px-1 h-7 rounded focus:outline-none' onChange={this.onUserNameChange.bind(this)} value={this.state.usernameInEdit}/>
+                            <img id='icon_done' className='w-7 ml-auto cursor-pointer' src='/icon_done.svg' alt='Confirm Username'
+                              onClick={this.updateUserName.bind(this)}
+                              onMouseOver={(e) => e.target.src = '/icon_done_hover.svg'}
+                              onMouseOut={(e) => e.target.src = '/icon_done.svg'}/>
+                          </div>
+                        : <div className='h-7 leading-loose text-sm text-font-color cursor-pointer hover:underline'
+                            onClick={(e) => {this.setState({ usernameEditMode: true, usernameInEdit: this.state.username })}}>
+                              {this.state.username.slice(0, 16)}
+                          </div>
+                    }
                   </div>
                 </div>
                 <div className='pt-2'>
