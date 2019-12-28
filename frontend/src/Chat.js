@@ -13,6 +13,9 @@ import Div100vh from 'react-div-100vh'
 
 import Messages from './Messages'
 import FormDialog from './Modal/FormDialog'
+import AlertDialog from './Modal/AlertDialog'
+import ConfirmDialog from './Modal/ConfirmDialog'
+
 import 'react-contexify/dist/ReactContexify.min.css'
 
 const HUBS = [
@@ -46,6 +49,11 @@ class Chat extends Component {
       messageListScrolled: false,
       messageInEditKey: null,
       openCreateChannelModal: false,
+      openAlertModal: false,
+      openConfirmModal: false,
+      alertMessage: '',
+      confirmMessage: '',
+      confirmData: {},
     }
 
     this.messageEndRef = React.createRef()
@@ -291,7 +299,11 @@ class Chat extends Component {
           this.setState({ openCreateChannelModal: false })
         })
       } else {
-        window.alert('invalid topic name')
+        this.setState({
+          openCreateChannelModal: false,
+          openAlertModal: true,
+          alertMessage: 'invalid topic name',
+        })
       }
     }
   }
@@ -343,16 +355,23 @@ class Chat extends Component {
   }
 
   async handleDelete ({ event, props }) {
-    const ok = window.confirm('delete message?')
+    this.setState({ openConfirmModal: true, confirmMessage: 'delete message?', confirmData: { event: event, props:props }})
+  }
 
-    if (ok) {
-      console.log('mod', props)
-      try {
-        const ret = await this.req('delete', `/topics/${props.topic}/${props.id}`)
-        console.log(ret.data)
-      } catch (e) {
-        window.alert('刪除失敗')
-      }
+  async onConfirmMessageDelete({ event, props }) {
+    console.log('mod', props)
+    try {
+      const ret = await this.req('delete', `/topics/${props.topic}/${props.id}`)
+      console.log(ret.data)
+      this.setState({ openConfirmModal: false, confirmMessage: '', confirmData: {} })
+    } catch (e) {
+      this.setState({
+        openConfirmModal: false,
+        confirmMessage: '',
+        confirmData: {},
+        openAlertModal: true,
+        alertMessage: '刪除失敗',
+      })
     }
   }
 
@@ -372,7 +391,11 @@ class Chat extends Component {
             console.log(ret.data)
             this.setState({ messageInEditKey: null })
           } catch (e) {
-            window.alert('編輯失敗')
+            this.setState({
+              messageInEditKey: null,
+              openAlertModal: true,
+              alertMessage: '編輯失敗',
+            })
           }
         }
         break
@@ -619,6 +642,18 @@ class Chat extends Component {
           open={this.state.openCreateChannelModal}
           handleClose={(e) => this.setState({ openCreateChannelModal: false })}
           handleSubmit={this.createTopic.bind(this)}
+        />
+        <AlertDialog
+          open={this.state.openAlertModal}
+          message={this.state.alertMessage}
+          handleClose={(e) => this.setState({ openAlertModal: false })}
+        />
+        <ConfirmDialog
+          open={this.state.openConfirmModal}
+          message={this.state.confirmMessage}
+          data={this.state.confirmData}
+          handleClose={(e) => this.setState({ openConfirmModal: false })}
+          handleConfirm={this.onConfirmMessageDelete.bind(this)}
         />
       </Div100vh>
     )
