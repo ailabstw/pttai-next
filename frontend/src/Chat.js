@@ -460,7 +460,7 @@ class Chat extends Component {
           {Object.keys(unread).length > 0 ? <ReactTitle title='(*) PTT.ai' /> : <ReactTitle title='PTT.ai' />}
           {this.state.disconnected ? <div className='absolute top-0 left-0 h-8 font-bold bg-red-800 text-gray-300 w-screen flex items-center justify-center z-20'>Disconnected</div> : ''}
           {this.state.showEmojiPicker
-            ? <EmojiPicker ref={this.emojiPickerRef} style={{ right: 10, bottom: this.state.emojiPickerBottom, position: 'absolute' }} onClick={this.handleSelectEmoji.bind(this)} />
+            ? <EmojiPicker ref={this.emojiPickerRef} style={{ zIndex: 20, right: 10, bottom: this.state.emojiPickerBottom, position: 'absolute' }} onClick={this.handleSelectEmoji.bind(this)} />
             : ''}
           {this.isPublicChannel() ? <Menu id='menu_id'>
             <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
@@ -572,8 +572,8 @@ class Chat extends Component {
               /> : ''}
             <div id='end' ref={this.messageEndRef} />
           </div>
-          <div className='prompt bg-blue'>
-            <input onKeyPress={this.onKeyPress.bind(this)} type='text' placeholder='say something...' className='focus:border-gray-900 border border-gray-400 w-full h-full p-2 rounded border-box outline-none' ref={this.inputRef} />
+          <div className='p-4 prompt bg-blue'>
+            <textarea onKeyPress={this.onKeyPress.bind(this)} placeholder='say something...' className='border border-dialogue-color-normal focus:border-dialogue-color-pressed w-full h-full p-4 rounded border-box outline-none resize-none' ref={this.inputRef}></textarea>
           </div>
         </div>
       </Div100vh>

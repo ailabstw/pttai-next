@@ -35,29 +35,40 @@ class Message extends Component {
     }
 
     return <li
-      className='message flex flex-col hover:bg-gray-100'>
-      {shouldRenderDate
-        ? <div className='text-sm text-center border-b border-gray-300 mb-2'>{moment(date).format('YYYY-MM-DD')}</div>
-        : ''}
-      <div className='flex flex-row justify-between'>
-        <span className='text-gray-500 inline-block mr-2 text-xs pt-1 font-mono'>{moment(date).format('HH:mm')}</span>
-        <span className={`${textStyle} flex-grow`}>
-          <span
-            className={`font-bold cursor-pointer hover:underline ${authorStyle}`}
-            onClick={this.props.onNewFriend(m.author)}>
-            {this.props.author}
-          </span>
-          <Linkify properties={{ target: '_blank', className: 'text-blue-400 underline' }}>{` ${m.message.value}`}</Linkify>
-        </span>
-        <MenuProvider id='menu_id' event='onClick' data={m}>
-          <span className='text-gray-500 hover:text-black cursor-pointer'>...</span>
-        </MenuProvider>
-      </div>
-      { m.reactions && m.reactions.length > 0
-        ? <div className='my-1 mb-3 ml-16'>
-          <Reactions myKey={this.props.myKey} reactions={m.reactions} onAddReaction={this.props.onAddReaction} message={m} />
+      className='message flex flex-col w-full'>
+      {
+        shouldRenderDate? <div className='date-divider my-2'  data-content={moment(date).format('dddd, MMMM Do')}></div> : ''
+      }
+      <div className='relative flex flex-row flex-start pt-2 pb-1 hover:bg-message-hover'>
+        <div className='w-16 cursor-pointer flex-shrink-0'>
+          <img className='w-8 h-8 ml-4 mr-2' src='/icon_avatar.svg' alt='User Avatar'></img>
         </div>
-        : <div className='my-1' />}
+        <div className={`'flex flex-col w-full min-w-0 pr-4 ${textStyle}`}>
+          <div className='flex flex-row flex-start'>
+            <span
+              className={`font-bold mr-2 cursor-pointer hover:underline ${authorStyle}`}
+              onClick={this.props.onNewFriend(m.author)}>
+              {this.props.author}
+            </span>
+            <span className='text-font-color-light inline-block mr-2 text-xs pt-1 font-mono'>{moment(date).format('HH:mm A')}</span>
+          </div>
+          <div className='text-font-color min-w-0 w-full break-words'>
+            <Linkify properties={{ target: '_blank', className: 'underline' }}>
+              {`${m.message.value}`}
+            </Linkify>
+          </div>
+          { m.reactions && m.reactions.length > 0
+            ? <div className='mb-1 ml-1'>
+              <Reactions myKey={this.props.myKey} reactions={m.reactions} onAddReaction={this.props.onAddReaction} message={m} />
+            </div>
+            : <div/>}
+        </div>
+        <div className='w-16'>
+          <MenuProvider id='menu_id' event='onClick' data={m}>
+            <span className='text-gray-500 hover:text-black cursor-pointer'>...</span>
+          </MenuProvider>
+        </div>
+      </div>
     </li>
   }
 }
