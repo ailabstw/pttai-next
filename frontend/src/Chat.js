@@ -42,7 +42,8 @@ class Chat extends Component {
       disconnected: false,
       mobileShowSidebar: false,
       loadFailed: false,
-      messageListScrolled: false
+      messageListScrolled: false,
+      messageInEditKey: null,
     }
 
     this.messageEndRef = React.createRef()
@@ -353,17 +354,28 @@ class Chat extends Component {
     }
   }
 
-  async handleUpdate ({ event, props }) {
-    const update = window.prompt('編輯訊息', props.message.value)
-
-    if (update) {
-      console.log('mod', props)
-      try {
-        const ret = await this.req('put', `/topics/${props.topic}/${props.id}`, { id: props.id, message: { type: 'text', value: update } })
-        console.log(ret.data)
-      } catch (e) {
-        window.alert('編輯失敗')
-      }
+  async handleUpdate ({ event, props, type, data }) {
+    switch (type) {
+      case 'edit':
+        this.setState({ messageInEditKey: props.id })
+        break
+      case 'cancel':
+        this.setState({ messageInEditKey: null })
+        break
+      case 'confirm':
+        if (data) {
+          console.log('mod', data)
+          try {
+            const ret = await this.req('put', `/topics/${props.topic}/${props.id}`, { id: props.id, message: { type: 'text', value: data } })
+            console.log(ret.data)
+            this.setState({ messageInEditKey: null })
+          } catch (e) {
+            window.alert('編輯失敗')
+          }
+        }
+        break
+      default:
+        console.log('this wont be reached')
     }
   }
 
@@ -592,6 +604,7 @@ class Chat extends Component {
                 onMessageReactClicked={this.handleAddReaction.bind(this)}
                 onMessageEditClicked={this.handleUpdate.bind(this)}
                 onMessageDeleteClicked={this.handleDelete.bind(this)}
+                messageInEditKey={this.state.messageInEditKey}
               /> : ''}
             <div id='end' ref={this.messageEndRef} />
           </div>

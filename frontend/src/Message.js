@@ -10,12 +10,34 @@ class Message extends Component {
       super()
       this.state = {
         shouldRenderOption: false,
+        messageInEdit: props.message.message.value,
       }
+
+      this.messageRef = React.createRef()
     }
+
+  componentDidUpdate (prevProps, prevState) {
+    if (this.messageRef.current && this.messageRef.current.getElementsByTagName('textarea')) {
+      this.messageRef.current.getElementsByTagName('textarea')[0].focus()
+    }
+  }
 
   id2color (id) {
     const n = parseInt(id, 16)
     return nameColors[n % nameColors.length]
+  }
+
+  onMessageChange (e) {
+    this.setState({ messageInEdit: e.target.value })
+  }
+
+  onMessageCancelEdit (event, message) {
+    this.setState({ messageInEdit: this.props.message.message.value })
+    this.props.onMessageEditClicked({event:event, props:message, type:'cancel'})
+  }
+
+  onMessageConfirmEdit (event, message) {
+    this.props.onMessageEditClicked({event:event, props:message, type:'confirm', data: this.state.messageInEdit })
   }
 
   render () {
@@ -60,7 +82,7 @@ class Message extends Component {
               <img className='m-1 w-6 h-6 cursor-pointer' src='/icon_edit.svg' alt='edit'
                 onMouseEnter={(e) => e.target.src = '/icon_edit_pressed.svg'}
                 onMouseLeave={(e) => e.target.src = '/icon_edit.svg'}
-                onClick={(e) => this.props.onMessageEditClicked({event:e, props:m})}/> : ''
+                onClick={(e) => this.props.onMessageEditClicked({event:e, props:m, type:'edit'})}/> : ''
             }
             {
               this.props.isPublicChannel ?
@@ -84,9 +106,18 @@ class Message extends Component {
             <span className='text-font-color-light inline-block mr-2 text-xs pt-1 font-mono'>{moment(date).format('HH:mm A')}</span>
           </div>
           <div className='text-font-color min-w-0 w-full break-words'>
-            <Linkify properties={{ target: '_blank', className: 'underline' }}>
-              {`${m.message.value}`}
-            </Linkify>
+          {
+            this.props.messageInEditKey === this.props.myKey
+              ? <div className='flex flex-col' ref={this.messageRef}>
+                  <textarea className='w-full p-2 border border-dialogue-color-normal rounded focus:outline-none resize-y' onChange={this.onMessageChange.bind(this)} value={this.state.messageInEdit}/>
+                  <div className='flex flex-row justify-start my-2'>
+                    <div className='w-24 h-8 mr-2 rounded text-center leading-loose bg-cancel-btn-color hover:bg-cancel-btn-color-hover text-font-color cursor-pointer' onClick={(e) => this.onMessageCancelEdit(e, m)}>Cancel</div>
+                    <div className='w-24 h-8 mr-2 rounded text-center leading-loose bg-confirm-btn-color hover:bg-confirm-btn-olor-hover text-white cursor-pointer'  onClick={(e) => this.onMessageConfirmEdit(e, m)}>Confirm</div>
+                  </div>
+                </div> : <Linkify properties={{ target: '_blank', className: 'underline' }}>
+                {`${m.message.value}`}
+              </Linkify>
+          }
           </div>
           { m.reactions && m.reactions.length > 0
             ? <div className='mb-1 ml-1'>

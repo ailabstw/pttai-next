@@ -6,6 +6,10 @@ module.exports = {
         'side-bar-color-active': '#d0dee4',
         'message-color': '#ffffff',
         'message-hover': '#f0f5f8',
+        'confirm-btn-color': '#97a5ac',
+        'confirm-btn-color-hover': '#87949a',
+        'cancel-btn-color': '#dde6eb',
+        'cancel-btn-color-hover': '#d0dee4',
       },
       textColor: {
         'font-color': '#707070',
