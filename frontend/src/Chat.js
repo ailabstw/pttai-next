@@ -53,7 +53,7 @@ class Chat extends Component {
       openConfirmModal: false,
       alertMessage: '',
       confirmMessage: '',
-      confirmData: {},
+      confirmData: {}
     }
 
     this.messageEndRef = React.createRef()
@@ -289,7 +289,7 @@ class Chat extends Component {
     this.gatewaySocket.on('error', console.error)
   }
 
-  async createTopic ({ name:topic }) {
+  async createTopic ({ name: topic }) {
     if (topic) {
       if (topic.match(/[\w-]+/) && topic.length <= 20) {
         await this.req('post', '/topics', topic)
@@ -302,7 +302,7 @@ class Chat extends Component {
         this.setState({
           openCreateChannelModal: false,
           openAlertModal: true,
-          alertMessage: 'invalid topic name',
+          alertMessage: 'invalid topic name'
         })
       }
     }
@@ -355,10 +355,17 @@ class Chat extends Component {
   }
 
   async handleDelete ({ event, props }) {
-    this.setState({ openConfirmModal: true, confirmMessage: 'delete message?', confirmData: { event: event, props:props }})
+    this.setState({
+      openConfirmModal: true,
+      confirmMessage: 'delete message?',
+      confirmData: {
+        event: event,
+        props: props
+      }
+    })
   }
 
-  async onConfirmMessageDelete({ event, props }) {
+  async onConfirmMessageDelete ({ event, props }) {
     console.log('mod', props)
     try {
       const ret = await this.req('delete', `/topics/${props.topic}/${props.id}`)
@@ -370,7 +377,7 @@ class Chat extends Component {
         confirmMessage: '',
         confirmData: {},
         openAlertModal: true,
-        alertMessage: '刪除失敗',
+        alertMessage: '刪除失敗'
       })
     }
   }
@@ -394,7 +401,7 @@ class Chat extends Component {
             this.setState({
               messageInEditKey: null,
               openAlertModal: true,
-              alertMessage: '編輯失敗',
+              alertMessage: '編輯失敗'
             })
           }
         }
@@ -527,23 +534,23 @@ class Chat extends Component {
               <div className='overflow-y-auto p-0'>
                 <div className='flex flex-row items-start p-3'>
                   <div className='w-10 flex-shrink-0 ml-0'>
-                    <img className='w-10' src='/icon_company.svg' alt='Company Icon'></img>
+                    <img className='w-10' src='/icon_company.svg' alt='Company Icon' />
                   </div>
                   <div className='flex-shrink pl-3 mt-0'>
                     <div className='text-base text-font-color font-bold'>台灣人工智慧實驗室</div>
                     {
                       this.state.usernameEditMode
                         ? <div className='text-sm text-font-color flex flex-row mt-1' ref={this.usernameInputRef}>
-                            <input className='min-w-0 my-atuo px-1 h-7 rounded focus:outline-none' onChange={this.onUserNameChange.bind(this)} value={this.state.usernameInEdit}/>
-                            <img id='icon_done' className='w-7 ml-auto cursor-pointer' src='/icon_done.svg' alt='Confirm Username'
-                              onClick={this.updateUserName.bind(this)}
-                              onMouseOver={(e) => e.target.src = '/icon_done_hover.svg'}
-                              onMouseOut={(e) => e.target.src = '/icon_done.svg'}/>
-                          </div>
+                          <input className='min-w-0 my-atuo px-1 h-7 rounded focus:outline-none' onChange={this.onUserNameChange.bind(this)} value={this.state.usernameInEdit} />
+                          <img id='icon_done' className='w-7 ml-auto cursor-pointer' src='/icon_done.svg' alt='Confirm Username'
+                            onClick={this.updateUserName.bind(this)}
+                            onMouseOver={(e) => { e.target.src = '/icon_done_hover.svg' }}
+                            onMouseOut={(e) => { e.target.src = '/icon_done.svg' }} />
+                        </div>
                         : <div className='h-7 leading-loose text-sm text-font-color cursor-pointer hover:underline'
-                            onClick={(e) => {this.setState({ usernameEditMode: true, usernameInEdit: this.state.username })}}>
-                              {this.state.username.slice(0, 16)}
-                          </div>
+                          onClick={(e) => { this.setState({ usernameEditMode: true, usernameInEdit: this.state.username }) }}>
+                          {this.state.username.slice(0, 16)}
+                        </div>
                     }
                   </div>
                 </div>
@@ -551,11 +558,11 @@ class Chat extends Component {
                   <div className='p-3 flex flex-row justify-between'>
                     <div className='leading-loose text-font-color font-bold'>Channels</div>
                     <div className='cursor-pointer'>
-                      <img id='icon_add' className="w-7" src="/icon_add.svg" alt="Add new channel"
-                           onMouseOver={(e) => e.target.src = '/icon_add_hover.svg'}
-                           onMouseOut={(e) => e.target.src = '/icon_add.svg'}
-                           onMouseDown={(e) => e.target.value = '/icon_add_pressed.svg'}
-                           onClick={(e) => this.setState({ openCreateChannelModal: true }) }/>
+                      <img id='icon_add' className='w-7' src='/icon_add.svg' alt='Add new channel'
+                        onMouseOver={(e) => { e.target.src = '/icon_add_hover.svg' }}
+                        onMouseOut={(e) => { e.target.src = '/icon_add.svg' }}
+                        onMouseDown={(e) => { e.target.value = '/icon_add_pressed.svg' }}
+                        onClick={(e) => this.setState({ openCreateChannelModal: true })} />
                     </div>
                   </div>
                   <ul>
@@ -574,11 +581,11 @@ class Chat extends Component {
                 <div className='pt-2 mb-40'>
                   <div className='flex flex-row justify-between'>
                     <div className='p-3 leading-loose text-font-color font-bold'>Friends</div>
-                      {/* <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.newFriend.bind(this)}>+</h2> */}
+                    {/* <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.newFriend.bind(this)}>+</h2> */}
                   </div>
                   <ul>
                     {this.state.friends.map(f => {
-                        const id = f.key || f.id
+                      const id = f.key || f.id
                       let c = ''
                       let avatarSrc = '/icon_avatar.svg'
                       if (currentActiveDM === id) {
@@ -595,8 +602,8 @@ class Chat extends Component {
                         className={`p-3 py-1 flex flex-row cursor-pointer ${textStyle} ${c}`}
                         key={id}
                         onClick={this.changeTopic(channelID).bind(this)}>
-                          <img className="w-8 h-8 mr-2" src={avatarSrc} alt="Avatar"></img>
-                          <div className='leading-loose text-font-color'>{name}</div>
+                        <img className='w-8 h-8 mr-2' src={avatarSrc} alt='Avatar' />
+                        <div className='leading-loose text-font-color'>{name}</div>
                       </li>
                     })}
                   </ul>
@@ -635,7 +642,7 @@ class Chat extends Component {
             <div id='end' ref={this.messageEndRef} />
           </div>
           <div className='p-4 prompt bg-blue'>
-            <textarea onKeyPress={this.onKeyPress.bind(this)} placeholder='say something...' className='border border-dialogue-color-normal focus:border-dialogue-color-pressed w-full h-full p-4 rounded border-box outline-none resize-none' ref={this.inputRef}></textarea>
+            <textarea onKeyPress={this.onKeyPress.bind(this)} placeholder='say something...' className='border border-dialogue-color-normal focus:border-dialogue-color-pressed w-full h-full p-4 rounded border-box outline-none resize-none' ref={this.inputRef} />
           </div>
         </div>
         <FormDialog

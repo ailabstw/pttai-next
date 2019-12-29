@@ -16,24 +16,23 @@ class ConfirmDialog extends Component {
   render () {
     return (
       <div>
-      <Dialog
-        open={this.props.open}
-        onClose={this.props.handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">{this.props.message}</DialogTitle>
-        <DialogActions>
-        <Button className='focus:outline-none' onClick={this.props.handleClose} color="primary">
-            Close
-          </Button>
-          <Button className='focus:outline-none' onClick={this.onConfirm.bind(this)} color="primary">
-            Ok
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Dialog
+          open={this.props.open}
+          onClose={this.props.handleClose}
+          aria-labelledby='alert-dialog-title'
+        >
+          <DialogTitle id='alert-dialog-title'>{this.props.message}</DialogTitle>
+          <DialogActions>
+            <Button className='focus:outline-none' onClick={this.props.handleClose} color='primary'>
+              Close
+            </Button>
+            <Button className='focus:outline-none' onClick={this.onConfirm.bind(this)} color='primary'>
+              Ok
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
-    );
+    )
   }
 }
 

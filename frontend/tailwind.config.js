@@ -12,21 +12,21 @@ module.exports = {
         'cancel-btn-color-hover': '#d0dee4',
         'create-btn-color': '#dde6eb',
         'create-btn-color-hover': '#d0dee4',
-        'modal-header-color': '#f0f5f8',
+        'modal-header-color': '#f0f5f8'
       },
       textColor: {
         'font-color': '#707070',
-        'font-color-light': '#a4a4a4',
+        'font-color-light': '#a4a4a4'
       },
       borderColor: {
         'dialogue-color-normal': '#97a5ac',
         'dialogue-color-hover': '#889aa3',
-        'dialogue-color-pressed': '#62727a',
+        'dialogue-color-pressed': '#62727a'
       },
       inset: {
         '1/2': '50%',
-        'minus-1': '-1rem',
-      },
+        'minus-1': '-1rem'
+      }
     }
   },
   variants: {},
