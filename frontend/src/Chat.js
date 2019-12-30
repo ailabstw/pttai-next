@@ -537,7 +537,7 @@ class Chat extends Component {
                     <img className='w-10' src='/icon_company.svg' alt='Company Icon' />
                   </div>
                   <div className='flex-shrink pl-3 mt-0'>
-                    <div className='text-base text-font-color font-bold'>台灣人工智慧實驗室</div>
+                    <div className='text-base text-font-color font-bold'>{process.env.REACT_APP_LOGO_TEXT}</div>
                     {
                       this.state.usernameEditMode
                         ? <div className='text-sm text-font-color flex flex-row mt-1' ref={this.usernameInputRef}>
