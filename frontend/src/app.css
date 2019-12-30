@@ -10,11 +10,40 @@ code {
     monospace;
 }
 
+.date-divider {
+    position: relative;
+    outline: 0;
+    border: 0;
+    text-align: center;
+  }
+  
+  .date-divider:before {
+    content: '';
+    background: #707070;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 1px;
+    opacity: .25;
+  }
+  
+  .date-divider:after {
+    content: attr(data-content);
+    position: relative;
+    display: inline-block;
+  
+    padding: 0 .5em;
+    line-height: 1.5em;
+    color: #707070;
+    background-color: white;
+  }
+
 @media screen and (min-width: 640px) {
 .app {
   display: grid;
   grid-template-columns: 250px minmax(1px, 1fr);
-  grid-template-rows: minmax(1px, 1fr) 40px;
+  grid-template-rows: minmax(1px, 1fr) 110px;
 }
 
 .sidebar {
@@ -37,7 +66,7 @@ code {
 .app {
   display: grid;
   grid-template-columns: 250px minmax(1px, 1fr);
-  grid-template-rows: 50px minmax(1px, 1fr) 40px;
+  grid-template-rows: 50px minmax(1px, 1fr) 110px;
 }
 
 .sidebar {

@@ -26,9 +26,9 @@ class Reactions extends Component {
     for (const r in counted) {
       const hl = fromMe.indexOf(r) !== -1 ? 'border-2 border-blue-400' : 'border-2 border-gray-200'
       ret.push(
-        <span className={`inline-block cursor-pointer border-box text-sm py-1 px-2 mr-1 bg-gray-200 rounded-full w-auto ${hl}`} key={r} onClick={this.addReaction(r, fromMe.indexOf(r) !== -1).bind(this)}>
+        <span className={`h-8 w-12 inline-block cursor-pointer border-box text-sm py-1 px-2 mr-1 bg-gray-200 rounded-full w-auto ${hl}`} key={r} onClick={this.addReaction(r, fromMe.indexOf(r) !== -1).bind(this)}>
           <span>{r}</span>
-          <span className='text-xs'>{counted[r]}</span>
+          <span className='text-xs ml-1 text-font-color'>{counted[r]}</span>
         </span>
       )
     }

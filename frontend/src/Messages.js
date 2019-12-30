@@ -26,10 +26,16 @@ class Messages extends Component {
         const author = m.author ? (this.props.profiles[m.author] ? this.props.profiles[m.author].name.substring(0, 16) : m.author.substring(0, 16) + '...') : ''
         return <Message
           key={m.id}
+          myKey={m.id}
           message={m}
           author={author}
           lastMessage={i > 0 ? this.props.messages[i - 1] : null}
           type={m.message.type}
+          isPublicChannel={this.props.isPublicChannel}
+          onMessageReactClicked={this.props.onMessageReactClicked}
+          onMessageEditClicked={this.props.onMessageEditClicked}
+          onMessageDeleteClicked={this.props.onMessageDeleteClicked}
+          messageInEditKey={this.props.messageInEditKey}
           onAddReaction={this.props.onAddReaction}
           onNewFriend={this.onNewFriend.bind(this)} />
       })}

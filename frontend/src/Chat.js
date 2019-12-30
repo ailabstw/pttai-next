@@ -5,7 +5,6 @@ import socketIOClient from 'socket.io-client'
 import 'emoji-mart/css/emoji-mart.css'
 import { Picker as EmojiPicker } from 'emoji-mart'
 import { Redirect, Link } from 'react-router-dom'
-import { Menu, Item, Separator } from 'react-contexify'
 import { ReactTitle } from 'react-meta-tags'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import uuid from 'uuid/v4'
@@ -13,6 +12,10 @@ import uuid from 'uuid/v4'
 import Div100vh from 'react-div-100vh'
 
 import Messages from './Messages'
+import FormDialog from './Modal/FormDialog'
+import AlertDialog from './Modal/AlertDialog'
+import ConfirmDialog from './Modal/ConfirmDialog'
+
 import 'react-contexify/dist/ReactContexify.min.css'
 
 const HUBS = [
@@ -30,7 +33,9 @@ class Chat extends Component {
       dmChannels: {},
       hubID: 0,
       api: process.env.REACT_APP_GATEWAY_URL,
-      username: 'username',
+      username: '',
+      usernameInEdit: '',
+      usernameEditMode: false,
       showEmojiPicker: false,
       emojiPickerBottom: 0,
       emojiPickerData: null,
@@ -41,11 +46,19 @@ class Chat extends Component {
       disconnected: false,
       mobileShowSidebar: false,
       loadFailed: false,
-      messageListScrolled: false
+      messageListScrolled: false,
+      messageInEditKey: null,
+      openCreateChannelModal: false,
+      openAlertModal: false,
+      openConfirmModal: false,
+      alertMessage: '',
+      confirmMessage: '',
+      confirmData: {}
     }
 
     this.messageEndRef = React.createRef()
     this.emojiPickerRef = React.createRef()
+    this.usernameInputRef = React.createRef()
     this.inputRef = React.createRef()
     this.sideBarRef = React.createRef()
     this.messagesRef = React.createRef()
@@ -69,19 +82,26 @@ class Chat extends Component {
     }
   }
 
+  componentDidUpdate (prevProps, prevState) {
+    if (this.usernameInputRef.current && this.usernameInputRef.current.getElementsByTagName('input')) {
+      this.usernameInputRef.current.getElementsByTagName('input')[0].focus()
+    }
+  }
+
   componentWillUnmount () {
     document.removeEventListener('mousedown', this.onClickOutSideEmojiPicker.bind(this))
     document.removeEventListener('touchstart', this.onClickOutSideEmojiPicker.bind(this))
   }
 
   async updateProfile () {
-    const name = window.prompt('Enter new name')
+    this.setState({ usernameEditMode: true, usernameInEdit: this.state.username })
+  }
 
-    if (name) {
-      await this.req('post', '/profile', { name })
-
-      this.setState({ username: name })
+  async updateUserName () {
+    if (this.state.usernameInEdit) {
+      await this.req('post', '/profile', { name: this.state.usernameInEdit })
     }
+    this.setState({ usernameEditMode: false, username: this.state.usernameInEdit })
   }
 
   onKeyPress (e) {
@@ -93,6 +113,10 @@ class Chat extends Component {
   }
 
   onClickOutSideEmojiPicker (e) {
+    if (this.state.usernameEditMode && !ReactDOM.findDOMNode(ReactDOM.findDOMNode(this.usernameInputRef.current)).contains(e.target)) {
+      this.setState({ usernameEditMode: false })
+    }
+
     if (this.emojiPickerRef.current && !ReactDOM.findDOMNode(ReactDOM.findDOMNode(this.emojiPickerRef.current)).contains(e.target)) {
       this.setState({ showEmojiPicker: false })
     }
@@ -265,17 +289,21 @@ class Chat extends Component {
     this.gatewaySocket.on('error', console.error)
   }
 
-  async createTopic () {
-    let topic = window.prompt('enter a new topic (english only)')
+  async createTopic ({ name: topic }) {
     if (topic) {
       if (topic.match(/[\w-]+/) && topic.length <= 20) {
         await this.req('post', '/topics', topic)
         if (topic[0] !== '#') topic = `#${topic}`
         this.setState({ currentTopic: topic }, () => {
           this.postToTopic({ message: { type: 'action', value: 'joined the topic' } })
+          this.setState({ openCreateChannelModal: false })
         })
       } else {
-        window.alert('invalid topic name')
+        this.setState({
+          openCreateChannelModal: false,
+          openAlertModal: true,
+          alertMessage: 'invalid topic name'
+        })
       }
     }
   }
@@ -327,30 +355,59 @@ class Chat extends Component {
   }
 
   async handleDelete ({ event, props }) {
-    const ok = window.confirm('delete message?')
-
-    if (ok) {
-      console.log('mod', props)
-      try {
-        const ret = await this.req('delete', `/topics/${props.topic}/${props.id}`)
-        console.log(ret.data)
-      } catch (e) {
-        window.alert('刪除失敗')
+    this.setState({
+      openConfirmModal: true,
+      confirmMessage: 'delete message?',
+      confirmData: {
+        event: event,
+        props: props
       }
+    })
+  }
+
+  async onConfirmMessageDelete ({ event, props }) {
+    console.log('mod', props)
+    try {
+      const ret = await this.req('delete', `/topics/${props.topic}/${props.id}`)
+      console.log(ret.data)
+      this.setState({ openConfirmModal: false, confirmMessage: '', confirmData: {} })
+    } catch (e) {
+      this.setState({
+        openConfirmModal: false,
+        confirmMessage: '',
+        confirmData: {},
+        openAlertModal: true,
+        alertMessage: '刪除失敗'
+      })
     }
   }
 
-  async handleUpdate ({ event, props }) {
-    const update = window.prompt('編輯訊息', props.message.value)
-
-    if (update) {
-      console.log('mod', props)
-      try {
-        const ret = await this.req('put', `/topics/${props.topic}/${props.id}`, { id: props.id, message: { type: 'text', value: update } })
-        console.log(ret.data)
-      } catch (e) {
-        window.alert('編輯失敗')
-      }
+  async handleUpdate ({ event, props, type, data }) {
+    switch (type) {
+      case 'edit':
+        this.setState({ messageInEditKey: props.id })
+        break
+      case 'cancel':
+        this.setState({ messageInEditKey: null })
+        break
+      case 'confirm':
+        if (data) {
+          console.log('mod', data)
+          try {
+            const ret = await this.req('put', `/topics/${props.topic}/${props.id}`, { id: props.id, message: { type: 'text', value: data } })
+            console.log(ret.data)
+            this.setState({ messageInEditKey: null })
+          } catch (e) {
+            this.setState({
+              messageInEditKey: null,
+              openAlertModal: true,
+              alertMessage: '編輯失敗'
+            })
+          }
+        }
+        break
+      default:
+        console.log('this wont be reached')
     }
   }
 
@@ -425,6 +482,10 @@ class Chat extends Component {
     this.scrollMessage(true)
   }
 
+  onUserNameChange (e) {
+    this.setState({ usernameInEdit: e.target.value })
+  }
+
   render () {
     let messages = []
     let currentActiveDM
@@ -460,76 +521,95 @@ class Chat extends Component {
           {Object.keys(unread).length > 0 ? <ReactTitle title='(*) PTT.ai' /> : <ReactTitle title='PTT.ai' />}
           {this.state.disconnected ? <div className='absolute top-0 left-0 h-8 font-bold bg-red-800 text-gray-300 w-screen flex items-center justify-center z-20'>Disconnected</div> : ''}
           {this.state.showEmojiPicker
-            ? <EmojiPicker ref={this.emojiPickerRef} style={{ right: 0, bottom: this.state.emojiPickerBottom, position: 'absolute' }} onClick={this.handleSelectEmoji.bind(this)} />
+            ? <EmojiPicker ref={this.emojiPickerRef} style={{ zIndex: 20, right: 10, bottom: this.state.emojiPickerBottom, position: 'absolute' }} onClick={this.handleSelectEmoji.bind(this)} />
             : ''}
-          {this.isPublicChannel() ? <Menu id='menu_id'>
-            <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
-            <Item onClick={this.handleUpdate.bind(this)}>Edit...</Item>
-            <Separator />
-            <Item onClick={this.handleDelete.bind(this)}>Delete</Item>
-          </Menu> : <Menu id='menu_id'>
-            <Item onClick={this.handleAddReaction.bind(this)}>React...</Item>
-          </Menu>
-          }
           <div className='header shadow-lg bg-gray-200 sm:hidden w-full h-full flex flex-row items-center justify-between px-2'>
             <FontAwesomeIcon icon='bars' size='lg' onClick={this.onClickHeaderMenu.bind(this)} />
 
             <span className='font-bold'>{header}</span>
             <FontAwesomeIcon icon='bars' size='lg' className='invisible' />{/* just for alignment */}
           </div>
-          <div className={`z-10 sidebar bg-gray-200 ${this.state.mobileShowSidebar ? '' : 'hidden'} sm:block shadow-lg sm:shadow-none`} ref={this.sideBarRef}>
+          <div className={`z-10 sidebar bg-side-bar-color ${this.state.mobileShowSidebar ? '' : 'hidden'} sm:block shadow-lg sm:shadow-none`} ref={this.sideBarRef}>
             <div className='flex flex-col justify-between h-full'>
-              <div className='overflow-y-auto p-2'>
-                <div className='mb-4'>
-                  <h2 className='font-bold'>P.me</h2>
-                  <input className='p-1 border border-gray-500 rounded font-mono text-xs w-full bg-gray-200' value={process.env.REACT_APP_GATEWAY_URL} readOnly />
-                </div>
-                <div className='flex flex-row justify-between'>
-                  <h2>Topics</h2>
-                  <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.createTopic.bind(this)}>+</h2>
-                </div>
-                <ul>
-                  {Object.keys(this.state.messages).sort().map(t => {
-                    let textStyle = 'text-gray-600'
-                    if (unread[t]) textStyle = `text-black font-bold`
-                    if (t === this.state.currentTopic) {
-                      return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`mt-1 rounded bg-gray-400 cursor-pointer ${textStyle}`}>{t}</li>
-                    } else if (!t.startsWith('__')) {
-                      return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`mt-1 cursor-pointer ${textStyle}`}>{t}</li>
+              <div className='overflow-y-auto p-0'>
+                <div className='flex flex-row items-start p-3'>
+                  <div className='w-10 flex-shrink-0 ml-0'>
+                    <img className='w-10' src='/icon_company.svg' alt='Company Icon' />
+                  </div>
+                  <div className='flex-shrink pl-3 mt-0'>
+                    <div className='text-base text-font-color font-bold'>台灣人工智慧實驗室</div>
+                    {
+                      this.state.usernameEditMode
+                        ? <div className='text-sm text-font-color flex flex-row mt-1' ref={this.usernameInputRef}>
+                          <input className='min-w-0 my-atuo px-1 h-7 rounded focus:outline-none' onChange={this.onUserNameChange.bind(this)} value={this.state.usernameInEdit} />
+                          <img id='icon_done' className='w-7 ml-auto cursor-pointer' src='/icon_done.svg' alt='Confirm Username'
+                            onClick={this.updateUserName.bind(this)}
+                            onMouseOver={(e) => { e.target.src = '/icon_done_hover.svg' }}
+                            onMouseOut={(e) => { e.target.src = '/icon_done.svg' }} />
+                        </div>
+                        : <div className='h-7 leading-loose text-sm text-font-color cursor-pointer hover:underline'
+                          onClick={(e) => { this.setState({ usernameEditMode: true, usernameInEdit: this.state.username }) }}>
+                          {this.state.username.slice(0, 16)}
+                        </div>
                     }
-                    return ''
-                  })}
-                </ul>
-                <div className='mt-4'>
+                  </div>
+                </div>
+                <div className='pt-2'>
+                  <div className='p-3 flex flex-row justify-between'>
+                    <div className='leading-loose text-font-color font-bold'>Channels</div>
+                    <div className='cursor-pointer'>
+                      <img id='icon_add' className='w-7' src='/icon_add.svg' alt='Add new channel'
+                        onMouseOver={(e) => { e.target.src = '/icon_add_hover.svg' }}
+                        onMouseOut={(e) => { e.target.src = '/icon_add.svg' }}
+                        onMouseDown={(e) => { e.target.value = '/icon_add_pressed.svg' }}
+                        onClick={(e) => this.setState({ openCreateChannelModal: true })} />
+                    </div>
+                  </div>
+                  <ul>
+                    {Object.keys(this.state.messages).sort().map(t => {
+                      let textStyle = 'text-font-color'
+                      if (unread[t]) textStyle = `text-black font-bold`
+                      if (t === this.state.currentTopic) {
+                        return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`p-3 py-1 rounded bg-side-bar-color-active cursor-pointer ${textStyle}`}>{'# ' + t.substring(t.indexOf('#') + 1)}</li>
+                      } else if (!t.startsWith('__')) {
+                        return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`p-3 py-1 cursor-pointer ${textStyle}`}>{'# ' + t.substring(t.indexOf('#') + 1)}</li>
+                      }
+                      return ''
+                    })}
+                  </ul>
+                </div>
+                <div className='pt-2 mb-40'>
                   <div className='flex flex-row justify-between'>
-                    <h2>Friends</h2>
+                    <div className='p-3 leading-loose text-font-color font-bold'>Friends</div>
                     {/* <h2 className='cursor-pointer mr-1 text-gray-600' onClick={this.newFriend.bind(this)}>+</h2> */}
                   </div>
                   <ul>
                     {this.state.friends.map(f => {
                       const id = f.key || f.id
-
                       let c = ''
+                      let avatarSrc = '/icon_avatar.svg'
                       if (currentActiveDM === id) {
-                        c = 'bg-gray-400 rounded'
+                        c = 'bg-side-bar-color-active rounded'
+                        avatarSrc = '/icon_avatar_pressed.svg'
                       }
                       let name = id
-                      let textStyle = 'text-gray-600'
+                      let textStyle = 'text-font-color'
                       const channelID = [id, this.state.me.key].sort().join('-')
                       if (unread[channelID]) textStyle = `text-black font-bold`
                       if (this.state.profiles[id]) name = this.state.profiles[id].name
                       if (name.length > 12) name = name.slice(0, 12) + '...'
                       return <li
-                        className={`mt-1 cursor-pointer ${textStyle} ${c}`}
+                        className={`p-3 py-1 flex flex-row cursor-pointer ${textStyle} ${c}`}
                         key={id}
                         onClick={this.changeTopic(channelID).bind(this)}>
-                         @{name}
+                        <img className='w-8 h-8 mr-2' src={avatarSrc} alt='Avatar' />
+                        <div className='leading-loose text-font-color'>{name}</div>
                       </li>
                     })}
                   </ul>
                 </div>
               </div>
-              <div className='bg-gray-100 h-20 flex flex-col justify-around px-2'>
+              <div className='hidden bg-gray-100 h-20 flex flex-col justify-around px-2'>
                 <div className='flex flex-row justify-between items-center'>
                   <Link to={`/QR?q=${encodeURIComponent(`${window.location.origin}/#/?friend=${this.state.me.key}`)}`} target='_blank'>
                     <h2 className='hover:underline'>
@@ -542,9 +622,8 @@ class Chat extends Component {
                 <input className='bg-gray-400 px-1 border border-gray-500 w-full' value={this.state.me.key} readOnly />
               </div>
             </div>
-
           </div>
-          <div className='message bg-red overflow-y-auto px-2' onScroll={this.onScrollMessage.bind(this)} ref={this.messagesRef}>
+          <div className='message bg-red overflow-y-auto' onScroll={this.onScrollMessage.bind(this)} ref={this.messagesRef}>
             {messages
               ? <Messages
                 profiles={this.state.profiles}
@@ -554,13 +633,35 @@ class Chat extends Component {
                 onNewFriend={this._newFriend.bind(this)}
                 showScrollButton={this.state.messageListScrolled}
                 onClickScrollButton={this.onClickMessageListScrollButton.bind(this)}
+                isPublicChannel={this.isPublicChannel()}
+                onMessageReactClicked={this.handleAddReaction.bind(this)}
+                onMessageEditClicked={this.handleUpdate.bind(this)}
+                onMessageDeleteClicked={this.handleDelete.bind(this)}
+                messageInEditKey={this.state.messageInEditKey}
               /> : ''}
             <div id='end' ref={this.messageEndRef} />
           </div>
-          <div className='prompt bg-blue'>
-            <input onKeyPress={this.onKeyPress.bind(this)} type='text' placeholder='say something...' className='focus:border-gray-900 border border-gray-400 w-full h-full p-2 rounded border-box outline-none' ref={this.inputRef} />
+          <div className='p-4 prompt bg-blue'>
+            <textarea onKeyPress={this.onKeyPress.bind(this)} placeholder='say something...' className='border border-dialogue-color-normal focus:border-dialogue-color-pressed w-full h-full p-4 rounded border-box outline-none resize-none' ref={this.inputRef} />
           </div>
         </div>
+        <FormDialog
+          open={this.state.openCreateChannelModal}
+          handleClose={(e) => this.setState({ openCreateChannelModal: false })}
+          handleSubmit={this.createTopic.bind(this)}
+        />
+        <AlertDialog
+          open={this.state.openAlertModal}
+          message={this.state.alertMessage}
+          handleClose={(e) => this.setState({ openAlertModal: false })}
+        />
+        <ConfirmDialog
+          open={this.state.openConfirmModal}
+          message={this.state.confirmMessage}
+          data={this.state.confirmData}
+          handleClose={(e) => this.setState({ openConfirmModal: false })}
+          handleConfirm={this.onConfirmMessageDelete.bind(this)}
+        />
       </Div100vh>
     )
   }
