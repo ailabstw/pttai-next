@@ -43,7 +43,7 @@ code {
 .app {
   display: grid;
   grid-template-columns: 250px minmax(1px, 1fr);
-  grid-template-rows: minmax(1px, 1fr) 110px;
+  grid-template-rows: minmax(1px, 1fr) 130px;
 }
 
 .sidebar {
@@ -66,7 +66,7 @@ code {
 .app {
   display: grid;
   grid-template-columns: 250px minmax(1px, 1fr);
-  grid-template-rows: 50px minmax(1px, 1fr) 110px;
+  grid-template-rows: 50px minmax(1px, 1fr) 130px;
 }
 
 .sidebar {

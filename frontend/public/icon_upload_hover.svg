@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="icon_upload_hover" width="31" height="31" viewBox="0 0 31 31">
+    <defs>
+        <style>
+            .cls-1{fill:#9f9f9f;opacity:0}.cls-2{fill:#82929a}.cls-3,.cls-4{fill:none;stroke:#fff;stroke-linecap:round;stroke-width:1.5px}.cls-4{stroke-miterlimit:10}
+        </style>
+    </defs>
+    <path id="Path_7" d="M15.5 0A15.5 15.5 0 1 1 0 15.5 15.5 15.5 0 0 1 15.5 0z" class="cls-1" data-name="Path 7"/>
+    <path id="Path_10" d="M9.5 0A9.5 9.5 0 1 1 0 9.5 9.5 9.5 0 0 1 9.5 0z" class="cls-2" data-name="Path 10" transform="translate(6 6)"/>
+    <path id="Line_1" d="M0 0v10" class="cls-3" data-name="Line 1" transform="translate(15.5 10.5)"/>
+    <path id="Path_104" d="M7.529 199.508l4-4.822 4 4.822" class="cls-4" data-name="Path 104" transform="translate(3.971 -184.686)"/>
+</svg>

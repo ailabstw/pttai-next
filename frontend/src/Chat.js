@@ -12,6 +12,7 @@ import uuid from 'uuid/v4'
 import Div100vh from 'react-div-100vh'
 
 import Messages from './Messages'
+import UploadDialog from './Modal/UploadDialog'
 import FormDialog from './Modal/FormDialog'
 import AlertDialog from './Modal/AlertDialog'
 import ConfirmDialog from './Modal/ConfirmDialog'
@@ -48,12 +49,14 @@ class Chat extends Component {
       loadFailed: false,
       messageListScrolled: false,
       messageInEditKey: null,
+      openUploadFilelModal: false,
       openCreateChannelModal: false,
       openAlertModal: false,
       openConfirmModal: false,
       alertMessage: '',
       confirmMessage: '',
-      confirmData: {}
+      confirmData: {},
+      selectedFileForUpload: null
     }
 
     this.messageEndRef = React.createRef()
@@ -105,10 +108,15 @@ class Chat extends Component {
   }
 
   onKeyPress (e) {
-    if (e.key === 'Enter' && e.target.value.length > 0) {
-      this.postToTopic({ message: { type: 'text', value: e.target.value } })
+    if (e.target.value.length > 0) {
+      if (e.key === 'Enter' && e.shiftKey) {
+        // new line
+      } else if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault()
+        this.postToTopic({ message: { type: 'text', value: e.target.value } })
 
-      e.target.value = ''
+        e.target.value = ''
+      }
     }
   }
 
@@ -287,6 +295,15 @@ class Chat extends Component {
       window.localStorage.setItem('lastReadTime', JSON.stringify(lastReadTime))
     })
     this.gatewaySocket.on('error', console.error)
+  }
+
+  async uploadFile () {
+    this.postToTopic({ message: { type: 'file', value: this.state.selectedFileForUpload } })
+
+    this.setState({
+      selectedFileForUpload: null,
+      openUploadFilelModal: false
+    })
   }
 
   async createTopic ({ name: topic }) {
@@ -486,6 +503,32 @@ class Chat extends Component {
     this.setState({ usernameInEdit: e.target.value })
   }
 
+  onFileSelected (e) {
+    const file = e.target.files[0]
+    const fr = new window.FileReader()
+    fr.onload = (data) => {
+      if (file.size > 1000) {
+        this.setState({
+          openAlertModal: true,
+          alertMessage: 'file size cannot exceed 1000'
+        })
+      } else {
+        this.setState({
+          selectedFileForUpload: {
+            dataUrl: fr.result,
+            name: file.name,
+            lastModified: file.lastModified,
+            size: file.size,
+            type: file.type
+          },
+          openUploadFilelModal: true
+        })
+      }
+    }
+    fr.readAsDataURL(file)
+    e.target.value = ''
+  }
+
   render () {
     let messages = []
     let currentActiveDM
@@ -641,10 +684,32 @@ class Chat extends Component {
               /> : ''}
             <div id='end' ref={this.messageEndRef} />
           </div>
-          <div className='p-4 prompt bg-blue'>
-            <textarea onKeyPress={this.onKeyPress.bind(this)} placeholder='say something...' className='border border-dialogue-color-normal focus:border-dialogue-color-pressed w-full h-full p-4 rounded border-box outline-none resize-none' ref={this.inputRef} />
+          <div className='flex flex-col p-4 prompt bg-blue'>
+            <textarea onKeyPress={this.onKeyPress.bind(this)} placeholder='say something...' className='border border-b-0 border-dialogue-color-normal w-full h-16 p-4 rounded rounded-b-none border-box outline-none resize-none' ref={this.inputRef} />
+            <div className='w-full h-8 bg-dialogue-option-color border border-t-0 border-dialogue-color-normal rounded rounded-t-none'>
+              <div className='ml-2'>
+                <label htmlFor='upload'>
+                  <img className='cursor-pointer' src='/icon_upload.svg' alt='file upload'
+                    onMouseOver={(e) => { e.target.src = '/icon_upload_hover.svg' }}
+                    onMouseOut={(e) => { e.target.src = '/icon_upload.svg' }}
+                    onMouseDown={(e) => { e.target.value = '/icon_upload_hover.svg' }} />
+                </label>
+                <input className='hidden' id='upload' type='file' onChange={this.onFileSelected.bind(this)} />
+              </div>
+            </div>
           </div>
         </div>
+        <UploadDialog
+          open={false || this.state.openUploadFilelModal}
+          data={this.state.selectedFileForUpload}
+          handleClose={(e) => {
+            this.setState({
+              openUploadFilelModal: false,
+              selectedFileForUpload: null
+            })
+          }}
+          handleSubmit={this.uploadFile.bind(this)}
+        />
         <FormDialog
           open={this.state.openCreateChannelModal}
           handleClose={(e) => this.setState({ openCreateChannelModal: false })}

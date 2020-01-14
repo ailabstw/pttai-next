@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="icon_zipfile" width="20.577" height="20.577" viewBox="0 0 20.577 20.577">
+    <defs>
+        <style>
+            .cls-1{fill:#707070}
+        </style>
+    </defs>
+    <path id="Path_120" d="M282.7 528.87h-16.746a1.919 1.919 0 0 0-1.918 1.917v16.743a1.919 1.919 0 0 0 1.918 1.917H282.7a1.919 1.919 0 0 0 1.917-1.917v-16.743a1.919 1.919 0 0 0-1.917-1.917zm-6.528 16.781a1.843 1.843 0 1 1-3.686 0v-2.916a1.843 1.843 0 0 1 3.686 0zm.157-12.817h-2v1.519h2v1.518h-2v1.519h2v1.518h-2v1.519h-2v-1.519h2v-1.518h-2v-1.519h2v-1.518h-2v-1.519h2v-1.518h-2V529.8h2v1.519h2z" class="cls-1" data-name="Path 120" transform="translate(-264.036 -528.87)"/>
+    <circle id="Ellipse_28" cx=".945" cy=".945" r=".945" class="cls-1" data-name="Ellipse 28" transform="translate(9.343 15.788)"/>
+</svg>
