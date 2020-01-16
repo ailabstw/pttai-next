@@ -13,5 +13,8 @@
   },
   "standard": {
     "parser": "babel-eslint"
+  },
+  "dependencies": {
+    "@material-ui/lab": "^4.0.0-alpha.39"
   }
 }

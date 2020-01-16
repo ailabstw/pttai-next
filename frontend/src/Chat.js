@@ -306,21 +306,33 @@ class Chat extends Component {
     })
   }
 
-  async createTopic ({ name: topic }) {
-    if (topic) {
-      if (topic.match(/[\w-]+/) && topic.length <= 20) {
-        await this.req('post', '/topics', topic)
-        if (topic[0] !== '#') topic = `#${topic}`
-        this.setState({ currentTopic: topic }, () => {
-          this.postToTopic({ message: { type: 'action', value: 'joined the topic' } })
-          this.setState({ openCreateChannelModal: false })
-        })
-      } else {
+  async createChannel ({ name: topic, isPrivate, selectedFriends: friends }) {
+    if (!topic || !topic.match(/[\w-]+/) || topic.length > 20) {
+      this.setState({
+        openCreateChannelModal: false,
+        openAlertModal: true,
+        alertMessage: 'invalid topic name'
+      })
+      return
+    }
+
+    if (!isPrivate) {
+      await this.req('post', '/topics', topic)
+      if (topic[0] !== '#') topic = `#${topic}`
+      this.setState({ currentTopic: topic }, () => {
+        this.postToTopic({ message: { type: 'action', value: 'joined the topic' } })
+        this.setState({ openCreateChannelModal: false })
+      })
+    } else {
+      if (friends.length < 3) {
         this.setState({
           openCreateChannelModal: false,
           openAlertModal: true,
-          alertMessage: 'invalid topic name'
+          alertMessage: 'please select at least one friend'
         })
+      } else {
+        // create private channel
+        console.log('creating private group for: ', topic, friends)
       }
     }
   }
@@ -712,8 +724,11 @@ class Chat extends Component {
         />
         <FormDialog
           open={this.state.openCreateChannelModal}
+          me={this.state.me}
+          profiles={this.state.profiles}
+          friends={this.state.friends}
           handleClose={(e) => this.setState({ openCreateChannelModal: false })}
-          handleSubmit={this.createTopic.bind(this)}
+          handleSubmit={this.createChannel.bind(this)}
         />
         <AlertDialog
           open={this.state.openAlertModal}
