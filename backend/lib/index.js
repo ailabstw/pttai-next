@@ -1,4 +1,5 @@
 const box = require('./box')
+const uuid = require('uuid/v4')
 
 module.exports = {
   init,
@@ -9,6 +10,7 @@ module.exports = {
   createTopic,
   postToTopic,
   postGossip,
+  postGossipToMany,
   moderate,
   react,
   deletePost,
@@ -17,6 +19,10 @@ module.exports = {
   getFriends,
   getFriend,
   createFriend,
+
+  getPChannels,
+  getPChannel,
+  createPChannel,
 
   getProfile,
   setProfile,
@@ -35,10 +41,13 @@ function init (archive) {
         if (err) return reject(err)
         archive.mkdir('/friends', (err) => {
           if (err) return reject(err)
-
-          archive.writeFile('/profile.json', JSON.stringify({ name: archive.key.toString('hex') }), (err) => {
+          archive.mkdir('/pchannels', (err) => {
             if (err) return reject(err)
-            resolve()
+
+            archive.writeFile('/profile.json', JSON.stringify({ name: archive.key.toString('hex') }), (err) => {
+              if (err) return reject(err)
+              resolve()
+            })
           })
         })
       })
@@ -211,6 +220,28 @@ async function postGossip (archive, receiverPublicKey, message) {
     })
 }
 
+async function postGossipToMany (archive, receiverPublicKeys, message) {
+  let msg = message
+  if (!msg.date) msg.date = Date.now()
+  msg = Buffer.from(JSON.stringify(msg))
+
+  const messageId = uuid()
+  for (const idx in receiverPublicKeys) {
+    const receiverPublicKey = receiverPublicKeys[idx]
+    const b = box.encrypt(archive.metadata.secretKey, receiverPublicKey, msg)
+
+    await postToTopic(
+      archive,
+      '__gossiping',
+      {
+        id: Date.now(),
+        messageId: messageId,
+        nonce: b.nonce.toString('hex'),
+        cipher: b.cipher.toString('hex')
+      })
+  }
+}
+
 function readFile (archive, fn) {
   return new Promise((resolve, reject) => {
     archive.readFile(fn, (err, data) => {
@@ -237,6 +268,22 @@ function getFriends (archive) {
   })
 }
 
+function getPChannels (archive) {
+  return new Promise((resolve, reject) => {
+    archive.readdir(`/pchannels`, async (err, list) => {
+      if (err) return reject(err)
+
+      const result = []
+      for (let i = 0; i < list.length; i++) {
+        const data = await getPChannel(archive, list[i])
+        result.push(data)
+      }
+
+      resolve(result)
+    })
+  })
+}
+
 function createFriend (archive, friend) {
   return new Promise((resolve, reject) => {
     if (!friend.id) return reject(new Error('undefined friend.id'))
@@ -244,6 +291,20 @@ function createFriend (archive, friend) {
     const b = box.encrypt(archive.metadata.secretKey, archive.key, Buffer.from(JSON.stringify(friend)))
 
     archive.writeFile(`/friends/${friend.id}`, JSON.stringify({ nonce: b.nonce.toString('hex'), cipher: b.cipher.toString('hex') }), (err) => {
+      if (err) return reject(err)
+
+      resolve()
+    })
+  })
+}
+
+function createPChannel (archive, pchannel) {
+  return new Promise((resolve, reject) => {
+    if (!pchannel.id) return reject(new Error('undefined channel.id'))
+
+    const b = box.encrypt(archive.metadata.secretKey, archive.key, Buffer.from(JSON.stringify(pchannel)))
+
+    archive.writeFile(`/pchannels/${pchannel.id}`, JSON.stringify({ nonce: b.nonce.toString('hex'), cipher: b.cipher.toString('hex') }), (err) => {
       if (err) return reject(err)
 
       resolve()
@@ -270,6 +331,15 @@ async function getProfile (archive) {
 
 async function getFriend (archive, id) {
   const b = await readFile(archive, `/friends/${id}`)
+  const { nonce, cipher } = JSON.parse(b)
+
+  const data = box.decrypt(archive.key, archive.metadata.secretKey, Buffer.from(cipher, 'hex'), Buffer.from(nonce, 'hex'))
+
+  return JSON.parse(data)
+}
+
+async function getPChannel (archive, id) {
+  const b = await readFile(archive, `/pchannels/${id}`)
   const { nonce, cipher } = JSON.parse(b)
 
   const data = box.decrypt(archive.key, archive.metadata.secretKey, Buffer.from(cipher, 'hex'), Buffer.from(nonce, 'hex'))

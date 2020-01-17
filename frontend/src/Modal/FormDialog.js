@@ -16,6 +16,16 @@ class FormDialog extends Component {
     }
   }
 
+  componentDidUpdate (prevProps) {
+    if (prevProps.open && !this.props.open) {
+      this.setState({
+        newChannelNameInEdit: '',
+        isPrivate: false,
+        selectedFriends: []
+      })
+    }
+  }
+
   onNewChannelNameChange (e) {
     this.setState({ newChannelNameInEdit: e.target.value })
   }
@@ -114,11 +124,6 @@ class FormDialog extends Component {
                     name: this.state.newChannelNameInEdit,
                     isPrivate: this.state.isPrivate,
                     selectedFriends: this.state.selectedFriends
-                  })
-                  this.setState({
-                    newChannelNameInEdit: '',
-                    isPrivate: false,
-                    selectedFriends: []
                   })
                 }}>Create</div>
             </div>
