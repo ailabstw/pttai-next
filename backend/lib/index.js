@@ -32,27 +32,47 @@ module.exports = {
 }
 
 function init (archive) {
-  return new Promise((resolve, reject) => {
+  const createTopics = new Promise((resolve, reject) => {
     archive.stat('/topics', (err, stat) => {
-      // reject if already initialized
       if (!err) return reject(err)
-
       archive.mkdir('/topics', (err) => {
         if (err) return reject(err)
-        archive.mkdir('/friends', (err) => {
-          if (err) return reject(err)
-          archive.mkdir('/pchannels', (err) => {
-            if (err) return reject(err)
-
-            archive.writeFile('/profile.json', JSON.stringify({ name: archive.key.toString('hex') }), (err) => {
-              if (err) return reject(err)
-              resolve()
-            })
-          })
-        })
+        resolve()
       })
     })
   })
+
+  const createFriends = new Promise((resolve, reject) => {
+    archive.stat('/friends', (err, stat) => {
+      if (!err) return reject(err)
+      archive.mkdir('/friends', (err) => {
+        if (err) return reject(err)
+        resolve()
+      })
+    })
+  })
+
+  const createPChannels = new Promise((resolve, reject) => {
+    archive.stat('/pchannels', (err, stat) => {
+      if (!err) return reject(err)
+      archive.mkdir('/pchannels', (err) => {
+        if (err) return reject(err)
+        resolve()
+      })
+    })
+  })
+
+  const writeProfile = new Promise((resolve, reject) => {
+    archive.stat('/profile.json', (err, stat) => {
+      if (!err) return reject(err)
+      archive.writeFile('/profile.json', JSON.stringify({ name: archive.key.toString('hex') }), (err) => {
+        if (err) return reject(err)
+        resolve()
+      })
+    })
+  })
+
+  return Promise.all([createTopics, createFriends, createPChannels, writeProfile])
 }
 
 function getTopics (archive) {
