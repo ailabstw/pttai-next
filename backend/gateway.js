@@ -107,6 +107,10 @@ async function main () {
         const archiveKey = archive.key.toString('hex')
         if (channelID.startsWith(archiveKey) || channelID.endsWith(archiveKey)) {
           ret[channelID] = dmChannels[channelID]
+        } else if (dmChannels[channelID].length > 0 &&
+          dmChannels[channelID][0].message.channel &&
+          dmChannels[channelID][0].message.channel.members.map(m => Object.values(m)[0]).includes(archiveKey)) {
+          ret[channelID] = dmChannels[channelID]
         } else {
           continue
         }
@@ -328,6 +332,33 @@ async function main () {
     const msg = req.body.data.message
 
     await user.postGossip(archive, receiverPublicKey, msg)
+    res.json({ result: 'ok' })
+  })
+
+  app.get('/pchannels', authToken, async (req, res) => {
+    const archive = await loadArchive(req.archiveID, true)
+    const pchannels = await user.getPChannels(archive)
+
+    res.json({ result: pchannels })
+  })
+
+  app.post('/pchannels', authToken, async (req, res) => {
+    const archive = await loadArchive(req.archiveID, true)
+    await user.createPChannel(archive, req.body.data)
+
+    if (req.body.data.key) {
+      replicateArchive(req.body.data.key)
+    }
+
+    res.json({ result: 'ok' })
+  })
+
+  app.post('/dms', authToken, async (req, res) => {
+    const archive = await loadArchive(req.archiveID, true)
+    const receiverPublicKeys = req.body.data.receivers.map((r) => Buffer.from(r, 'hex'))
+    const msg = req.body.data.message
+
+    await user.postGossipToMany(archive, receiverPublicKeys, msg)
     res.json({ result: 'ok' })
   })
 

@@ -32,11 +32,15 @@ class GatewayView extends EventEmitter {
   }
 
   collectDM (receiverKey, authorKey, dmID, message) {
-    const dmChannelID = [authorKey, receiverKey].sort().join('-')
+    const messageJson = JSON.parse(message)
+    let dmChannelID = [authorKey, receiverKey].sort().join('-')
+    if (messageJson.channel) {
+      dmChannelID = messageJson.channel.id
+    }
 
     if (!this.state.dmChannels[dmChannelID]) this.state.dmChannels[dmChannelID] = []
 
-    this.state.dmChannels[dmChannelID].push({ author: authorKey, message: JSON.parse(message), id: dmID })
+    this.state.dmChannels[dmChannelID].push({ author: authorKey, message: messageJson, id: dmID })
 
     // reduce
     let dmReactions = this.state.dmChannels[dmChannelID].filter(m => m.message.type === 'react')
@@ -65,15 +69,12 @@ class GatewayView extends EventEmitter {
     console.log('gossip received, pending', this.pendingDMs.length, this.resolvedDMIDs)
     const nextPendingDMs = []
     for (let i = 0; i < this.pendingDMs.length; i++) {
-      const { author, nonce, cipher, id: dmID } = this.pendingDMs[i]
+      const { author, nonce, cipher, id: dmID, messageId: mesID } = this.pendingDMs[i]
 
       let foundReceiver = false
 
-      if (this.resolvedDMIDs[dmID]) {
+      if (mesID && this.resolvedDMIDs.indexOf(mesID) !== -1) {
         foundReceiver = true
-        if (this.resolvedDMIDs.indexOf(dmID) !== -1) {
-          this.resolvedDMIDs.push(dmID)
-        }
       } else {
         for (const archiveID in this.archives) {
           const archive = this.archives[archiveID]
@@ -93,9 +94,9 @@ class GatewayView extends EventEmitter {
 
             if (success) {
               foundReceiver = true
-              this.emit('decrypted', { receiver: archive, msg: decrypted, author, id: dmID })
-              if (this.resolvedDMIDs.indexOf(dmID) === -1) {
-                this.resolvedDMIDs.push(dmID)
+              this.emit('decrypted', { receiver: archive, msg: decrypted, author, id: dmID, messageId: mesID })
+              if (mesID && this.resolvedDMIDs.indexOf(mesID) === -1) {
+                this.resolvedDMIDs.push(mesID)
               }
               this.collectDM(archive.key.toString('hex'), author.key.toString('hex'), dmID, decrypted.toString())
               break
@@ -128,10 +129,9 @@ class GatewayView extends EventEmitter {
       if (d.name.match(/^\/topics\/__gossiping\/(.+)$/)) {
         const data = await user.readFile(archive, d.name)
 
-        const { nonce, cipher, id: dmID } = JSON.parse(data)
+        const { nonce, cipher, id: dmID, messageId: mesID } = JSON.parse(data)
 
-        this.pendingDMs.unshift({ author: archive, nonce, cipher, id: dmID })
-
+        this.pendingDMs.unshift({ author: archive, nonce, cipher, id: dmID, messageId: mesID })
         this.emit('gossip')
       }
     })

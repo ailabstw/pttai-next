@@ -52,7 +52,7 @@ class TestLogin extends Component {
       <div className='bg-white flex flex-col justify-between items-center rounded-lg p-4'>
         <h2 className='text-lg'>nickname</h2>
         <input className='p-1 border border-gray-500 rounded font-mono text-xs w-full' ref={this.inputRef} value={this.state.input} onChange={this.handleChange.bind(this)} onKeyPress={this.handleInputChange.bind(this)} />
-        <span className='text-blue-600 underline pt-4' onClick={this.onSubmit.bind(this)}>Login</span>
+        <span className='text-blue-600 underline pt-4 cursor-pointer' onClick={this.onSubmit.bind(this)}>Login</span>
       </div>
     </div>
   }

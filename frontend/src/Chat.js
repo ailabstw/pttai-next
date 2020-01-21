@@ -16,6 +16,7 @@ import UploadDialog from './Modal/UploadDialog'
 import FormDialog from './Modal/FormDialog'
 import AlertDialog from './Modal/AlertDialog'
 import ConfirmDialog from './Modal/ConfirmDialog'
+import CHANNEL_TPYE from './Constants'
 
 import 'react-contexify/dist/ReactContexify.min.css'
 
@@ -27,8 +28,14 @@ class Chat extends Component {
   constructor () {
     super()
     this.state = {
-      currentTopic: window.localStorage.getItem('currentTopic') || '#general',
+      currentChannel: {
+        id: window.localStorage.getItem('currentChannelId') || 'general',
+        type: CHANNEL_TPYE.public,
+        name: window.localStorage.getItem('currentChannelName') || 'general',
+        members: []
+      },
       friends: [],
+      pchannels: [],
       me: { key: '' },
       messages: {},
       dmChannels: {},
@@ -146,8 +153,8 @@ class Chat extends Component {
     }
   }
 
-  isPublicChannel () {
-    return this.state.currentTopic[0] === '#'
+  getChannelType () {
+    return this.state.currentChannel.type
   }
 
   getReceiverKey (channelID) {
@@ -159,12 +166,26 @@ class Chat extends Component {
   }
 
   async postToTopic (data) {
-    if (this.isPublicChannel()) {
-      const topic = this.state.currentTopic.slice(1)
-      data.id = Date.now()
-      await this.req('post', `/topics/${topic}`, data)
-    } else {
-      await this.req('post', '/dm', { message: data.message, receiver: this.getReceiverKey(this.state.currentTopic) })
+    switch (this.getChannelType()) {
+      case CHANNEL_TPYE.public:
+        const topic = this.state.currentChannel.name.slice(1)
+        data.id = Date.now()
+        await this.req('post', `/topics/${topic}`, data)
+        break
+      case CHANNEL_TPYE.private:
+        await this.req('post', '/dms', {
+          message: {
+            channel: this.state.currentChannel,
+            ...data.message
+          },
+          receivers: this.state.currentChannel.members.map(m => m.key)
+        })
+        break
+      case CHANNEL_TPYE.direct:
+        await this.req('post', '/dm', { message: data.message, receiver: this.getReceiverKey(this.state.currentChannel.id) })
+        break
+      default:
+        break
     }
     this.scrollMessage()
   }
@@ -176,13 +197,16 @@ class Chat extends Component {
       res = await this.req('get', `/friends`)
       const friends = res.data.result
 
+      res = await this.req('get', `/pchannels`)
+      const pchannels = res.data.result
+
       res = await this.req('get', `/me`)
       const me = res.data.result
 
       res = await this.req('get', `/profile`)
       const profile = res.data.result
 
-      this.setState({ friends, me, username: profile.name }, this.connect)
+      this.setState({ friends, pchannels, me, username: profile.name }, this.connect)
     } catch (e) {
       this.setState({ loadFailed: true })
     }
@@ -215,7 +239,7 @@ class Chat extends Component {
       const lastReadTime = Object.assign({}, this.state.lastReadTime)
       for (let i = 0; i < msgs.length; i++) {
         const m = msgs[i]
-        const topic = `#${m.topic}`
+        const topic = m.topic
         if (!messages[topic]) messages[topic] = []
         messages[topic].push(m)
 
@@ -229,7 +253,7 @@ class Chat extends Component {
       }
 
       // current topic is always read
-      lastReadTime[this.state.currentTopic] = Date.now()
+      lastReadTime[this.state.currentChannel.id] = Date.now()
 
       window.localStorage.setItem('lastReadTime', JSON.stringify(lastReadTime))
       this.setState({ messages, lastMessageTime, lastReadTime }, () => {
@@ -273,9 +297,18 @@ class Chat extends Component {
       const lastMessageTime = Object.assign({}, this.state.lastMessageTime)
       const lastReadTime = Object.assign({}, this.state.lastReadTime)
       for (const channelID in dmChannels) {
-        const key = this.getReceiverKey(channelID)
-        if (this.state.friends.findIndex(f => (f.key || f.id) === key) === -1) {
-          this.setState({ friends: this.state.friends.concat([{ id: key }]) })
+        if (dmChannels[channelID].length > 0 &&
+          dmChannels[channelID][0].message.channel &&
+          dmChannels[channelID][0].message.channel.type === CHANNEL_TPYE.private) {
+          const channel = dmChannels[channelID][0].message.channel
+          if (this.state.pchannels.findIndex(p => p.id === channelID) === -1) {
+            this.setState({ pchannels: this.state.pchannels.concat([channel]) })
+          }
+        } else {
+          const key = this.getReceiverKey(channelID)
+          if (this.state.friends.findIndex(f => (f.key || f.id) === key) === -1) {
+            this.setState({ friends: this.state.friends.concat([{ id: key }]) })
+          }
         }
         if (!lastReadTime[channelID]) lastReadTime[channelID] = Date.now()
 
@@ -289,7 +322,7 @@ class Chat extends Component {
         }
       }
       // current topic is always read
-      lastReadTime[this.state.currentTopic] = Date.now()
+      lastReadTime[this.state.currentChannel.id] = Date.now()
 
       this.setState({ lastMessageTime, lastReadTime })
       window.localStorage.setItem('lastReadTime', JSON.stringify(lastReadTime))
@@ -306,20 +339,53 @@ class Chat extends Component {
     })
   }
 
-  async createTopic ({ name: topic }) {
-    if (topic) {
-      if (topic.match(/[\w-]+/) && topic.length <= 20) {
-        await this.req('post', '/topics', topic)
-        if (topic[0] !== '#') topic = `#${topic}`
-        this.setState({ currentTopic: topic }, () => {
-          this.postToTopic({ message: { type: 'action', value: 'joined the topic' } })
-          this.setState({ openCreateChannelModal: false })
+  async createChannel ({ name: topic, isPrivate, selectedFriends: friends }) {
+    if (!topic || !topic.match(/[\w-]+/) || topic.length > 20) {
+      this.setState({
+        openAlertModal: true,
+        alertMessage: 'invalid topic name'
+      })
+      return
+    }
+
+    if (!isPrivate) {
+      await this.req('post', '/topics', topic)
+      this.setState({
+        currentChannel: {
+          id: topic,
+          name: topic,
+          type: CHANNEL_TPYE.public,
+          members: []
+        }
+      }, () => {
+        this.postToTopic({ message: { type: 'action', value: 'joined the topic' } })
+        this.setState({ openCreateChannelModal: false })
+      })
+    } else {
+      if (friends.length < 3) {
+        this.setState({
+          openAlertModal: true,
+          alertMessage: 'please invite at least two friends'
         })
       } else {
+        // create private channel
+        const channelID = uuid()
+        await this.newPrivateChannel({
+          id: channelID,
+          name: topic,
+          type: CHANNEL_TPYE.private,
+          members: friends
+        })
         this.setState({
-          openCreateChannelModal: false,
-          openAlertModal: true,
-          alertMessage: 'invalid topic name'
+          currentChannel: {
+            id: channelID,
+            name: topic,
+            type: CHANNEL_TPYE.private,
+            members: friends
+          }
+        }, () => {
+          this.postToTopic({ message: { type: 'action', value: 'joined the topic' } })
+          this.setState({ openCreateChannelModal: false })
         })
       }
     }
@@ -334,28 +400,57 @@ class Chat extends Component {
 
   async _newFriend (key) {
     if (this.state.me.key === key) return
-    if (this.state.friends.find(f => f.id === key)) {
-      return this.changeTopic([key, this.state.me.key].sort().join('-'))()
+    if (this.state.friends.find(f => f.key === key)) {
+      return this.changeTopic({
+        id: [key, this.state.me.key].sort().join('-'),
+        name: [key, this.state.me.key].sort().join('-'),
+        type: CHANNEL_TPYE.direct,
+        members: []
+      })()
     }
     await this.req('post', '/friends', { id: uuid(), key })
     await this.req('post', '/dm', { message: { type: 'action', value: 'started the conversation' }, receiver: key })
     const res = await this.req('get', `/friends`)
     const friends = res.data.result
     this.setState({ friends }, () => {
-      this.changeTopic([key, this.state.me.key].sort().join('-'))()
+      this.changeTopic({
+        id: [key, this.state.me.key].sort().join('-'),
+        name: [key, this.state.me.key].sort().join('-'),
+        type: CHANNEL_TPYE.direct,
+        members: []
+      })()
     })
   }
 
-  changeTopic (topic) {
+  async newPrivateChannel (pchannel) {
+    const receiverKeys = pchannel.members.map((m) => m.key)
+    await this.req('post', '/pchannels', pchannel)
+    await this.req('post', '/dms', {
+      message: {
+        channel: pchannel,
+        type: 'action',
+        value: 'started the conversation'
+      },
+      receivers: receiverKeys
+    })
+    const res = await this.req('get', `/pchannels`)
+    const pchannels = res.data.result
+    this.setState({ pchannels }, () => {
+      this.changeTopic(pchannel)()
+    })
+  }
+
+  changeTopic (channel) {
     return () => {
       const lastReadTime = Object.assign({}, this.state.lastReadTime)
-      lastReadTime[topic] = Date.now()
+      lastReadTime[channel.id] = Date.now()
       window.localStorage.setItem('lastReadTime', JSON.stringify(lastReadTime))
-      window.localStorage.setItem('currentTopic', topic)
+      window.localStorage.setItem('currentChannelName', channel.name)
+      window.localStorage.setItem('currentChannelId', channel.id)
       if (this.inputRef.current) {
         this.inputRef.current.focus()
       }
-      this.setState({ currentTopic: topic, lastReadTime, mobileShowSidebar: false }, () => {
+      this.setState({ currentChannel: channel, lastReadTime, mobileShowSidebar: false }, () => {
         this.scrollMessage()
       })
     }
@@ -440,40 +535,76 @@ class Chat extends Component {
     this.setState({ showEmojiPicker: false })
     const props = this.state.emojiPickerData
 
-    if (this.isPublicChannel()) {
-      const ret = await this.req('post', `/topics/${props.topic}/reactions`, { id: Date.now(), react: emoji.native, msgID: props.id })
-      console.log(ret.data)
-    } else {
-      const ret = await this.req('post', '/dm', {
-        message: {
-          type: 'react',
-          value: {
-            id: Date.now(),
-            react: emoji.native,
-            msgID: props.id
-          }
-        },
-        receiver: this.getReceiverKey(this.state.currentTopic)
-      })
-      console.log(ret.data)
+    switch (this.getChannelType()) {
+      case CHANNEL_TPYE.public:
+        await this.req('post', `/topics/${props.topic}/reactions`, { id: Date.now(), react: emoji.native, msgID: props.id })
+        break
+      case CHANNEL_TPYE.private:
+        await this.req('post', '/dms', {
+          message: {
+            channel: this.state.currentChannel,
+            type: 'react',
+            value: {
+              id: Date.now(),
+              react: emoji.native,
+              msgID: props.id
+            }
+          },
+          receivers: this.state.currentChannel.members.map(m => m.key)
+        })
+        break
+      case CHANNEL_TPYE.direct:
+        await this.req('post', '/dm', {
+          message: {
+            type: 'react',
+            value: {
+              id: Date.now(),
+              react: emoji.native,
+              msgID: props.id
+            }
+          },
+          receiver: this.getReceiverKey(this.state.currentChannel.id)
+        })
+        break
+      default:
+        break
     }
   }
 
   async onAddReaction (react, message) {
-    if (this.isPublicChannel()) {
-      await this.req('post', `/topics/${message.topic}/reactions`, { id: Date.now(), react: react, msgID: message.id })
-    } else {
-      await this.req('post', '/dm', {
-        message: {
-          type: 'react',
-          value: {
-            id: Date.now(),
-            react: react,
-            msgID: message.id
-          }
-        },
-        receiver: this.getReceiverKey(this.state.currentTopic)
-      })
+    switch (this.getChannelType()) {
+      case CHANNEL_TPYE.public:
+        await this.req('post', `/topics/${message.topic}/reactions`, { id: Date.now(), react: react, msgID: message.id })
+        break
+      case CHANNEL_TPYE.private:
+        await this.req('post', '/dms', {
+          message: {
+            channel: this.state.currentChannel,
+            type: 'react',
+            value: {
+              id: Date.now(),
+              react: react,
+              msgID: message.id
+            }
+          },
+          receivers: this.state.currentChannel.members.map(m => m.key)
+        })
+        break
+      case CHANNEL_TPYE.direct:
+        await this.req('post', '/dm', {
+          message: {
+            type: 'react',
+            value: {
+              id: Date.now(),
+              react: react,
+              msgID: message.id
+            }
+          },
+          receiver: this.getReceiverKey(this.state.currentChannel.id)
+        })
+        break
+      default:
+        break
     }
   }
 
@@ -507,10 +638,10 @@ class Chat extends Component {
     const file = e.target.files[0]
     const fr = new window.FileReader()
     fr.onload = (data) => {
-      if (file.size > 1000) {
+      if (file.size > 10000) {
         this.setState({
           openAlertModal: true,
-          alertMessage: 'file size cannot exceed 1000'
+          alertMessage: 'file size cannot exceed 10K'
         })
       } else {
         this.setState({
@@ -533,12 +664,12 @@ class Chat extends Component {
     let messages = []
     let currentActiveDM
 
-    console.log(this.state.currentTopic, this.state.dmChannels)
-    if (this.state.messages[this.state.currentTopic]) {
-      messages = this.state.messages[this.state.currentTopic]
+    console.log(this.state.currentChannel.name, this.state.dmChannels)
+    if (this.state.messages[this.state.currentChannel.id]) {
+      messages = this.state.messages[this.state.currentChannel.id]
     } else {
-      messages = this.state.dmChannels[this.state.currentTopic]
-      currentActiveDM = this.getReceiverKey(this.state.currentTopic)
+      messages = this.state.dmChannels[this.state.currentChannel.id]
+      currentActiveDM = this.getReceiverKey(this.state.currentChannel.id)
     }
 
     const unread = {}
@@ -553,7 +684,7 @@ class Chat extends Component {
       return <Redirect to={{ path: '/' }} />
     }
 
-    let header = this.state.currentTopic
+    let header = this.state.currentChannel.name
     if (currentActiveDM) {
       if (this.state.profiles[currentActiveDM]) header = `@${this.state.profiles[currentActiveDM].name}`
     }
@@ -612,10 +743,36 @@ class Chat extends Component {
                     {Object.keys(this.state.messages).sort().map(t => {
                       let textStyle = 'text-font-color'
                       if (unread[t]) textStyle = `text-black font-bold`
-                      if (t === this.state.currentTopic) {
-                        return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`p-3 py-1 rounded bg-side-bar-color-active cursor-pointer ${textStyle}`}>{'# ' + t.substring(t.indexOf('#') + 1)}</li>
+                      if (t === this.state.currentChannel.id) {
+                        return <li onClick={this.changeTopic({
+                          id: `${t}`,
+                          name: `${t}`,
+                          type: CHANNEL_TPYE.public,
+                          members: []
+                        }).bind(this)} key={t} className={`p-3 py-1 rounded bg-side-bar-color-active cursor-pointer ${textStyle}`}>{'# ' + t}</li>
                       } else if (!t.startsWith('__')) {
-                        return <li onClick={this.changeTopic(`${t}`).bind(this)} key={t} className={`p-3 py-1 cursor-pointer ${textStyle}`}>{'# ' + t.substring(t.indexOf('#') + 1)}</li>
+                        return <li onClick={this.changeTopic({
+                          id: `${t}`,
+                          name: `${t}`,
+                          type: CHANNEL_TPYE.public,
+                          members: []
+                        }).bind(this)} key={t} className={`p-3 py-1 cursor-pointer ${textStyle}`}>{'# ' + t}</li>
+                      }
+                      return ''
+                    })}
+                    {this.state.pchannels.sort().map(p => {
+                      let textStyle = 'text-font-color'
+                      if (unread[p.id]) textStyle = `text-black font-bold`
+                      if (p.id === this.state.currentChannel.id) {
+                        return <li onClick={this.changeTopic(p).bind(this)} key={p.id} className={`flex flex-row p-3 pl-2 py-1 rounded bg-side-bar-color-active cursor-pointer ${textStyle}`}>
+                          <img className='w-4 h-4 mr-1 mt-1 mb-1' alt='private' src='/icon_private.svg' />
+                          <div>{p.name}</div>
+                        </li>
+                      } else if (!p.name.startsWith('__')) {
+                        return <li onClick={this.changeTopic(p).bind(this)} key={p.id} className={`flex flex-row p-3 pl-2 py-1 cursor-pointer ${textStyle}`}>
+                          <img className='w-4 h-4 mr-1 mt-1 mb-1' alt='private' src='/icon_private.svg' />
+                          <div>{p.name}</div>
+                        </li>
                       }
                       return ''
                     })}
@@ -644,7 +801,12 @@ class Chat extends Component {
                       return <li
                         className={`p-3 py-1 flex flex-row cursor-pointer ${textStyle} ${c}`}
                         key={id}
-                        onClick={this.changeTopic(channelID).bind(this)}>
+                        onClick={this.changeTopic({
+                          id: channelID,
+                          name: name,
+                          type: CHANNEL_TPYE.direct,
+                          members: []
+                        }).bind(this)}>
                         <img className='w-8 h-8 mr-2' src={avatarSrc} alt='Avatar' />
                         <div className='leading-loose text-font-color'>{name}</div>
                       </li>
@@ -676,7 +838,7 @@ class Chat extends Component {
                 onNewFriend={this._newFriend.bind(this)}
                 showScrollButton={this.state.messageListScrolled}
                 onClickScrollButton={this.onClickMessageListScrollButton.bind(this)}
-                isPublicChannel={this.isPublicChannel()}
+                isPublicChannel={this.getChannelType() === CHANNEL_TPYE.public}
                 onMessageReactClicked={this.handleAddReaction.bind(this)}
                 onMessageEditClicked={this.handleUpdate.bind(this)}
                 onMessageDeleteClicked={this.handleDelete.bind(this)}
@@ -712,8 +874,11 @@ class Chat extends Component {
         />
         <FormDialog
           open={this.state.openCreateChannelModal}
+          me={this.state.me}
+          profiles={this.state.profiles}
+          friends={this.state.friends}
           handleClose={(e) => this.setState({ openCreateChannelModal: false })}
-          handleSubmit={this.createTopic.bind(this)}
+          handleSubmit={this.createChannel.bind(this)}
         />
         <AlertDialog
           open={this.state.openAlertModal}
