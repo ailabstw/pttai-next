@@ -13,7 +13,7 @@ Currently implemented a slack-like chat room as a PoC.
 </a>
 
 <!-- Build Status -->
-<a href="https://travis-ci.org/choojs/choo">
+<a href="https://travis-ci.org/ailabstw/pttai-next">
 <img src="https://travis-ci.org/ailabstw/pttai-next.svg?branch=master"
   alt="Build Status" />
 </a>
