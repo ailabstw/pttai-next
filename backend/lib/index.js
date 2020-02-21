@@ -149,8 +149,9 @@ function updatePost (archive, topicID, postID, data) {
     if (!data.date) data.date = Date.now()
 
     const fn = `/topics/${topicID}/${postID}`
-    archive.readFile(fn, (err, data) => {
+    archive.readFile(fn, (err, _) => {
       // only allows update existing files
+      console.log(err)
       if (err) return reject(new Error('file not found'))
 
       archive.writeFile(`/topics/${topicID}/${postID}`, JSON.stringify(data), (err) => {
