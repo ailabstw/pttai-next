@@ -168,7 +168,7 @@ class Chat extends Component {
   async postToTopic (data) {
     switch (this.getChannelType()) {
       case CHANNEL_TPYE.public:
-        const topic = this.state.currentChannel.name.slice(1)
+        const topic = this.state.currentChannel.name
         data.id = Date.now()
         await this.req('post', `/topics/${topic}`, data)
         break
