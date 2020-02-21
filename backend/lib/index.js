@@ -148,10 +148,16 @@ function updatePost (archive, topicID, postID, data) {
     if (!data.topic) data.topic = topicID
     if (!data.date) data.date = Date.now()
 
-    archive.writeFile(`/topics/${topicID}/${postID}`, JSON.stringify(data), (err) => {
-      if (err) return reject(err)
+    const fn = `/topics/${topicID}/${postID}`
+    archive.readFile(fn, (err, data) => {
+      // only allows update existing files
+      if (err) return reject(new Error('file not found'))
 
-      resolve()
+      archive.writeFile(`/topics/${topicID}/${postID}`, JSON.stringify(data), (err) => {
+        if (err) return reject(err)
+
+        resolve()
+      })
     })
   })
 }
