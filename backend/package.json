@@ -27,7 +27,7 @@
     "google-auth-library": "^4.2.5",
     "hyperdiscovery": "^10.0.0",
     "hyperdrive": "^9.15.0",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "random-access-memory": "^3.1.1",
     "socket.io": "^2.2.0",
     "sodium-universal": "^2.0.0",
